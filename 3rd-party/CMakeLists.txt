@@ -16,9 +16,10 @@ ExternalProject_Add(geGL
 		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 		-DCMAKE_PROJECT_geGL_INCLUDE:PATH=${PARENT_DIR}/include.cmake
 		-DROOT_DIR:PATH=${PARENT_DIR}
+		-DBUILD_SHARED_LIBS=ON
 
 	GIT_REPOSITORY	https://github.com/dormon/geGL
-	GIT_TAG			0c4550226bf8fc0c302a5d3f2d56fce005d6828e
+	GIT_TAG			0c4550226bf8fc0c302a5d3f2d56fce005d6828e # working
 	)
 
 ExternalProject_Add(SDL2CPP

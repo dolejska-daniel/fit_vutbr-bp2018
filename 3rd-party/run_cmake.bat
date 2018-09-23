@@ -22,7 +22,7 @@ IF EXIST CMakeCache.txt (
 
 ECHO(
 ECHO Configuring...
-cmake ../
+cmake -G "Visual Studio 15 2017 Win64" ../
 
 ECHO(
 ECHO Building...

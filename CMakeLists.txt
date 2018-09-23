@@ -68,12 +68,6 @@ target_link_libraries(proceduralCity
 	debug BasicCamerad
 	optimized BasicCamera)
 
-if(WIN32)
-	target_link_libraries(proceduralCity
-		debug SDL2.dll
-		optimized SDL2.dll)
-endif(WIN32)
-
 target_link_libraries(proceduralCity
 	debug SDL2d
 	optimized SDL2)
