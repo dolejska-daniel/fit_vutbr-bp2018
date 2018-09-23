@@ -28,6 +28,11 @@ set(BIN_DIR ${ROOT_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR})
 
+set(CMAKE_DEBUG_POSTFIX			"d" CACHE STRING "add a postfix, usually d on windows")
+set(CMAKE_RELEASE_POSTFIX		"" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_RELEASEWITHDEBINFO_POSTFIX	"rd" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_MINSIZEREL_POSTFIX		"s" CACHE STRING "add a postfix, usually empty on windows")
+
 set(SOURCES
 	src/proceduralCity/main.cpp
 	)
@@ -44,7 +49,7 @@ find_package(imguiOpenGLDormon REQUIRED PATHS ${ROOT_DIR})
 find_package(imguiSDL2Dormon REQUIRED PATHS ${ROOT_DIR})
 find_package(imguiSDL2OpenGL REQUIRED PATHS ${ROOT_DIR})
 #find_package(glm REQUIRED PATHS ${ROOT_DIR})
-	
+
 include_directories(${INC_DIR})
 link_directories(${BIN_DIR})
 link_directories(${LIB_DIR})
@@ -63,9 +68,11 @@ target_link_libraries(proceduralCity
 	debug BasicCamerad
 	optimized BasicCamera)
 
-target_link_libraries(proceduralCity
-	debug SDL2d.dll
-	optimized SDL2.dll)
+if(WIN32)
+	target_link_libraries(proceduralCity
+		debug SDL2.dll
+		optimized SDL2.dll)
+endif(WIN32)
 
 target_link_libraries(proceduralCity
 	debug SDL2d
