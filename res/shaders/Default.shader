@@ -1,11 +1,18 @@
 #shader vertex
 #version 450
 
-layout(location = 0) in vec4 position;
+layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 1) in vec3 vertexColor;
+
+uniform mat4 mvpMatrix;
+
+out vec3 fragmentColor;
 
 void main()
 {
-	gl_Position = position;
+	gl_Position = mvpMatrix * vec4(vertexPosition_modelspace, 1);
+
+	fragmentColor = vertexColor;
 };
 
 
@@ -13,9 +20,11 @@ void main()
 #shader fragment
 #version 450
 
-layout(location = 0) out vec4 color;
+in vec3 fragmentColor;
+
+layout(location = 0) out vec3 color;
 
 void main()
 {
-	color = vec4(1.0, 1.0, 1.0, 1.0);
+	color = fragmentColor;
 };
