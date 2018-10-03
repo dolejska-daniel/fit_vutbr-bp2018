@@ -35,12 +35,16 @@ set(CMAKE_MINSIZEREL_POSTFIX		"s" CACHE STRING "add a postfix, usually empty on 
 
 set(SOURCES
 	src/proceduralCity/main.cpp
-	src/proceduralCity/Shader/Manager.cpp
-	src/proceduralCity/Shader/Loader.cpp
+	src/proceduralCity/Application/ShaderManager.cpp
+	src/proceduralCity/Application/ShaderLoader.cpp
+	src/proceduralCity/bunny.c
 	)
 
 set(INCLUDES
-	src/proceduralCity/Shader/Fwd.h
+	src/proceduralCity/Application/Application.h
+	src/proceduralCity/Application/ShaderLoader.h
+	src/proceduralCity/Application/ShaderLoader.h
+	src/proceduralCity/bunny.h
 	)
 
 find_package(SDL2 REQUIRED PATHS ${ROOT_DIR})
