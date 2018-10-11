@@ -15,22 +15,22 @@
 #include <geGL/geGL.h>
 #include <geGL/StaticCalls.h>
 
+#include <BasicCamera/PerspectiveCamera.h>
+#include <BasicCamera/FreeLookCamera.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/perpendicular.hpp>
 
 #include "Application/Application.h"
 #include "Application/ShaderManager.h"
 
-#include "bunny.h"
+#include "Terrain.h"
 
-using namespace std;
+using namespace glm;
 using namespace ge::gl;
 using namespace Application;
 
-
-//#define TRIANGLE_RENDER
+std::map<SDL_Keycode, bool> keyDown;
 
 
 ///
@@ -41,13 +41,13 @@ using namespace Application;
 ///
 int main(int argc, char* argv[])
 {
-	uint32_t width = 640;
-	uint32_t height = 480;
+	uint32_t width = 1280;
+	uint32_t height = 800;
 
 	//	Create main loop & window
-	auto mainLoop = make_shared<sdl2cpp::MainLoop>();
-	auto window   = make_shared<sdl2cpp::Window  >(width, height);
-    window->createContext("rendering");
+	auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
+	auto window   = std::make_shared<sdl2cpp::Window  >(width, height);
+    window->createContext("rendering", 450u, sdl2cpp::Window::CORE, sdl2cpp::Window::DEBUG);
     mainLoop->addWindow("mainWindow", window);
 
 	//	Initialize geGL
@@ -64,106 +64,121 @@ int main(int argc, char* argv[])
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	unsigned int vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	// Cull triangles which normal is not towards the camera
-	glEnable(GL_CULL_FACE);
-
-	//	Create, bind and fill vertex buffer on GPU
-	unsigned int vertexBufferObject;
-	glCreateBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, 1048 * 6 * sizeof(float), &bunnyVertices[0], GL_STATIC_DRAW);
-
-	//	Define vertex attribute - POSITION (0)
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
-
-	//glBindAttribLocation(ShaderManager::program, 0, "position");
-
-	//	Define vertex attribute - NORMAL (1)
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void*) (3 * sizeof(float)));
-
-	//	Create, bind and fill index buffer on GPU
-	unsigned int indexBufferObject;
-	glCreateBuffers(1, &indexBufferObject);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2092 * 3 * sizeof(unsigned int), &bunnyIndices[0], GL_STATIC_DRAW);
-
-	std::cerr << "Vertices size:" << sizeof(bunnyVertices) << std::endl;
-	std::cerr << "Indices size:" << sizeof(bunnyIndices) << std::endl;
-
-	float param = 0;
-	float paramInc = -0.01f;
-
-	float yParam = 0;
-	float yParamInc = 0.005f;
-
-	float cameraDistance = 4;
-
-	/*
-	//	Define Light position
-	int lightPosition_uniformLocation = glGetUniformLocation(ShaderManager::program, "lightPosition_worldspace");
-	if (lightPosition_uniformLocation != -1)
-	{
-		glUniform3f(lightPosition_uniformLocation, 1.f, 2.f, 2.f);
-	}
-	*/
 
 	//	Define MVP matrix
 	int mvpMatrix_uniformLocation = glGetUniformLocation(ShaderManager::program, "mvpMatrix");
 
 	//	Define MVP matrix
-	int cameraPosition_uniformLocation = glGetUniformLocation(ShaderManager::program, "cameraPosition_worldspace");
-
-	//	Define MVP matrix
 	int lightPosition_uniformLocation = glGetUniformLocation(ShaderManager::program, "lightPosition_worldspace");
 	glUniform3f(lightPosition_uniformLocation, 2.f, 2.f, 0.f);
 
-	glm::vec3 cameraPosition(0, 0, 1);
-	glm::vec3 cameraDirection(0);
+	//	Setup cameras
+	int cameraPosition_uniformLocation = glGetUniformLocation(ShaderManager::program, "cameraPosition_worldspace");
+	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(glm::radians(45.f), width / height, 0.1f, std::numeric_limits<float>::infinity());
+	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
 
+	freeLook->setPosition(vec3(1, 1, 4));
+
+
+	Terrain t(32 ^ 3, 32 ^ 3);
+	glm::vec3 *vertices = t.BuildVertices();
+	glm::uvec3 *indices = t.BuildIndices();
+
+	std::cerr << "Setting up OpenGL" << std::endl;
+	unsigned int vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	std::cerr << "Setting up VBO" << std::endl;
+	//	Create, bind and fill vertex buffer on GPU
+	unsigned int vbo;
+	glCreateBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//glBufferData(GL_ARRAY_BUFFER, t.GetVerticesSize(), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, t.GetVerticesSize(), vertices, GL_STATIC_DRAW);
+
+	//	Define vertex attribute - POSITION (0)
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+
+	//	Define vertex attribute - NORMAL (1)
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void*)(3 * sizeof(float)));
+
+	std::cerr << "Setting up IBO" << std::endl;
+	unsigned int ibo;
+	glCreateBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, t.GetIndicesSize(), indices, GL_STATIC_DRAW);
+
+
+	std::cerr << "Callback" << std::endl;
 	//	Drawing
     mainLoop->setIdleCallback([&](){
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		param += paramInc;
-		yParam += yParamInc;
+		for (int a = 0; a < 3; ++a)
+			freeLook->move(a, float(keyDown["d s"[a]] - keyDown["acw"[a]]) * .25f);
 
-		cameraPosition.x = cameraDistance * cos(param);
-		cameraPosition.z = cameraDistance * sin(param);
-		cameraPosition.y = cameraDistance / 2 * sin(yParam);
+		vec3 cameraPosition = freeLook->getPosition();
+		glUniform3f(lightPosition_uniformLocation, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 		glUniform3f(cameraPosition_uniformLocation, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-		if (mvpMatrix_uniformLocation != -1)
-		{
-			glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), (float)width / (float)height, 0.1f, 100.0f);
+		mat4 projectionMatrix = cameraProjection->getProjection();
+		mat4 viewMatrix = freeLook->getView();
+		mat4 modelMatrix(1);
 
-			glm::mat4 viewMatrix = glm::lookAt(
-				cameraPosition,		// the position of your camera, in world space
-				cameraDirection,	// where you want to look at, in world space
-				glm::vec3(0, 1, 0)
-			);
+		mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
+		glUniformMatrix4fv(mvpMatrix_uniformLocation, 1, GL_FALSE, &mvpMatrix[0][0]);
 
-			glm::mat4 modelMatrix(1);
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glDrawElements(GL_TRIANGLES, t.GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
 
-			glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
-
-			glUniformMatrix4fv(mvpMatrix_uniformLocation, 1, GL_FALSE, &mvpMatrix[0][0]);
-		}
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
-		glDrawElements(GL_TRIANGLES, 2092 * 3 * sizeof(unsigned int), GL_UNSIGNED_INT, (const void*)0);
+		t.Render();
 
 		glFinish();
-
         window->swap();
     });
+
+	//	Camera rotation
+	window->setEventCallback(SDL_MOUSEMOTION, [&](SDL_Event const &event) {
+		if (event.motion.state & SDL_BUTTON_LMASK)
+		{
+			//	Trap mouse
+			SDL_SetRelativeMouseMode(SDL_TRUE);
+			
+			auto const sensitivity = 0.0025f;
+			auto const xrel = static_cast<float>(event.motion.xrel);
+			auto const yrel = static_cast<float>(event.motion.yrel);
+
+			freeLook->setAngle(
+				1, freeLook->getAngle(1) + xrel * sensitivity);
+			freeLook->setAngle(
+				0, freeLook->getAngle(0) + yrel * sensitivity);
+
+			return  true;
+		}
+		else
+		{
+			//	Free mouse
+			SDL_SetRelativeMouseMode(SDL_FALSE);
+		}
+
+		return false;
+	});
+
+	window->setEventCallback(SDL_KEYDOWN, [&](SDL_Event const &event) {
+		keyDown[event.key.keysym.sym] = true;
+		return true;
+	});
+
+	window->setEventCallback(SDL_KEYUP, [&](SDL_Event const &event) {
+		keyDown[event.key.keysym.sym] = false;
+		return true;
+	});
 
 	//	Start main loop
 	(*mainLoop)();

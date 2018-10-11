@@ -2,7 +2,7 @@
 /// @file ShaderLoader.cpp
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 
 #include <iostream>
@@ -31,7 +31,7 @@ std::unordered_map<std::string, ShaderType> ShaderLoader::typeMapping ///<
 ///
 std::ifstream ShaderLoader::getStream()
 {
-	std::string filepath = "K:/Google Drive/PRIVATE/_VUT/BP/res/shaders/" + getSourceFilename();
+	std::string filepath = "../res/shaders/" + getSourceFilename();
 	std::cerr << "Reading shaders from: " << filepath << std::endl;
 	return std::ifstream(filepath, std::ifstream::in);
 }

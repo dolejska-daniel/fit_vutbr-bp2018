@@ -1,3 +1,8 @@
+###
+### CMakeLists.txt
+### Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
+###
+
 cmake_minimum_required(VERSION 3.10.2)
 
 project(
@@ -7,17 +12,20 @@ project(
 	DESCRIPTION "Procedurální město - Bakalářská práce, Daniel Dolejška, FIT VUTBR 2018"
 	)
 	
+# C++ Compiler Settings
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # set global flags
+set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra) # set debug flags
+set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}) # set release flags
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_COMPILER_FLAGS ${CMAKE_CXX_COMPILER_FLAGS} -g -O0)
+else()
+    set(CMAKE_CXX_COMPILER_FLAGS ${CMAKE_CXX_COMPILER_FLAGS} -O3 -Os)
+endif()
+
+# C Compiler Settings
 set(CMAKE_C_STANDARD 99)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
-
-#add_compile_options(-W)
-add_compile_options(-Wall)
-#add_compile_options(-Wextra)
-#add_compile_options(-Wconversion)
-add_compile_options(-pedantic)
 
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(THIRDRDPARTY_DIR ${ROOT_DIR}/3rd-party)
@@ -28,34 +36,31 @@ set(BIN_DIR ${ROOT_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR})
 
-set(CMAKE_DEBUG_POSTFIX			"d" CACHE STRING "add a postfix, usually d on windows")
-set(CMAKE_RELEASE_POSTFIX		"" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_DEBUG_POSTFIX			        "d"  CACHE STRING "add a postfix, usually d on windows")
+set(CMAKE_RELEASE_POSTFIX		        ""   CACHE STRING "add a postfix, usually empty on windows")
 set(CMAKE_RELEASEWITHDEBINFO_POSTFIX	"rd" CACHE STRING "add a postfix, usually empty on windows")
-set(CMAKE_MINSIZEREL_POSTFIX		"s" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_MINSIZEREL_POSTFIX            "s"  CACHE STRING "add a postfix, usually empty on windows")
 
 set(SOURCES
 	src/proceduralCity/main.cpp
 	src/proceduralCity/Application/ShaderManager.cpp
 	src/proceduralCity/Application/ShaderLoader.cpp
-	src/proceduralCity/bunny.c
+	src/proceduralCity/Terrain.cpp
 	)
 
 set(INCLUDES
 	src/proceduralCity/Application/Application.h
 	src/proceduralCity/Application/ShaderLoader.h
 	src/proceduralCity/Application/ShaderLoader.h
-	src/proceduralCity/bunny.h
+	src/proceduralCity/Terrain.h
 	)
 
 find_package(SDL2 REQUIRED PATHS ${ROOT_DIR})
 find_package(SDL2CPP REQUIRED PATHS ${ROOT_DIR})
 find_package(geGL REQUIRED PATHS ${ROOT_DIR})
 find_package(BasicCamera REQUIRED PATHS ${ROOT_DIR})
-find_package(imguiDormon REQUIRED PATHS ${ROOT_DIR})
-find_package(imguiOpenGLDormon REQUIRED PATHS ${ROOT_DIR})
-find_package(imguiSDL2Dormon REQUIRED PATHS ${ROOT_DIR})
 find_package(imguiSDL2OpenGL REQUIRED PATHS ${ROOT_DIR})
-#find_package(glm REQUIRED PATHS ${ROOT_DIR})
+find_package(glm REQUIRED PATHS ${ROOT_DIR})
 
 include_directories(${INC_DIR})
 link_directories(${BIN_DIR})
@@ -63,41 +68,5 @@ link_directories(${LIB_DIR})
 
 add_executable(proceduralCity ${SOURCES} ${INCLUDES})
 
-target_link_libraries(proceduralCity
-	debug geGLd
-	optimized geGL)
+target_link_libraries(proceduralCity SDL2::SDL2 SDL2::SDL2main SDL2CPP::SDL2CPP BasicCamera::BasicCamera geGL::geGL imguiSDL2OpenGL::imguiSDL2OpenGL)
 
-target_link_libraries(proceduralCity
-	debug SDL2CPPd
-	optimized SDL2CPP)
-
-target_link_libraries(proceduralCity
-	debug BasicCamerad
-	optimized BasicCamera)
-
-target_link_libraries(proceduralCity
-	debug SDL2d
-	optimized SDL2)
-
-target_link_libraries(proceduralCity
-	debug SDL2maind
-	optimized SDL2main)
-
-target_link_libraries(proceduralCity
-	debug imguiDormond
-	optimized imguiDormon)
-
-target_link_libraries(proceduralCity
-	debug imguiSDL2Dormond
-	optimized imguiSDL2Dormon)
-
-target_link_libraries(proceduralCity
-	debug imguiOpenGLDormond
-	optimized imguiOpenGLDormon)
-
-target_link_libraries(proceduralCity
-	debug imguiSDL2OpenGLd
-	optimized imguiSDL2OpenGL)
-
-#add_library(glm ${LIB_DIR})
-#target_link_libraries(proceduralCity glm)
