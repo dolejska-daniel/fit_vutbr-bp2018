@@ -31,7 +31,7 @@ ExternalProject_Add(SDL2CPP
 		-DROOT_DIR:PATH=${PARENT_DIR}
 
 	GIT_REPOSITORY	https://github.com/dormon/SDL2CPP
-	GIT_TAG			master
+	GIT_TAG			f4d46e12b0324400fb48e7e361d9717ca22f4b67 # older CMake version
 	)
 
 ExternalProject_Add(BasicCamera

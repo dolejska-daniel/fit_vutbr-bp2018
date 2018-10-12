@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cstring>
 
 #include "Application.h"
 #include "ShaderLoader.h"

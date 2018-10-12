@@ -23,7 +23,7 @@ void main()
 
 	position = vertexPosition_worldspace;
 	normal = vertexNormal_worldspace;
-};
+}
 
 
 
@@ -70,4 +70,5 @@ void main()
 	vec3 specular = light_color * spec;
 
 	color = diffuse + specular;
-};
+}
+
