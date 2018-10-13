@@ -2,8 +2,7 @@
 ### CMakeLists.txt
 ### Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ###
-
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.12.3)
 
 project(
 	proceduralCity
@@ -27,6 +26,7 @@ endif()
 # C Compiler Settings
 set(CMAKE_C_STANDARD 99)
 
+# Directory setup
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(THIRDRDPARTY_DIR ${ROOT_DIR}/3rd-party)
 set(LIB_DIR ${ROOT_DIR}/lib)
@@ -36,37 +36,81 @@ set(BIN_DIR ${ROOT_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR})
 
-set(CMAKE_DEBUG_POSTFIX			        "d"  CACHE STRING "add a postfix, usually d on windows")
-set(CMAKE_RELEASE_POSTFIX		        ""   CACHE STRING "add a postfix, usually empty on windows")
-set(CMAKE_RELEASEWITHDEBINFO_POSTFIX	"rd" CACHE STRING "add a postfix, usually empty on windows")
-set(CMAKE_MINSIZEREL_POSTFIX            "s"  CACHE STRING "add a postfix, usually empty on windows")
-
+###
+# Define files
+###
 set(SOURCES
 	src/proceduralCity/main.cpp
 	src/proceduralCity/Application/ShaderManager.cpp
 	src/proceduralCity/Application/ShaderLoader.cpp
+	src/proceduralCity/Terrain/Builder.cpp
+	src/proceduralCity/Terrain/Generator.cpp
+	src/proceduralCity/Terrain/HeightMap.cpp
+	src/proceduralCity/Terrain/Chunk.cpp
+	src/proceduralCity/Terrain/Map.cpp
 	src/proceduralCity/Terrain.cpp
 	)
 
 set(INCLUDES
 	src/proceduralCity/Application/Application.h
 	src/proceduralCity/Application/ShaderLoader.h
-	src/proceduralCity/Application/ShaderLoader.h
+	src/proceduralCity/Application/ShaderManager.h
+	src/proceduralCity/Terrain/Fwd.h
+	src/proceduralCity/Terrain/Builder.h
+	src/proceduralCity/Terrain/Generator.h
+	src/proceduralCity/Terrain/HeightMap.h
+	src/proceduralCity/Terrain/Chunk.h
+	src/proceduralCity/Terrain/Map.h
 	src/proceduralCity/Terrain.h
 	)
 
-find_package(SDL2 REQUIRED PATHS ${ROOT_DIR})
-find_package(SDL2CPP REQUIRED PATHS ${ROOT_DIR})
-find_package(geGL REQUIRED PATHS ${ROOT_DIR})
-find_package(BasicCamera REQUIRED PATHS ${ROOT_DIR})
-find_package(imguiSDL2OpenGL REQUIRED PATHS ${ROOT_DIR})
-find_package(glm REQUIRED PATHS ${ROOT_DIR})
+file(GLOB_RECURSE SHADERS LIST_DIRECTORIES false RELATIVE ${ROOT_DIR} *.shader)
+
+###
+# Setup source groups for Visual Studio project file
+###
+function(assign_source_group)
+	foreach(filename IN ITEMS ${ARGV})
+		get_filename_component(filepath "${filename}" PATH)
+		string(REPLACE "/" "\\" group_name "${filepath}")
+		source_group("${group_name}" FILES "${filename}")
+	endforeach()
+endfunction(assign_source_group)
+
+assign_source_group(${SOURCES})
+assign_source_group(${INCLUDES})
+assign_source_group(${SHADERS})
+
+###
+# Define packages
+###
+find_package(ArgumentViewer REQUIRED)
+find_package(BasicCamera REQUIRED)
+find_package(Vars REQUIRED)
+find_package(geGL REQUIRED)
+find_package(glm REQUIRED)
+find_package(imguiSDL2OpenGL REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(SDL2CPP REQUIRED)
 
 include_directories(${INC_DIR})
 link_directories(${BIN_DIR})
 link_directories(${LIB_DIR})
 
-add_executable(proceduralCity ${SOURCES} ${INCLUDES})
+###
+# Define targets
+# CMake recognises non-build files itself
+###
+add_executable(proceduralCity ${SOURCES} ${INCLUDES} ${SHADERS})
 
-target_link_libraries(proceduralCity SDL2::SDL2 SDL2::SDL2main SDL2CPP::SDL2CPP BasicCamera::BasicCamera geGL::geGL imguiSDL2OpenGL::imguiSDL2OpenGL)
+target_link_libraries(proceduralCity
+	SDL2::SDL2
+	SDL2::SDL2main
+	SDL2CPP::SDL2CPP
+	BasicCamera::BasicCamera
+	ArgumentViewer::ArgumentViewer
+	imguiSDL2OpenGL::imguiSDL2OpenGL
+	geGL::geGL
+	Vars::Vars
+	)
 

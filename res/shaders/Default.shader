@@ -47,6 +47,8 @@ void main()
 {
 	//	Use color provided by vertex shader
 	//color = fragmentColor;
+	//color = normal;
+	//return;
 
 	vec3 light_pos = lightPosition_worldspace;
 	vec3 camera_pos = cameraPosition_worldspace;

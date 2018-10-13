@@ -21,14 +21,21 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <ArgumentViewer/ArgumentViewer.h>
+#include <Vars/Vars.h>
+
 #include "Application/Application.h"
 #include "Application/ShaderManager.h"
-
-#include "Terrain.h"
+#include "Terrain/Generator.h"
+#include "Terrain/Map.h"
+#include "Terrain/Chunk.h"
 
 using namespace glm;
 using namespace ge::gl;
+using namespace vars;
+using namespace argumentViewer;
 using namespace Application;
+using namespace Terrain;
 
 std::map<SDL_Keycode, bool> keyDown;
 
@@ -41,6 +48,9 @@ std::map<SDL_Keycode, bool> keyDown;
 ///
 int main(int argc, char* argv[])
 {
+	ArgumentViewer args(argc, argv);
+	Vars vars;
+
 	uint32_t width = 1280;
 	uint32_t height = 800;
 
@@ -80,9 +90,9 @@ int main(int argc, char* argv[])
 	freeLook->setPosition(vec3(1, 1, 4));
 
 
-	Terrain t(32 ^ 3, 32 ^ 3);
-	glm::vec3 *vertices = t.BuildVertices();
-	glm::uvec3 *indices = t.BuildIndices();
+	Map* map = Generator::GenerateMap(vars);
+	Chunk* chunk = map->chunks[0];
+	
 
 	std::cerr << "Setting up OpenGL" << std::endl;
 	unsigned int vao;
@@ -94,8 +104,8 @@ int main(int argc, char* argv[])
 	unsigned int vbo;
 	glCreateBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, t.GetVerticesSize(), vertices, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, t.GetVerticesSize(), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, chunk->GetVerticesSize(), chunk->GetVertices(), GL_STATIC_DRAW);
+	printf("Vertices size: %d\n", chunk->GetVerticesSize());
 
 	//	Define vertex attribute - POSITION (0)
 	glEnableVertexAttribArray(0);
@@ -109,7 +119,56 @@ int main(int argc, char* argv[])
 	unsigned int ibo;
 	glCreateBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, t.GetIndicesSize(), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndicesSize(), chunk->GetIndices(), GL_STATIC_DRAW);
+	printf("Vertices size: %d\n", chunk->GetIndicesSize());
+
+	/*
+	unsigned int hmapTex;
+	glGenTextures(1, &hmapTex);
+	glBindTexture(GL_TEXTURE_2D, hmapTex);
+	
+	//	Texture wrapping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	//	Texture filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//	Texture border
+	glm::vec4 hmapBorder(0.f, 0.f, 0.f, 0.f);
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float *)&hmapBorder);
+
+	HeightMap map = HeightMap(vars, 32, 32);
+	float *hmap = map.GetMap();
+	glm::vec3 *hmapTexture = new glm::vec3[map.GetWidth() * map.GetHeight()];
+	for (int y = 0; y < map.GetHeight(); y++)
+	{
+		for (int x = 0; x < map.GetWidth(); x++)
+		{
+			int index = y * map.GetWidth() + x;
+			hmapTexture[index].r = hmapTexture[index].g = hmapTexture[index].b = glm::mix(0, 1, hmap[index]);
+		}
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, map.GetWidth(), map.GetHeight(), 0, GL_RGB, GL_FLOAT, hmapTexture);
+	*/
+
+	/*
+	auto vertexArray = std::make_shared<VertexArray>();
+
+	auto vertexBuffer = std::make_shared<Buffer>(t.GetVerticesSize());
+	vertexBuffer->setData(vertices);
+
+	//	POSITION
+	vertexArray->addAttrib(vertexBuffer, 0, 3, GL_FLOAT, 6 * sizeof(float));
+	//	NORMAL
+	vertexArray->addAttrib(vertexBuffer, 1, 3, GL_FLOAT, 6 * sizeof(float), 3 * sizeof(float));
+
+	auto indexBuffer = std::make_shared<Buffer>(t.GetIndicesCount());
+	vertexBuffer->setData(indices);
+
+	vertexArray->addElementBuffer(indexBuffer);
+	*/
 
 
 	std::cerr << "Callback" << std::endl;
@@ -133,11 +192,16 @@ int main(int argc, char* argv[])
 		mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
 		glUniformMatrix4fv(mvpMatrix_uniformLocation, 1, GL_FALSE, &mvpMatrix[0][0]);
 
+
 		glBindVertexArray(vao);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements(GL_TRIANGLES, t.GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
+		glDrawElements(GL_TRIANGLES, chunk->GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
 
-		t.Render();
+		/*
+		vertexArray->bind();
+		indexBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
+		glDrawElements(GL_TRIANGLES, t.GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
+		*/
 
 		glFinish();
         window->swap();

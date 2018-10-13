@@ -4,9 +4,7 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-
 #include <iostream>
-
 #include <geGL/StaticCalls.h>
 
 #include "Application.h"

@@ -4,7 +4,6 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-
 #include <iostream>
 #include <fstream>
 #include <string>

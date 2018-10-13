@@ -21,12 +21,28 @@ IF EXIST CMakeCache.txt (
 )
 
 ECHO(
-ECHO Configuring...
-cmake -G "Visual Studio 15 2017 Win64" ../
+ECHO Configuring third party libraries...
+cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_PREFIX_PATH=../../lib/cmake -DCMAKE_INSTALL_PREFIX=../../ ../
+
+IF errorlevel 1 (
+	ECHO(
+	ECHO CMake configuration FAILED!
+	ECHO(
+	PAUSE
+	EXIT /b %errorlevel%
+)
 
 ECHO(
-ECHO Building...
+ECHO Building third party libraries...
 cmake --build ./
+
+IF errorlevel 1 (
+	ECHO(
+	ECHO CMake configuration FAILED!
+	ECHO(
+	PAUSE
+	EXIT /b %errorlevel%
+)
 
 ECHO(
 ECHO Completed!

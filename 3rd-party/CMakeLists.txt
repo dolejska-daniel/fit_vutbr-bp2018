@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 3.10.2)
+###
+### CMakeLists.txt
+### Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
+###
+cmake_minimum_required(VERSION 3.12.3)
 
 project(
 	3rd-party
@@ -31,7 +35,7 @@ ExternalProject_Add(SDL2CPP
 		-DROOT_DIR:PATH=${PARENT_DIR}
 
 	GIT_REPOSITORY	https://github.com/dormon/SDL2CPP
-	GIT_TAG			f4d46e12b0324400fb48e7e361d9717ca22f4b67 # older CMake version
+	GIT_TAG			master
 	)
 
 ExternalProject_Add(BasicCamera
@@ -46,26 +50,6 @@ ExternalProject_Add(BasicCamera
 	GIT_TAG			master
 	)
 
-ExternalProject_Add(imguiSDL2Dormon
-	PREFIX 		repos
-	INSTALL_DIR	${PARENT_DIR}
-	CMAKE_ARGS
-		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-
-	GIT_REPOSITORY	https://github.com/dormon/imguiSDL2Dormon
-	GIT_TAG			master
-	)
-
-ExternalProject_Add(imguiOpenGLDormon
-	PREFIX 		repos
-	INSTALL_DIR	${PARENT_DIR}
-	CMAKE_ARGS
-		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-
-	GIT_REPOSITORY	https://github.com/dormon/imguiOpenGLDormon
-	GIT_TAG			master
-	)
-
 ExternalProject_Add(imguiDormon
 	PREFIX 		repos
 	INSTALL_DIR	${PARENT_DIR}
@@ -76,6 +60,28 @@ ExternalProject_Add(imguiDormon
 	GIT_TAG			master
 	)
 
+ExternalProject_Add(imguiSDL2Dormon
+	PREFIX 		repos
+	INSTALL_DIR	${PARENT_DIR}
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+	GIT_REPOSITORY	https://github.com/dormon/imguiSDL2Dormon
+	GIT_TAG			master
+	)
+add_dependencies(imguiSDL2Dormon imguiDormon)
+
+ExternalProject_Add(imguiOpenGLDormon
+	PREFIX 		repos
+	INSTALL_DIR	${PARENT_DIR}
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+	GIT_REPOSITORY	https://github.com/dormon/imguiOpenGLDormon
+	GIT_TAG			master
+	)
+add_dependencies(imguiOpenGLDormon imguiDormon)
+
 ExternalProject_Add(imguiSDL2OpenGL
 	PREFIX 		repos
 	INSTALL_DIR	${PARENT_DIR}
@@ -85,12 +91,48 @@ ExternalProject_Add(imguiSDL2OpenGL
 	GIT_REPOSITORY	https://github.com/dormon/imguiSDL2OpenGl
 	GIT_TAG			master
 	)
-add_dependencies(imguiSDL2Dormon imguiDormon)
-add_dependencies(imguiOpenGLDormon imguiDormon)
+add_dependencies(imguiSDL2OpenGL imguiDormon imguiSDL2Dormon imguiOpenGLDormon)
 
-add_dependencies(imguiSDL2OpenGL imguiDormon)
-add_dependencies(imguiSDL2OpenGL imguiSDL2Dormon)
-add_dependencies(imguiSDL2OpenGL imguiOpenGLDormon)
+ExternalProject_Add(Vars
+	PREFIX 		repos
+	INSTALL_DIR	${PARENT_DIR}
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+	GIT_REPOSITORY	https://github.com/dormon/Vars
+	GIT_TAG			master
+	)
+
+ExternalProject_Add(MealyMachine
+	PREFIX 		repos
+	INSTALL_DIR	${PARENT_DIR}
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+	GIT_REPOSITORY	https://github.com/dormon/MealyMachine
+	GIT_TAG			master
+	)
+
+ExternalProject_Add(TxtUtils
+	PREFIX 		repos
+	INSTALL_DIR	${PARENT_DIR}
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+	GIT_REPOSITORY	https://github.com/dormon/TxtUtils
+	GIT_TAG			master
+	)
+
+ExternalProject_Add(ArgumentViewer
+	PREFIX 		repos
+	INSTALL_DIR	${PARENT_DIR}
+	CMAKE_ARGS
+		-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+
+	GIT_REPOSITORY	https://github.com/dormon/ArgumentViewer
+	GIT_TAG			master
+	)
+add_dependencies(ArgumentViewer MealyMachine TxtUtils)
 
 ExternalProject_Add(SDL2
 	PREFIX 		repos
