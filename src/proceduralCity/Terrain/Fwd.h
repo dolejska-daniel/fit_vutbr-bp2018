@@ -7,6 +7,10 @@
 #pragma once
 
 
+///
+/// @namespace Terrain
+/// @brief
+///
 namespace Terrain
 {
 	class Map;

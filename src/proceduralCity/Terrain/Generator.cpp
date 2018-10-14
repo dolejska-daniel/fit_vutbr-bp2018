@@ -15,16 +15,16 @@ Terrain::Map* Terrain::Generator::GenerateMap(vars::Vars& vars)
 	return new Map(vars);
 }
 
-Terrain::Chunk* Terrain::Generator::GenerateChunk(Terrain::Map* map)
+Terrain::Chunk* Terrain::Generator::GenerateChunk(Terrain::Map* map, int globalOffsetX, int globalOffsetY)
 {
 	assert(map != nullptr);
 
 	//	Vytvoøení instance chunku
-	//	automaticky probìhne vygenerování vıškové mapy a inicializace objektu
-	Chunk* chunk = new Chunk(map);
+	//	- vygenerování vıškové mapy a inicializace objektu probìhne automaticky
+	Chunk* chunk = new Chunk(map->vars, globalOffsetX, globalOffsetY);
 
 	//	Sestavení vertexù a indexù chunku
-	Terrain::Builder::BuildVertices(chunk);
+	Terrain::Builder::BuildVertices(chunk, map->GetHeightMap());
 	Terrain::Builder::BuildIndices(chunk);
 
 	return chunk;

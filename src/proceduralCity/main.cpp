@@ -51,6 +51,15 @@ int main(int argc, char* argv[])
 	ArgumentViewer args(argc, argv);
 	Vars vars;
 
+	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width", 4, "Šířka terénu"));
+	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 4, "2D Výška (hloubka) terénu"));
+
+	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width", 16, "Šířka jednoho bloku terénu"));
+	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height", 16, "2D Výška (hloubka) jednoho bloku terénu"));
+
+	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail", 1, "Výchozí úroveň detailu terénu (může být dynamicky snižována pro vzdálenější objekty)"));
+	vars.addUint32("terrain.detail.max",	args.getu32("--terrain-detail-max", 8, "Maximální úroveň detailu terénu"));
+
 	uint32_t width = 1280;
 	uint32_t height = 800;
 
@@ -91,36 +100,53 @@ int main(int argc, char* argv[])
 
 
 	Map* map = Generator::GenerateMap(vars);
-	Chunk* chunk = map->chunks[0];
-	
 
-	std::cerr << "Setting up OpenGL" << std::endl;
-	unsigned int vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	std::cerr << "Setting up VBOs and VAOs" << std::endl;
 
-	std::cerr << "Setting up VBO" << std::endl;
-	//	Create, bind and fill vertex buffer on GPU
-	unsigned int vbo;
-	glCreateBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, chunk->GetVerticesSize(), chunk->GetVertices(), GL_STATIC_DRAW);
-	printf("Vertices size: %d\n", chunk->GetVerticesSize());
+	int mapWidth = vars.getUint32("terrain.map.width");
+	int mapHeight = vars.getUint32("terrain.map.height");
+	unsigned int* vaos = new unsigned int[mapWidth * mapHeight];
+	unsigned int* vbos = new unsigned int[mapWidth * mapHeight];
+	unsigned int* ibos = new unsigned int[mapWidth * mapHeight];
 
-	//	Define vertex attribute - POSITION (0)
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	for (int y = 0; y < mapHeight; y++)
+	{
+		for (int x = 0; x < mapWidth; x++)
+		{
+			Chunk* chunk = map->chunks[y * mapWidth + x];
 
-	//	Define vertex attribute - NORMAL (1)
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void*)(3 * sizeof(float)));
+			//	Create, bind and fill vertex buffer on GPU
+			glCreateBuffers(1, &vbos[y * mapWidth + x]);
+			glGenVertexArrays(1, &vaos[y * mapWidth + x]);
+			glBindVertexArray(vaos[y * mapWidth + x]);
+			glBindBuffer(GL_ARRAY_BUFFER, vbos[y * mapWidth + x]);
+			glBufferData(GL_ARRAY_BUFFER, chunk->GetVerticesSize(), chunk->GetVertices(), GL_STATIC_DRAW);
+			printf("Vertices size: %d\n", chunk->GetVerticesSize());
 
-	std::cerr << "Setting up IBO" << std::endl;
-	unsigned int ibo;
-	glCreateBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndicesSize(), chunk->GetIndices(), GL_STATIC_DRAW);
-	printf("Vertices size: %d\n", chunk->GetIndicesSize());
+			//	Define vertex attribute - POSITION (0)
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+
+			//	Define vertex attribute - NORMAL (1)
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void*)(3 * sizeof(float)));
+		}
+	}
+
+	for (int y = 0; y < mapHeight; y++)
+	{
+		for (int x = 0; x < mapWidth; x++)
+		{
+			Chunk* chunk = map->chunks[y * mapWidth + x];
+
+			std::cerr << "Setting up IBO" << std::endl;
+			glBindVertexArray(vaos[y * mapWidth + x]);
+			glCreateBuffers(1, &ibos[y * mapWidth + x]);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibos[y * mapWidth + x]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndicesSize(), chunk->GetIndices(), GL_STATIC_DRAW);
+			printf("Indices size: %d\n", chunk->GetIndicesSize());
+		}
+	}
 
 	/*
 	unsigned int hmapTex;
@@ -175,7 +201,7 @@ int main(int argc, char* argv[])
 	//	Drawing
     mainLoop->setIdleCallback([&](){
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.f);
+		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (int a = 0; a < 3; ++a)
@@ -193,9 +219,16 @@ int main(int argc, char* argv[])
 		glUniformMatrix4fv(mvpMatrix_uniformLocation, 1, GL_FALSE, &mvpMatrix[0][0]);
 
 
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements(GL_TRIANGLES, chunk->GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
+		for (int y = 0; y < mapHeight; y++)
+		{
+			for (int x = 0; x < mapWidth; x++)
+			{
+				Chunk* chunk = map->chunks[y * mapWidth + x];
+
+				glBindVertexArray(vaos[y * mapWidth + x]);
+				glDrawElements(GL_TRIANGLES, chunk->GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
+			}
+		}
 
 		/*
 		vertexArray->bind();
@@ -218,10 +251,8 @@ int main(int argc, char* argv[])
 			auto const xrel = static_cast<float>(event.motion.xrel);
 			auto const yrel = static_cast<float>(event.motion.yrel);
 
-			freeLook->setAngle(
-				1, freeLook->getAngle(1) + xrel * sensitivity);
-			freeLook->setAngle(
-				0, freeLook->getAngle(0) + yrel * sensitivity);
+			freeLook->setAngle(1, freeLook->getAngle(1) + xrel * sensitivity);
+			freeLook->setAngle(0, freeLook->getAngle(0) + yrel * sensitivity);
 
 			return  true;
 		}

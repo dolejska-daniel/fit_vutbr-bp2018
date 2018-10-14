@@ -11,9 +11,13 @@
 
 namespace Terrain
 {
+	///
+	/// @namespace Builder
+	/// @brief
+	///
 	namespace Builder
 	{
-		void BuildVertices(Chunk* chunk);
+		void BuildVertices(Chunk* chunk, HeightMap* heightMap);
 		void BuildIndices(Chunk* chunk);
 	}
 }

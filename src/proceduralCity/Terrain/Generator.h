@@ -13,9 +13,13 @@
 
 namespace Terrain
 {
+	///
+	/// @namespace Generator
+	/// @brief
+	///
 	namespace Generator
 	{
 		Map* GenerateMap(vars::Vars& vars);
-		Chunk* GenerateChunk(Terrain::Map* map);
+		Chunk* GenerateChunk(Terrain::Map* map, int globalOffsetX, int globalOffsetY);
 	};
 }

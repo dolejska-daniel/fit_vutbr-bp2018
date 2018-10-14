@@ -13,18 +13,22 @@
 
 namespace Terrain
 {
+	///
+	/// @class Map
+	/// @brief
+	///
 	class Map
 	{
-		friend Chunk;
-
 	public:
+		vars::Vars& vars;
+		Chunk** chunks;
+
 		Map(vars::Vars& vars);
 		~Map();
 
-		Chunk** chunks;
+		inline HeightMap* GetHeightMap() { return heightMap; }
 
 	private:
-		vars::Vars& vars;
-
+		HeightMap* heightMap;
 	};
 }
