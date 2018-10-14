@@ -11,15 +11,13 @@
 #include "HeightMap.h"
 
 
-Terrain::Chunk::Chunk(vars::Vars & vars, int globalOffsetX, int globalOffsetY)
+Terrain::Chunk::Chunk(vars::Vars& vars, int globalOffsetX, int globalOffsetY)
 	: globalOffsetX(globalOffsetX), globalOffsetY(globalOffsetY)
 {
+	detail = vars.getUint32("terrain.detail");
 	width  = vars.getUint32("terrain.chunk.width");
 	height = vars.getUint32("terrain.chunk.height");
 }
-
-Terrain::Chunk::Chunk(unsigned int width, unsigned int height, int globalOffsetX, int globalOffsetY)
-	: width(width), height(height), globalOffsetX(globalOffsetX), globalOffsetY(globalOffsetY) {}
 
 Terrain::Chunk::~Chunk()
 {

@@ -51,17 +51,35 @@ int main(int argc, char* argv[])
 	ArgumentViewer args(argc, argv);
 	Vars vars;
 
-	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width", 4, "Šířka terénu"));
-	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 4, "2D Výška (hloubka) terénu"));
+	// ==========================================================dd=
+	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ TERÉNU
+	// =============================================================
+	vars.addUint32("terrain.seed",			args.getu32("--terrain-seed",			12345,	"Default seed for terrain generation"));
+	vars.addFloat( "terrain.scale",			args.getf32("--terrain-scale",			32.f,	""));
+	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		3.f,	""));
+	vars.addFloat( "terrain.frequency",		args.getf32("--terrain-frequency",		2.f,	""));
+	vars.addFloat( "terrain.persistence",	args.getf32("--terrain-persistence",	0.5f,	""));
+	vars.addFloat( "terrain.lacunarity",	args.getf32("--terrain-lacunarity",		1.25f,	""));
+	vars.addUint32("terrain.octaves",		args.getu32("--terrain-octaves",		3,		"Number of noises from which is the terrain going to be generated"));
+	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail",			1,		"Default level of object detail"));
 
-	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width", 16, "Šířka jednoho bloku terénu"));
-	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height", 16, "2D Výška (hloubka) jednoho bloku terénu"));
+	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width",	8, "Terrain map width (count of chunks)"));
+	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 8, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
 
-	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail", 1, "Výchozí úroveň detailu terénu (může být dynamicky snižována pro vzdálenější objekty)"));
-	vars.addUint32("terrain.detail.max",	args.getu32("--terrain-detail-max", 8, "Maximální úroveň detailu terénu"));
+	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width",	64, "Chunk width"));
+	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64, "Terrain chunk height in 2D (depth/length in 3D)"));
 
-	uint32_t width = 1280;
-	uint32_t height = 800;
+	if (args.isPresent("--help", "") || args.validate() == false)
+	{
+		std::cerr << args.toStr() << std::endl;
+		exit(EXIT_SUCCESS);
+	}
+
+	// ==========================================================dd=
+	//	INICIALIZACE OKNA, geGL, ...
+	// =============================================================
+	uint32_t width = 800;
+	uint32_t height = 600;
 
 	//	Create main loop & window
 	auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();

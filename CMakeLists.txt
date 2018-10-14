@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.12.3)
 
 project(
 	proceduralCity
-	VERSION 0.1
+	VERSION 0.1.1
 	LANGUAGES C CXX
 	DESCRIPTION "Procedurální město - Bakalářská práce, Daniel Dolejška, FIT VUTBR 2018"
 	)
@@ -48,7 +48,6 @@ set(SOURCES
 	src/proceduralCity/Terrain/HeightMap.cpp
 	src/proceduralCity/Terrain/Chunk.cpp
 	src/proceduralCity/Terrain/Map.cpp
-	src/proceduralCity/Terrain.cpp
 	)
 
 set(INCLUDES
@@ -61,7 +60,6 @@ set(INCLUDES
 	src/proceduralCity/Terrain/HeightMap.h
 	src/proceduralCity/Terrain/Chunk.h
 	src/proceduralCity/Terrain/Map.h
-	src/proceduralCity/Terrain.h
 	)
 
 file(GLOB_RECURSE SHADERS LIST_DIRECTORIES false RELATIVE ${ROOT_DIR} *.shader)

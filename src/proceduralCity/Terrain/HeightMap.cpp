@@ -26,32 +26,44 @@ Terrain::HeightMap::~HeightMap()
 
 }
 
-float Terrain::HeightMap::GetData(float x, float y, unsigned int detail)
+float Terrain::HeightMap::GetData(float globalX, float globalY, unsigned int detail)
 {
-	//	TODO: Octaves
-	//	TODO: Vars
-	float scale = 16.f;
-	float amplitude = 4;
-	float frequency = 1;
+	//
+	// https://github.com/SebLague/Procedural-Landmass-Generation
+	//
 
-	//	TODO: Octaves
-	//	TODO: Vars
-	float persistence = 1;
-	float lacunarity = 1;
+	float scale = vars.getFloat("terrain.scale");
+	float amplitude = vars.getFloat("terrain.amplitude");
+	float frequency = vars.getFloat("terrain.frequency");
 
+	float persistence = vars.getFloat("terrain.persistence");
+	float lacunarity = vars.getFloat("terrain.lacunarity");
+	unsigned int octaveCount = vars.getUint32("terrain.octaves");
 
-	srand(123456); //	TODO: vars: terrain.seed
-	int offsetX = rand() % 200000 - 100000;
-	int offsetY = rand() % 200000 - 100000;
+	srand(vars.getUint32("terrain.seed"));
 
+	glm::vec2 *offsets = new glm::vec2[octaveCount];
+	for (unsigned int i = 0; i < octaveCount; i++)
+	{
+		offsets[i].x = float(rand() % 200000 - 100000);
+		offsets[i].y = float(rand() % 200000 - 100000);
+	}
+
+	float result = 0;
 	glm::vec2 sample(0);
-	sample.y = y / scale * frequency + offsetY;
-	sample.x = x / scale * frequency + offsetX;
+	for (unsigned int i = 0; i < octaveCount; i++)
+	{
+		sample.y = globalY / scale * frequency + offsets[i].x;
+		sample.x = globalX / scale * frequency + offsets[i].y;
 
-	//	Posunutí intervalu do <-1, 1>
-	float h = glm::perlin(sample) * 2 - 1;
-	h *= amplitude;
+		//	Posunutí intervalu do <-1, 1>
+		float h = glm::perlin(sample) * 2 - 1;
+		result += h * amplitude;
 
-	//printf("perlin[%2d, %2d] = (%f, %f, %f)\n", x, y, sample.x, sample.y, h);
-	return h;
+		amplitude *= persistence;
+		frequency *= lacunarity;
+	}
+
+	//printf("perlin[%2d, %2d] = (%f, %f, %f)\n", globalX, globalY, sample.globalX, sample.globalY, h);
+	return result;
 }

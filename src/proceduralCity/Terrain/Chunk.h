@@ -43,7 +43,6 @@ namespace Terrain
 	{
 	public:
 		Chunk(vars::Vars& vars, int globalOffsetX, int globalOffsetY);
-		Chunk(unsigned int width, unsigned int height, int globalOffsetX, int globalOffsetY);
 		~Chunk();
 
 		inline ChunkVertex* GetVertices() { return vertices; }
@@ -54,10 +53,13 @@ namespace Terrain
 
 		inline unsigned int GetWidth() { return width; }
 		inline unsigned int GetHeight() { return height; }
-		inline unsigned int GetIndicesSize() { return GetWidth() * GetHeight() * sizeof(ChunkIndex); }
 
-		inline unsigned int GetVerticesWidth() { return GetWidth() + 1; }
-		inline unsigned int GetVerticesHeight() { return GetHeight() + 1; }
+		inline unsigned int GetIndicesWidth() { return GetWidth() * GetDetail(); }
+		inline unsigned int GetIndicesHeight() { return GetHeight() * GetDetail(); }
+		inline unsigned int GetIndicesSize() { return GetIndicesWidth() * GetIndicesHeight() * sizeof(ChunkIndex); }
+
+		inline unsigned int GetVerticesWidth() { return (GetWidth() + 1) * GetDetail(); }
+		inline unsigned int GetVerticesHeight() { return (GetHeight() + 1) * GetDetail(); }
 		inline unsigned int GetVerticesSize() { return GetVerticesWidth() * GetVerticesHeight() * sizeof(ChunkVertex); }
 
 		inline int GetGlobalOffsetX() { return globalOffsetX; }
@@ -67,7 +69,7 @@ namespace Terrain
 		inline void SetDetail(unsigned int detail) { this->detail = detail; }
 
 	private:
-		unsigned int detail = 1;	///< Detaily této èásti
+		unsigned int detail;	///< Detaily této èásti
 		unsigned int width;		///< Šíøka této èásti mapy
 		unsigned int height;	///< Vıška této èásti mapy
 

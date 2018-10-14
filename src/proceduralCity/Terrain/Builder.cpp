@@ -32,12 +32,12 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 
 	//	Lokální lambda pro výpoèet normály
 	static auto CalculatePosition = [&](unsigned int x, unsigned int y, glm::vec3& target)  {
-		float globalX = float((int)x + chunk->GetGlobalOffsetX());
-		float globalY = float((int)y + chunk->GetGlobalOffsetY());
+		float globalX = float(float(x / detail) + chunk->GetGlobalOffsetX());
+		float globalY = float(float(y / detail) + chunk->GetGlobalOffsetY());
 
-		target.x = globalX / detail; // Šíøka
+		target.x = globalX; // Šíøka
 		target.y = 0; // 3D Výška
-		target.z = globalY / detail; // 2D Výška (Hloubka)
+		target.z = globalY; // 2D Výška (Hloubka)
 
 		target.y = heightMap->GetData(target, chunk->GetDetail()); // Souøadnice Y je výška
 	};
@@ -115,8 +115,8 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 	assert(chunk->GetVertices() != nullptr);
 
 	//	Naètení potøebných promìnných
-	unsigned int width = chunk->GetWidth();
-	unsigned int height = chunk->GetHeight();
+	unsigned int width = chunk->GetIndicesWidth();
+	unsigned int height = chunk->GetIndicesHeight();
 
 	Terrain::ChunkIndex* indices;
 
