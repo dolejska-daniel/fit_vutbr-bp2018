@@ -18,6 +18,7 @@ using namespace ge::gl;
 ShaderSources	ShaderManager::sources;	///< Contains ShaderSources struct
 unsigned int	ShaderManager::program;	///< Program ID
 unsigned int	ShaderManager::vs;		///< Vertex Shader ID
+unsigned int	ShaderManager::gs;		///< Geometry Shader ID
 unsigned int	ShaderManager::fs;		///< Fragment Shader ID
 
 ///
@@ -32,13 +33,20 @@ void ShaderManager::init(const std::string filename)
 
 	program = glCreateProgram();
 
+	std::cerr << "===\nAdding Vertex shader" << std::endl;
 	std::cerr << "sources.Vertex.length(): " << sources.Vertex.length() << std::endl;
 	if (sources.Vertex.length())
 		compile(GL_VERTEX_SHADER, sources.Vertex, &vs);
 
+	std::cerr << "===\nAdding Fragment shader" << std::endl;
 	std::cerr << "sources.Fragment.length(): " << sources.Fragment.length() << std::endl;
 	if (sources.Fragment.length())
 		compile(GL_FRAGMENT_SHADER, sources.Fragment, &fs);
+
+	std::cerr << "===\nAdding Geometry shader" << std::endl;
+	std::cerr << "sources.Geometry.length(): " << sources.Geometry.length() << std::endl;
+	if (sources.Geometry.length())
+		compile(GL_GEOMETRY_SHADER, sources.Geometry, &gs);
 }
 
 ///

@@ -29,6 +29,7 @@ namespace Application
 		static ShaderSources sources;
 		static unsigned int program;
 		static unsigned int vs;
+		static unsigned int gs;
 		static unsigned int fs;
 
 	private:

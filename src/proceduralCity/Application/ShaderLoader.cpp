@@ -21,6 +21,7 @@ std::string ShaderLoader::filename; ///<
 std::unordered_map<std::string, ShaderType> ShaderLoader::typeMapping ///< 
 {
 	std::pair<std::string, ShaderType>("vertex",   ShaderType::VERTEX),
+	std::pair<std::string, ShaderType>("geometry", ShaderType::GEOMETRY),
 	std::pair<std::string, ShaderType>("fragment", ShaderType::FRAGMENT),
 };
 
@@ -33,7 +34,7 @@ std::ifstream ShaderLoader::getStream()
 {
 	std::string filepath = "../res/shaders/" + getSourceFilename();
 	std::cerr << "Reading shaders from: " << filepath << std::endl;
-	return std::ifstream(filepath, std::ifstream::in);
+	return std::ifstream(filepath.c_str(), std::ifstream::in);
 }
 
 ///
@@ -42,7 +43,7 @@ std::ifstream ShaderLoader::getStream()
 ShaderSources ShaderLoader::parse()
 {
 	std::string line;
-	std::stringstream sources[2];
+	std::stringstream sources[3];
 	ShaderType type = ShaderType::NONE;
 
 	std::ifstream stream = getStream();
@@ -57,6 +58,11 @@ ShaderSources ShaderLoader::parse()
 			type = typeMapping[line.substr(8)];
 			continue;
 		}
+		else if (line.find("//") == 0)
+		{
+			//	Komentář ve zdrojáku
+			continue;
+		}
 
 		sources[(int)type] << line << std::endl;
 	}
@@ -64,5 +70,6 @@ ShaderSources ShaderLoader::parse()
 	return {
 		sources[0].str(),
 		sources[1].str(),
+		sources[2].str(),
 	};
 }

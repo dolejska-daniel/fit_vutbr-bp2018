@@ -17,11 +17,12 @@ namespace Application
 	///
 	/// @brief
 	///
-	enum class ShaderType
+	enum ShaderType
 	{
 		NONE		= -1,
 		VERTEX		= 0,
-		FRAGMENT	= 1,
+		GEOMETRY	= 1,
+		FRAGMENT	= 2,
 	};
 
 	///
@@ -30,6 +31,7 @@ namespace Application
 	struct ShaderSources
 	{
 		std::string Vertex;		///< Vertex Shader source code
+		std::string Geometry;	///< Geometry Shader source code
 		std::string Fragment;	///< Fragment Shader source code
 	};
 

@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
 	vars.addUint32("terrain.octaves",		args.getu32("--terrain-octaves",		3,		"Number of noises from which is the terrain going to be generated"));
 	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail",			1,		"Default level of object detail"));
 
-	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width",	8, "Terrain map width (count of chunks)"));
-	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 8, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
+	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width",	1, "Terrain map width (count of chunks)"));
+	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 1, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
 
 	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width",	64, "Chunk width"));
 	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64, "Terrain chunk height in 2D (depth/length in 3D)"));
@@ -78,8 +78,8 @@ int main(int argc, char* argv[])
 	// ==========================================================dd=
 	//	INICIALIZACE OKNA, geGL, ...
 	// =============================================================
-	uint32_t width = 800;
-	uint32_t height = 600;
+	uint32_t width = 1024;
+	uint32_t height = 768;
 
 	//	Create main loop & window
 	auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
@@ -96,6 +96,9 @@ int main(int argc, char* argv[])
 	ShaderManager::init("Default");
 	ShaderManager::attach();
 
+	// Enable debug mode
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one

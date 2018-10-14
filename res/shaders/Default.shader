@@ -1,10 +1,12 @@
+// ==========================================================dd=
+//	VERTEX SHADER
+// =============================================================
 #shader vertex
 #version 450
 
 //	Input vertex attributes
 layout(location = 0) in vec3 vertexPosition_worldspace;
 layout(location = 1) in vec3 vertexNormal_worldspace;
-//layout(location = 2) in vec3 vertexColor;
 
 //	Output variables
 out vec3 fragmentColor;
@@ -26,7 +28,9 @@ void main()
 }
 
 
-
+// ==========================================================dd=
+//	FRAGMENT SHADER
+// =============================================================
 #shader fragment
 #version 450
 
