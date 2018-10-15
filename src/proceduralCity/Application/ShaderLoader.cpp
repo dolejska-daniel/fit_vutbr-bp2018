@@ -4,11 +4,10 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <cstring>
+#include <iostream> // std::cerr
+#include <fstream> // std::ifstream
+#include <string> // std::string
+#include <sstream> // std::stringstream
 
 #include "Application.h"
 #include "ShaderLoader.h"
@@ -16,46 +15,54 @@
 using namespace Application;
 
 
-std::string ShaderLoader::filename; ///< 
-
-std::unordered_map<std::string, ShaderType> ShaderLoader::typeMapping ///< 
-{
+const std::unordered_map<std::string, ShaderType> ShaderLoader::types = {
 	std::pair<std::string, ShaderType>("vertex",   ShaderType::VERTEX),
 	std::pair<std::string, ShaderType>("geometry", ShaderType::GEOMETRY),
 	std::pair<std::string, ShaderType>("fragment", ShaderType::FRAGMENT),
 };
 
-///
-/// @brief
-///
-/// @param
-///
-std::ifstream ShaderLoader::getStream()
+std::unordered_map<std::string, ShaderSources> ShaderLoader::files = {};
+
+
+std::ifstream ShaderLoader::OpenFile(const std::string filepath)
 {
-	std::string filepath = "../res/shaders/" + getSourceFilename();
 	std::cerr << "Reading shaders from: " << filepath << std::endl;
 	return std::ifstream(filepath.c_str(), std::ifstream::in);
 }
 
-///
-/// @brief
-///
-ShaderSources ShaderLoader::parse()
+void ShaderLoader::CloseFile(std::ifstream file)
 {
+	file.close();
+}
+
+ShaderSources ShaderLoader::GetShaderSources(vars::Vars& vars, const std::string filename)
+{
+	//	Pokus o vyhledání z již zpracovaných zdrojáků
+	auto existingSources = ShaderLoader::files.find(filename);
+	if (existingSources != ShaderLoader::files.end())
+		//	Zdrojáky byly nalezeny
+		existingSources->second;
+
 	std::string line;
-	std::stringstream sources[3];
+	std::stringstream *sources = new std::stringstream[types.size()];
 	ShaderType type = ShaderType::NONE;
 
-	std::ifstream stream = getStream();
+	std::ifstream stream = OpenFile(vars.getString("resources.dir") + "/shaders/" + filename + ".shader");
 	if (stream.is_open() == false)
-		std::cerr << "Failed to open shaders file: " << strerror(errno) << std::endl;
+		//	Stream se nepodařilo otevřít
+		throw std::invalid_argument("Shader file with given name was not found.");
 
 	while (getline(stream, line))
 	{
 		if (line.find("#shader") != std::string::npos)
 		{
-			//	FIXME: Type might not be present
-			type = typeMapping[line.substr(8)];
+			//	Řádek identifikující typ shaderu
+			auto typeSearch = ShaderLoader::types.find(line.substr(8));
+			if (typeSearch == ShaderLoader::types.end())
+				//	Typ ze souboru není podporován
+				throw std::out_of_range("Shader file contains unsupported shader type.");
+
+			type = typeSearch->second;
 			continue;
 		}
 		else if (line.find("//") == 0)

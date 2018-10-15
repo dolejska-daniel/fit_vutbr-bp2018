@@ -14,12 +14,14 @@ out vec3 position;
 out vec3 normal;
 
 //	Uniforms
-uniform mat4 mvpMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
 
 void main()
 {
-	gl_Position = mvpMatrix * vec4(vertexPosition_worldspace, 1);
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition_worldspace, 1);
 
 	fragmentColor = vec3(0, 1, 0);
 
@@ -49,11 +51,6 @@ uniform vec3 lightPosition_worldspace;
 
 void main()
 {
-	//	Use color provided by vertex shader
-	//color = fragmentColor;
-	//color = normal;
-	//return;
-
 	vec3 light_pos = lightPosition_worldspace;
 	vec3 camera_pos = cameraPosition_worldspace;
 

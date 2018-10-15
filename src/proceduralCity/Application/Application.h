@@ -5,8 +5,8 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
-
 #include <string>
+#include <geGL/Program.h>
 
 
 ///
@@ -19,10 +19,10 @@ namespace Application
 	///
 	enum ShaderType
 	{
-		NONE		= -1,
-		VERTEX		= 0,
-		GEOMETRY	= 1,
-		FRAGMENT	= 2,
+		NONE		= -1,	///<
+		VERTEX		= 0,	///< 
+		GEOMETRY	= 1,	///<
+		FRAGMENT	= 2,	///<
 	};
 
 	///
@@ -30,12 +30,8 @@ namespace Application
 	///
 	struct ShaderSources
 	{
-		std::string Vertex;		///< Vertex Shader source code
-		std::string Geometry;	///< Geometry Shader source code
-		std::string Fragment;	///< Fragment Shader source code
+		std::string Vertex;		///< Zdrojový kód pro Vertex Shader
+		std::string Geometry;	///< Zdrojový kód pro Geometry Shader
+		std::string Fragment;	///< Zdrojový kód pro Fragment Shader
 	};
-
-
-	class ShaderManager;
-	class ShaderLoader;
 }

@@ -1,19 +1,17 @@
 ///
 /// @file ShaderManager.h
-/// @brief
+/// @brief Obsahuje deklaraci pro tøídu ShaderManager.
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
-
 #include <string>
+#include <unordered_map>
+#include <geGL/Program.h>
 
 #include "Application.h"
 
 
-///
-/// @brief
-///
 namespace Application
 {
 	///
@@ -22,19 +20,17 @@ namespace Application
 	class ShaderManager
 	{
 	public:
-		static void init(const std::string filename);
-		static void attach();
-		static void detach();
+		std::shared_ptr<ge::gl::Program> activeProgram;
 
-		static ShaderSources sources;
-		static unsigned int program;
-		static unsigned int vs;
-		static unsigned int gs;
-		static unsigned int fs;
+		ShaderManager(vars::Vars& vars);
+		~ShaderManager();
+
+		void Use(const std::string programName);
 
 	private:
-		ShaderManager() {}
+		vars::Vars& vars;
+		std::unordered_map<std::string, std::shared_ptr<ge::gl::Program>> programs;
 
-		static void compile(GLenum type, std::string source, unsigned int* shader_id);
+		void BindProgram(std::shared_ptr<ge::gl::Program> program);
 	};
 }

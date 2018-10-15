@@ -52,6 +52,11 @@ int main(int argc, char* argv[])
 	Vars vars;
 
 	// ==========================================================dd=
+	//	DEFINICE OBECNÝCH PROMĚNNÝCH A ARGUMENTŮ PROGRAMU
+	// =============================================================
+	vars.addString("resources.dir", args.gets("--resources-dir", "../res", "Path to resources directory (shaders, ...)"));
+
+	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ TERÉNU
 	// =============================================================
 	vars.addUint32("terrain.seed",			args.getu32("--terrain-seed",			12345,	"Default seed for terrain generation"));
@@ -93,8 +98,8 @@ int main(int argc, char* argv[])
 	std::cerr << "Using " << glGetString(GL_VERSION) << std::endl;
 
 	//	Initialize ShaderManager
-	ShaderManager::init("Default");
-	ShaderManager::attach();
+	ShaderManager* shaders = new ShaderManager(vars);
+	shaders->Use("Default");
 
 	// Enable debug mode
 	glEnable(GL_DEBUG_OUTPUT);
@@ -104,19 +109,9 @@ int main(int argc, char* argv[])
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-
-	//	Define MVP matrix
-	int mvpMatrix_uniformLocation = glGetUniformLocation(ShaderManager::program, "mvpMatrix");
-
-	//	Define MVP matrix
-	int lightPosition_uniformLocation = glGetUniformLocation(ShaderManager::program, "lightPosition_worldspace");
-	glUniform3f(lightPosition_uniformLocation, 2.f, 2.f, 0.f);
-
-	//	Setup cameras
-	int cameraPosition_uniformLocation = glGetUniformLocation(ShaderManager::program, "cameraPosition_worldspace");
+	//	Setup main camera
 	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(glm::radians(45.f), width / height, 0.1f, std::numeric_limits<float>::infinity());
 	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
-
 	freeLook->setPosition(vec3(1, 1, 4));
 
 
@@ -126,48 +121,36 @@ int main(int argc, char* argv[])
 
 	int mapWidth = vars.getUint32("terrain.map.width");
 	int mapHeight = vars.getUint32("terrain.map.height");
-	unsigned int* vaos = new unsigned int[mapWidth * mapHeight];
-	unsigned int* vbos = new unsigned int[mapWidth * mapHeight];
-	unsigned int* ibos = new unsigned int[mapWidth * mapHeight];
 
+	std::shared_ptr<VertexArray>* vertexArrays = new std::shared_ptr<VertexArray>[mapWidth * mapHeight];
 	for (int y = 0; y < mapHeight; y++)
 	{
 		for (int x = 0; x < mapWidth; x++)
 		{
 			Chunk* chunk = map->chunks[y * mapWidth + x];
 
-			//	Create, bind and fill vertex buffer on GPU
-			glCreateBuffers(1, &vbos[y * mapWidth + x]);
-			glGenVertexArrays(1, &vaos[y * mapWidth + x]);
-			glBindVertexArray(vaos[y * mapWidth + x]);
-			glBindBuffer(GL_ARRAY_BUFFER, vbos[y * mapWidth + x]);
-			glBufferData(GL_ARRAY_BUFFER, chunk->GetVerticesSize(), chunk->GetVertices(), GL_STATIC_DRAW);
-			printf("Vertices size: %d\n", chunk->GetVerticesSize());
+			auto vertexArray = vertexArrays[y * width + x] = std::make_shared<VertexArray>();
+			vertexArray->bind();
 
-			//	Define vertex attribute - POSITION (0)
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+			auto vertexBuffer = std::make_shared<Buffer>(chunk->GetVerticesSize(), chunk->GetVertices());
+			vertexBuffer->bind(GL_ARRAY_BUFFER);
 
-			//	Define vertex attribute - NORMAL (1)
-			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (const void*)(3 * sizeof(float)));
+			//	POSITION
+			vertexArray->addAttrib(vertexBuffer, 0, 3, GL_FLAT, 6 * sizeof(float));
+			//	NORMAL
+			vertexArray->addAttrib(vertexBuffer, 1, 3, GL_FLAT, 6 * sizeof(float), 3 * sizeof(float));
+
+			auto elementBuffer = std::make_shared<Buffer>(chunk->GetIndicesSize(), chunk->GetIndices());
+			elementBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
+			vertexArray->addElementBuffer(elementBuffer);
+
+			std::cerr << "Number of buffers:" << vertexArray->getNofBuffers() << std::endl;
 		}
 	}
+	std::cerr << vertexArrays[0]->getInfo();
 
-	for (int y = 0; y < mapHeight; y++)
-	{
-		for (int x = 0; x < mapWidth; x++)
-		{
-			Chunk* chunk = map->chunks[y * mapWidth + x];
 
-			std::cerr << "Setting up IBO" << std::endl;
-			glBindVertexArray(vaos[y * mapWidth + x]);
-			glCreateBuffers(1, &ibos[y * mapWidth + x]);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibos[y * mapWidth + x]);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->GetIndicesSize(), chunk->GetIndices(), GL_STATIC_DRAW);
-			printf("Indices size: %d\n", chunk->GetIndicesSize());
-		}
-	}
+
 
 	/*
 	unsigned int hmapTex;
@@ -200,23 +183,6 @@ int main(int argc, char* argv[])
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, map.GetWidth(), map.GetHeight(), 0, GL_RGB, GL_FLOAT, hmapTexture);
 	*/
 
-	/*
-	auto vertexArray = std::make_shared<VertexArray>();
-
-	auto vertexBuffer = std::make_shared<Buffer>(t.GetVerticesSize());
-	vertexBuffer->setData(vertices);
-
-	//	POSITION
-	vertexArray->addAttrib(vertexBuffer, 0, 3, GL_FLOAT, 6 * sizeof(float));
-	//	NORMAL
-	vertexArray->addAttrib(vertexBuffer, 1, 3, GL_FLOAT, 6 * sizeof(float), 3 * sizeof(float));
-
-	auto indexBuffer = std::make_shared<Buffer>(t.GetIndicesCount());
-	vertexBuffer->setData(indices);
-
-	vertexArray->addElementBuffer(indexBuffer);
-	*/
-
 
 	std::cerr << "Callback" << std::endl;
 	//	Drawing
@@ -229,33 +195,34 @@ int main(int argc, char* argv[])
 			freeLook->move(a, float(keyDown["d s"[a]] - keyDown["acw"[a]]) * .25f);
 
 		vec3 cameraPosition = freeLook->getPosition();
-		glUniform3f(lightPosition_uniformLocation, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-		glUniform3f(cameraPosition_uniformLocation, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-
 		mat4 projectionMatrix = cameraProjection->getProjection();
 		mat4 viewMatrix = freeLook->getView();
 		mat4 modelMatrix(1);
-
-		mat4 mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
-		glUniformMatrix4fv(mvpMatrix_uniformLocation, 1, GL_FALSE, &mvpMatrix[0][0]);
-
 
 		for (int y = 0; y < mapHeight; y++)
 		{
 			for (int x = 0; x < mapWidth; x++)
 			{
-				Chunk* chunk = map->chunks[y * mapWidth + x];
+				auto vertexArray = vertexArrays[y * mapWidth + x];
+				vertexArray->bind();
 
-				glBindVertexArray(vaos[y * mapWidth + x]);
-				glDrawElements(GL_TRIANGLES, chunk->GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
+				shaders->Use("Default");
+				shaders->activeProgram->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+				shaders->activeProgram->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
+				shaders->activeProgram->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
+				shaders->activeProgram->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
+				glDrawElements(GL_TRIANGLES, vertexArray->getElement()->getSize(), GL_UNSIGNED_INT, (const void*)0);
+
+				/*
+				shaders->Use("Normal");
+				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
+				shaders->activeProgram->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
+				shaders->activeProgram->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
+				glDrawElements(GL_TRIANGLES, vertexArray->getElement()->getSize(), GL_UNSIGNED_INT, (const void*)0);
+				*/
 			}
 		}
-
-		/*
-		vertexArray->bind();
-		indexBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
-		glDrawElements(GL_TRIANGLES, t.GetIndicesSize(), GL_UNSIGNED_INT, (const void*)0);
-		*/
 
 		glFinish();
         window->swap();
@@ -298,8 +265,6 @@ int main(int argc, char* argv[])
 
 	//	Start main loop
 	(*mainLoop)();
-
-	ShaderManager::detach();
 
     return EXIT_SUCCESS;
 }
