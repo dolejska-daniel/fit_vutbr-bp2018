@@ -1,6 +1,6 @@
 ///
 /// @file ShaderManager.cpp
-/// @brief
+/// @brief Obsahuje definice funkcí třídy Application::ShaderManager.
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
@@ -8,17 +8,16 @@
 #include <vector>
 #include <Vars/Vars.h>
 #include <geGL/geGL.h>
-
-#include "Application.h"
-#include "ShaderManager.h"
-#include "ShaderLoader.h"
+#include <Application/Application.h>
+#include <Application/ShaderManager.h>
+#include <Application/ShaderLoader.h>
 
 using namespace Application;
 using namespace ge::gl;
 
 
 ShaderManager::ShaderManager(vars::Vars& vars)
-	: vars(vars)
+	: _vars(vars)
 {
 }
 
@@ -29,14 +28,14 @@ ShaderManager::~ShaderManager()
 
 void Application::ShaderManager::Use(const std::string programName)
 {
-	auto existingProgram = programs.find(programName);
-	if (existingProgram != programs.end())
+	auto existingProgram = _programs.find(programName);
+	if (existingProgram != _programs.end())
 		return BindProgram(existingProgram->second);
 
 	std::shared_ptr<Shader> shader;
 	std::vector<std::shared_ptr<Shader>> shaders;
 
-	ShaderSources sources = ShaderLoader::GetShaderSources(vars, programName);
+	ShaderSources sources = ShaderLoader::GetShaderSources(_vars, programName);
 	if (sources.Vertex.length())
 	{
 		shader = std::make_shared<Shader>();
@@ -65,7 +64,7 @@ void Application::ShaderManager::Use(const std::string programName)
 	std::shared_ptr<Program> program = std::make_shared<Program>(shaders);
 	program->create();
 
-	programs[programName] = program;
+	_programs[programName] = program;
 	BindProgram(program);
 }
 

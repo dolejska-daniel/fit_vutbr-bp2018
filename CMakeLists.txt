@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.12.3)
 
 project(
 	proceduralCity
-	VERSION 0.1.1
+	VERSION 0.1.2
 	LANGUAGES C CXX
 	DESCRIPTION "Procedurální město - Bakalářská práce, Daniel Dolejška, FIT VUTBR 2018"
 	)
@@ -28,7 +28,7 @@ set(CMAKE_C_STANDARD 99)
 
 # Directory setup
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(THIRDRDPARTY_DIR ${ROOT_DIR}/3rd-party)
+set(THIRDPARTY_DIR ${ROOT_DIR}/3rd-party)
 set(LIB_DIR ${ROOT_DIR}/lib)
 set(INC_DIR ${ROOT_DIR}/include)
 set(BIN_DIR ${ROOT_DIR}/bin)
@@ -91,15 +91,14 @@ find_package(imguiSDL2OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2CPP REQUIRED)
 
-include_directories(${INC_DIR})
-link_directories(${BIN_DIR})
-link_directories(${LIB_DIR})
-
 ###
 # Define targets
 # CMake recognises non-build files itself
 ###
 add_executable(proceduralCity ${SOURCES} ${INCLUDES} ${SHADERS})
+
+target_include_directories(proceduralCity PUBLIC ${INC_DIR})
+target_include_directories(proceduralCity PUBLIC ${ROOT_DIR}/src/proceduralCity)
 
 target_link_libraries(proceduralCity
 	SDL2::SDL2

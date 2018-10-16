@@ -1,6 +1,6 @@
 ///
 /// @file ShaderLoader.h
-/// @brief Obsahuje deklaraci pro namespace ShaderLoader.
+/// @brief Obsahuje deklaraci namespace Apllication::ShaderLoader.
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
@@ -9,8 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include <Vars/Vars.h>
-
-#include "Application.h"
+#include <Application/Application.h>
 
 
 namespace Application
@@ -46,7 +45,7 @@ namespace Application
 		///
 		/// @returns	Zdrojový kód z daného souboru
 		///
-		ShaderSources GetShaderSources(vars::Vars& vars, const std::string filename);
+		ShaderSources GetShaderSources(const vars::Vars& vars, const std::string filename);
 
 		///
 		/// @brief Seznam podporovaných typů.

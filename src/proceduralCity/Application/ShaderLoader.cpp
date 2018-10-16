@@ -1,6 +1,6 @@
 ///
 /// @file ShaderLoader.cpp
-/// @brief
+/// @brief Obsahuje definice funkcí z namespace Application::ShaderLoader.
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
@@ -8,9 +8,8 @@
 #include <fstream> // std::ifstream
 #include <string> // std::string
 #include <sstream> // std::stringstream
-
-#include "Application.h"
-#include "ShaderLoader.h"
+#include <Application/Application.h>
+#include <Application/ShaderLoader.h>
 
 using namespace Application;
 
@@ -35,7 +34,7 @@ void ShaderLoader::CloseFile(std::ifstream file)
 	file.close();
 }
 
-ShaderSources ShaderLoader::GetShaderSources(vars::Vars& vars, const std::string filename)
+ShaderSources ShaderLoader::GetShaderSources(const vars::Vars& vars, const std::string filename)
 {
 	//	Pokus o vyhledání z již zpracovaných zdrojáků
 	auto existingSources = ShaderLoader::files.find(filename);
