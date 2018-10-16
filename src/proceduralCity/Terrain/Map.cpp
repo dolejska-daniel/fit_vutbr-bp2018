@@ -4,10 +4,10 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#include "Map.h"
-#include "Chunk.h"
-#include "HeightMap.h"
-#include "Generator.h"
+#include <Terrain/Map.h>
+#include <Terrain/Chunk.h>
+#include <Terrain/HeightMap.h>
+#include <Terrain/Generator.h>
 
 
 Terrain::Map::Map(vars::Vars& vars)

@@ -4,31 +4,23 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-
 #include <stdio.h>
-
 #include <SDL2/SDL.h>
-
 #include <SDL2CPP/Window.h>
 #include <SDL2CPP/MainLoop.h>
-
+#include <glm/glm.hpp>
 #include <geGL/geGL.h>
 #include <geGL/StaticCalls.h>
-
 #include <BasicCamera/PerspectiveCamera.h>
 #include <BasicCamera/FreeLookCamera.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <ArgumentViewer/ArgumentViewer.h>
 #include <Vars/Vars.h>
-
-#include "Application/Application.h"
-#include "Application/ShaderManager.h"
-#include "Terrain/Generator.h"
-#include "Terrain/Map.h"
-#include "Terrain/Chunk.h"
+#include <Terrain/Map.h>
+#include <Terrain/Chunk.h>
+#include <Terrain/Generator.h>
+#include <Application/Application.h>
+#include <Application/ShaderManager.h>
+#include <Infrastructure/Street.h>
 
 using namespace glm;
 using namespace ge::gl;

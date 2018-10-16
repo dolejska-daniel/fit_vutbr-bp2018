@@ -5,10 +5,8 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
-
 #include <Vars/Vars.h>
-
-#include "Fwd.h"
+#include <Terrain/Fwd.h>
 
 
 namespace Terrain

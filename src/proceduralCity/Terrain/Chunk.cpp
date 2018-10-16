@@ -5,10 +5,9 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <Vars/Vars.h>
-
-#include "Chunk.h"
-#include "Map.h"
-#include "HeightMap.h"
+#include <Terrain/Map.h>
+#include <Terrain/Chunk.h>
+#include <Terrain/HeightMap.h>
 
 
 Terrain::Chunk::Chunk(vars::Vars& vars, int globalOffsetX, int globalOffsetY)

@@ -5,9 +5,8 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <glm/gtc/noise.hpp> // perlin
-
-#include "HeightMap.h"
-#include "Chunk.h"
+#include <Terrain/Chunk.h>
+#include <Terrain/HeightMap.h>
 
 
 Terrain::HeightMap::HeightMap(vars::Vars& vars)

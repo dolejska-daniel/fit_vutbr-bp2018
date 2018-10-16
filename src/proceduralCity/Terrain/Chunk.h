@@ -5,11 +5,9 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
-
-#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
 #include <Vars/Vars.h>
-
-#include "Fwd.h"
+#include <Terrain/Fwd.h>
 
 
 namespace Terrain

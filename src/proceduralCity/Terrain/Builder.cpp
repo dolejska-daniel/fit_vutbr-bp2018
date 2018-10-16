@@ -4,9 +4,10 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#include "Builder.h"
-#include "Chunk.h"
-#include "HeightMap.h"
+#include <glm/glm.hpp>
+#include <Terrain/Chunk.h>
+#include <Terrain/Builder.h>
+#include <Terrain/HeightMap.h>
 
 
 void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
