@@ -34,4 +34,5 @@ namespace Application
 		std::string Geometry;	///< Zdrojový kód pro Geometry Shader
 		std::string Fragment;	///< Zdrojový kód pro Fragment Shader
 	};
+	
 }

@@ -13,15 +13,8 @@ project(
 	
 # C++ Compiler Settings
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}) # set global flags
-set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra) # set debug flags
-set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}) # set release flags
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_CXX_COMPILER_FLAGS ${CMAKE_CXX_COMPILER_FLAGS} -g -O0)
-else()
-    set(CMAKE_CXX_COMPILER_FLAGS ${CMAKE_CXX_COMPILER_FLAGS} -O3 -Os)
-endif()
+#target_compile_options(foo PUBLIC "$<$<CONFIG:DEBUG>:${DEBUG_FLAGS}>")
+#target_compile_options(foo PUBLIC "$<$<CONFIG:RELEASE>:${RELEASE_FLAGS}>")
 
 # C Compiler Settings
 set(CMAKE_C_STANDARD 99)
@@ -52,6 +45,8 @@ set(SOURCES
 
 set(INCLUDES
 	src/proceduralCity/Application/Application.h
+	src/proceduralCity/Application/IRenderable.h
+	src/proceduralCity/Application/IRenderableCollection.h
 	src/proceduralCity/Application/ShaderLoader.h
 	src/proceduralCity/Application/ShaderManager.h
 	src/proceduralCity/Terrain/Fwd.h

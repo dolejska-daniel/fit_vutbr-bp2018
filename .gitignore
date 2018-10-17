@@ -323,8 +323,12 @@ TSWLatexianTemp*
 .idea
 .vs
 3rd-party/build
+CMakeFiles/
 bin
 build
 cmake*
 include
 lib
+docs/doxygen/
+html/
+latex/

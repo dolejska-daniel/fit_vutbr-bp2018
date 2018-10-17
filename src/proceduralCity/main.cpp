@@ -20,7 +20,7 @@
 #include <Terrain/Generator.h>
 #include <Application/Application.h>
 #include <Application/ShaderManager.h>
-#include <Infrastructure/Street.h>
+//#include <Infrastructure/Street.h>
 
 using namespace glm;
 using namespace ge::gl;
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
 	//	Initialize ShaderManager
 	ShaderManager* shaders = new ShaderManager(vars);
-	shaders->Use("Default");
+	shaders->Use("Phong");
 
 	// Enable debug mode
 	glEnable(GL_DEBUG_OUTPUT);
@@ -139,7 +139,6 @@ int main(int argc, char* argv[])
 			std::cerr << "Number of buffers:" << vertexArray->getNofBuffers() << std::endl;
 		}
 	}
-	std::cerr << vertexArrays[0]->getInfo();
 
 
 
@@ -198,16 +197,20 @@ int main(int argc, char* argv[])
 				auto vertexArray = vertexArrays[y * mapWidth + x];
 				vertexArray->bind();
 
-				shaders->Use("Default");
+				shaders->Use("Phong");
 				shaders->activeProgram->set3fv("lightPosition_worldspace", &cameraPosition[0]);
 				shaders->activeProgram->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
 				shaders->activeProgram->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 				shaders->activeProgram->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
 				glDrawElements(GL_TRIANGLES, vertexArray->getElement()->getSize(), GL_UNSIGNED_INT, (const void*)0);
+				//glMultiDrawElements(GL_TRIANGLES,);
+				// glMultiDrawElementsIndirect()
+
+
 
 				/*
-				shaders->Use("Normal");
+				shaders->Use("Geometry_Normals");
 				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
 				shaders->activeProgram->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 				shaders->activeProgram->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
