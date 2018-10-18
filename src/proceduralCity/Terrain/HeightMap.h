@@ -2,7 +2,7 @@
 /// @file HeightMap.h
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
 #include <glm/vec2.hpp>

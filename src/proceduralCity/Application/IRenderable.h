@@ -1,8 +1,8 @@
 ///
 /// @file IRenderable.h
-/// @brief Obsahuje deklaraci rozhranÌ Application::IRenderable.
+/// @brief Obsahuje deklaraci rozhran√≠ Application::IRenderable.
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
 #include <geGL/VertexArray.h>

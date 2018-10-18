@@ -1,8 +1,8 @@
 ///
 /// @file IRenderableCollection.h
-/// @brief Obsahuje deklaraci rozhranÌ Application::IRenderableCollection.
+/// @brief Obsahuje deklaraci rozhran√≠ Application::IRenderableCollection.
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
 #include <unordered_map>

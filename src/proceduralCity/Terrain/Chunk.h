@@ -2,7 +2,7 @@
 /// @file Chunk.h
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
 #include <glm/vec3.hpp>
@@ -18,8 +18,8 @@ namespace Terrain
 	///
 	struct ChunkVertex
 	{
-		glm::vec3 position;	///< PoziËnÌ vektor
-		glm::vec3 normal;	///< Norm·lov˝ vektor
+		glm::vec3 position;	///< Poziƒçn√≠ vektor
+		glm::vec3 normal;	///< Norm√°lov√Ω vektor
 	};
 
 	///
@@ -28,8 +28,8 @@ namespace Terrain
 	///
 	struct ChunkIndex
 	{
-		glm::uvec3 triangle1;	///< T¯i vrcholy prvnÌho troj˙helnÌka segmentu
-		glm::uvec3 triangle2;	///< T¯i vrcholy druhÈho troj˙helnÌka segmentu
+		glm::uvec3 triangle1;	///< T≈ôi vrcholy prvn√≠ho troj√∫heln√≠ka segmentu
+		glm::uvec3 triangle2;	///< T≈ôi vrcholy druh√©ho troj√∫heln√≠ka segmentu
 	};
 
 
@@ -67,15 +67,15 @@ namespace Terrain
 		inline void SetDetail(unsigned int detail) { this->detail = detail; }
 
 	private:
-		unsigned int detail;	///< Detaily tÈto Ë·sti
-		unsigned int width;		///< äÌ¯ka tÈto Ë·sti mapy
-		unsigned int height;	///< V˝öka tÈto Ë·sti mapy
+		unsigned int detail;	///< Detaily t√©to ƒç√°sti
+		unsigned int width;		///< ≈†√≠≈ôka t√©to ƒç√°sti mapy
+		unsigned int height;	///< V√Ω≈°ka t√©to ƒç√°sti mapy
 
-		//	TODO: P¯edÏlat => vec2 position;
-		int globalOffsetX;	///< PoziËnÌ offset chunku v r·mci celÈ mapy na ose X
-		int globalOffsetY;	///< PoziËnÌ offset chunku v r·mci celÈ mapy na ose Y
+		//	TODO: P≈ôedƒõlat => vec2 position;
+		int globalOffsetX;	///< Poziƒçn√≠ offset chunku v r√°mci cel√© mapy na ose X
+		int globalOffsetY;	///< Poziƒçn√≠ offset chunku v r√°mci cel√© mapy na ose Y
 
-		ChunkVertex* vertices = nullptr;	///< Pole vertex˘ tÈto Ë·sti mapy
-		ChunkIndex* indices = nullptr;		///< Pole index˘ tÈto Ë·sti mapy
+		ChunkVertex* vertices = nullptr;	///< Pole vertex≈Ø t√©to ƒç√°sti mapy
+		ChunkIndex* indices = nullptr;		///< Pole index≈Ø t√©to ƒç√°sti mapy
 	};
 }

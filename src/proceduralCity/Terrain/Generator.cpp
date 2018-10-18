@@ -2,7 +2,7 @@
 /// @file Generator.cpp
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <Terrain/Map.h>
 #include <Terrain/Chunk.h>
@@ -19,11 +19,11 @@ Terrain::Chunk* Terrain::Generator::GenerateChunk(Terrain::Map* map, int globalO
 {
 	assert(map != nullptr);
 
-	//	Vytvo¯enÌ instance chunku
-	//	- vygenerov·nÌ v˝ökovÈ mapy a inicializace objektu probÏhne automaticky
+	//	Vytvo≈ôen√≠ instance chunku
+	//	- vygenerov√°n√≠ v√Ω≈°kov√© mapy a inicializace objektu probƒõhne automaticky
 	Chunk* chunk = new Chunk(map->vars, globalOffsetX, globalOffsetY);
 
-	//	SestavenÌ vertex˘ a index˘ chunku
+	//	Sestaven√≠ vertex≈Ø a index≈Ø chunku
 	Terrain::Builder::BuildVertices(chunk, map->GetHeightMap());
 	Terrain::Builder::BuildIndices(chunk);
 

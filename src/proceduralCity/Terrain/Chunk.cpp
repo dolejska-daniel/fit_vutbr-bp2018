@@ -2,7 +2,7 @@
 /// @file Chunk.cpp
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <Vars/Vars.h>
 #include <Terrain/Map.h>

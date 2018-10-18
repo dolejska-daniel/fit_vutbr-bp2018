@@ -2,7 +2,7 @@
 /// @file Builder.cpp
 /// @brief
 ///
-/// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel DolejÅ¡ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <glm/glm.hpp>
 #include <Terrain/Chunk.h>
@@ -14,7 +14,7 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 {
 	assert(chunk != nullptr);
 
-	//	Naètení potøebnıch promìnnıch
+	//	NaÄtenÃ­ potÅ™ebnÃ½ch promÄ›nnÃ½ch
 	unsigned int width = chunk->GetVerticesWidth();
 	unsigned int height = chunk->GetVerticesHeight();
 	float detail = (float)chunk->GetDetail();
@@ -26,24 +26,24 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 		delete[] chunk->GetVertices();
 	chunk->SetVertices(vertices = new Terrain::ChunkVertex[width * height]);
 
-	//	Lokální lambda pro jednoduché naètení vertexu  
+	//	LokÃ¡lnÃ­ lambda pro jednoduchÃ© naÄtenÃ­ vertexu  
 	static auto GetVertex = [&](int x, int y) -> Terrain::ChunkVertex& {
 		return vertices[y * width + x];
 	};
 
-	//	Lokální lambda pro vıpoèet normály
+	//	LokÃ¡lnÃ­ lambda pro vÃ½poÄet normÃ¡ly
 	static auto CalculatePosition = [&](unsigned int x, unsigned int y, glm::vec3& target)  {
 		float globalX = float(float(x / detail) + chunk->GetGlobalOffsetX());
 		float globalY = float(float(y / detail) + chunk->GetGlobalOffsetY());
 
-		target.x = globalX; // Šíøka
-		target.y = 0; // 3D Vıška
-		target.z = globalY; // 2D Vıška (Hloubka)
+		target.x = globalX; // Å Ã­Å™ka
+		target.y = 0; // 3D VÃ½Å¡ka
+		target.z = globalY; // 2D VÃ½Å¡ka (Hloubka)
 
-		target.y = heightMap->GetData(target, chunk->GetDetail()); // Souøadnice Y je vıška
+		target.y = heightMap->GetData(target, chunk->GetDetail()); // SouÅ™adnice Y je vÃ½Å¡ka
 	};
 
-	//	Hlavní cyklus pro vytvoøení vertexù
+	//	HlavnÃ­ cyklus pro vytvoÅ™enÃ­ vertexÅ¯
 	for (unsigned int y = 0; y < height; y++)
 	{
 		for (unsigned int x = 0; x < width; x++)
@@ -56,14 +56,14 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 				chunk->GetGlobalOffsetX(), chunk->GetGlobalOffsetY(), chunk->GetDetail()
 			);*/
 
-			//	Vıchozí normála
+			//	VÃ½chozÃ­ normÃ¡la
 			GetVertex(x, y).normal.x = 0;
 			GetVertex(x, y).normal.y = 1;
 			GetVertex(x, y).normal.z = 0;
 		}
 	}
 
-	//	Lokální lambda pro vıpoèet normály
+	//	LokÃ¡lnÃ­ lambda pro vÃ½poÄet normÃ¡ly
 	static auto GetOrCalculatePosition = [&](unsigned int x, unsigned int y) -> glm::vec3 {
 		if (x >= 0 && x < width && y >= 0 && y < height)
 			return GetVertex(x, y).position;
@@ -72,11 +72,11 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 		float globalY = float((int)y + chunk->GetGlobalOffsetY());
 
 		glm::vec3 result(globalX / detail, 0, globalY / detail);
-		result.y = heightMap->GetData(result, chunk->GetDetail()); // Souøadnice Y je vıška
+		result.y = heightMap->GetData(result, chunk->GetDetail()); // SouÅ™adnice Y je vÃ½Å¡ka
 		return result;
 	};
 
-	//	Lokální lambda pro vıpoèet normály
+	//	LokÃ¡lnÃ­ lambda pro vÃ½poÄet normÃ¡ly
 	static auto CalculateNormal = [&](unsigned int x, unsigned int y, glm::vec3 p1, glm::vec3 p2) {
 		assert(x >= 0);
 		assert(x < width);
@@ -84,23 +84,23 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 		assert(y < height);
 		glm::vec3 p0 = GetVertex(x, y).position;
 
-		//	Vytvoøení smìrovıch vektorù v dané rovinì
+		//	VytvoÅ™enÃ­ smÄ›rovÃ½ch vektorÅ¯ v danÃ© rovinÄ›
 		glm::vec3 v0 = p0 - p1;
 		glm::vec3 v1 = p0 - p2;
 
-		//	Vıpoèet normály z cross-product-u smìrovıch vektorù
+		//	VÃ½poÄet normÃ¡ly z cross-product-u smÄ›rovÃ½ch vektorÅ¯
 		glm::vec3 n = glm::cross(v1, v0);
 
 		//printf("normal[%2d, %2d] = (%f, %f, %f);\n", x, y, n.x, n.y, n.z);
 		GetVertex(x, y).normal = glm::normalize(n);
 	};
 
-	//	Cyklus pro vıpoèet normál 
+	//	Cyklus pro vÃ½poÄet normÃ¡l 
 	for (unsigned int y = 0; y < height; y++)
 	{
 		for (unsigned int x = 0; x < width; x++)
 		{
-			//	Naètení relevantních vrcholù
+			//	NaÄtenÃ­ relevantnÃ­ch vrcholÅ¯
 			CalculateNormal(x, y,
 				GetOrCalculatePosition(x - 1, y),
 				GetOrCalculatePosition(x, y - 1)
@@ -111,11 +111,11 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 
 void Terrain::Builder::BuildIndices(Chunk* chunk)
 {
-	//	Vıstavba indexù vyaduje ji vystavené vertexy
+	//	VÃ½stavba indexÅ¯ vyÅ¾aduje jiÅ¾ vystavenÃ© vertexy
 	assert(chunk != nullptr);
 	assert(chunk->GetVertices() != nullptr);
 
-	//	Naètení potøebnıch promìnnıch
+	//	NaÄtenÃ­ potÅ™ebnÃ½ch promÄ›nnÃ½ch
 	unsigned int width = chunk->GetIndicesWidth();
 	unsigned int height = chunk->GetIndicesHeight();
 
@@ -126,12 +126,12 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 		delete[] chunk->GetIndices();
 	chunk->SetIndices(indices = new Terrain::ChunkIndex[width * height]);
 
-	//	Lokální lambda pro jednoduché naètení vertexu
+	//	LokÃ¡lnÃ­ lambda pro jednoduchÃ© naÄtenÃ­ vertexu
 	static auto GetIndex = [&](int x, int y) -> Terrain::ChunkIndex& {
 		return indices[y * width + x];
 	};
 
-	//	Cyklus pro vıpoèet indexù 
+	//	Cyklus pro vÃ½poÄet indexÅ¯ 
 	for (unsigned int y = 0; y < height; y++)
 	{
 		for (unsigned int x = 0; x < width; x++)
@@ -139,12 +139,12 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 			int xy0 =  y      * chunk->GetVerticesWidth() + x;
 			int xy1 = (y + 1) * chunk->GetVerticesWidth() + x;
 
-			//	První trojúhelník segmentu
+			//	PrvnÃ­ trojÃºhelnÃ­k segmentu
 			GetIndex(x, y).triangle1[0] = xy0;
 			GetIndex(x, y).triangle1[1] = xy1 + 1;
 			GetIndex(x, y).triangle1[2] = xy1;
 
-			//	Druhı trojúhelník segmentu
+			//	DruhÃ½ trojÃºhelnÃ­k segmentu
 			GetIndex(x, y).triangle2[0] = xy0;
 			GetIndex(x, y).triangle2[1] = xy0 + 1;
 			GetIndex(x, y).triangle2[2] = xy1 + 1;

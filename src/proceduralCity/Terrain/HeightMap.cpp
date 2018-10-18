@@ -2,7 +2,7 @@
 /// @file HeightMap.cpp
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <glm/gtc/noise.hpp> // perlin
 #include <Terrain/Chunk.h>
@@ -55,7 +55,7 @@ float Terrain::HeightMap::GetData(float globalX, float globalY, unsigned int det
 		sample.y = globalY / scale * frequency + offsets[i].x;
 		sample.x = globalX / scale * frequency + offsets[i].y;
 
-		//	PosunutÌ intervalu do <-1, 1>
+		//	Posunut√≠ intervalu do <-1, 1>
 		float h = glm::perlin(sample) * 2 - 1;
 		result += h * amplitude;
 

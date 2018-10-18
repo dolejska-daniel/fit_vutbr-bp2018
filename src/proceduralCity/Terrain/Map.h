@@ -2,7 +2,7 @@
 /// @file Map.h
 /// @brief
 ///
-/// @author Daniel Dolejöka <xdolej08@stud.fit.vutbr.cz>
+/// @author Daniel Dolej≈°ka <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
 #include <Vars/Vars.h>
