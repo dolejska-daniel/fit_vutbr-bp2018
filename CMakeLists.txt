@@ -34,6 +34,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR})
 ###
 set(SOURCES
 	src/proceduralCity/main.cpp
+	src/proceduralCity/Application/Renderer.cpp
 	src/proceduralCity/Application/ShaderManager.cpp
 	src/proceduralCity/Application/ShaderLoader.cpp
 	src/proceduralCity/Terrain/Builder.cpp
@@ -45,8 +46,10 @@ set(SOURCES
 
 set(INCLUDES
 	src/proceduralCity/Application/Application.h
-	src/proceduralCity/Application/IRenderable.h
+	src/proceduralCity/Application/IRenderableBase.h
+	src/proceduralCity/Application/IRenderableArray.h
 	src/proceduralCity/Application/IRenderableCollection.h
+	src/proceduralCity/Application/Renderer.h
 	src/proceduralCity/Application/ShaderLoader.h
 	src/proceduralCity/Application/ShaderManager.h
 	src/proceduralCity/Terrain/Fwd.h

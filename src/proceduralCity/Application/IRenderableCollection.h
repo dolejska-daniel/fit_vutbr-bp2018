@@ -6,7 +6,7 @@
 ///
 #pragma once
 #include <unordered_map>
-#include <Application/IRenderable.h>
+#include <Application/IRenderableBase.h>
 
 
 namespace Application
@@ -20,6 +20,6 @@ namespace Application
 		///
 		/// @brief 
 		///
-		virtual std::unordered_map<unsigned int, std::shared_ptr<IRenderable>> GetRenderableObjects() = 0;
+		virtual std::unordered_map<unsigned int, std::shared_ptr<IRenderableBase>> GetRenderableObjects() = 0;
 	};
 }

@@ -128,9 +128,9 @@ int main(int argc, char* argv[])
 			vertexBuffer->bind(GL_ARRAY_BUFFER);
 
 			//	POSITION
-			vertexArray->addAttrib(vertexBuffer, 0, 3, GL_FLAT, 6 * sizeof(float));
+			vertexArray->addAttrib(vertexBuffer, 0, 3, GL_FLOAT, 6 * sizeof(float));
 			//	NORMAL
-			vertexArray->addAttrib(vertexBuffer, 1, 3, GL_FLAT, 6 * sizeof(float), 3 * sizeof(float));
+			vertexArray->addAttrib(vertexBuffer, 1, 3, GL_FLOAT, 6 * sizeof(float), 3 * sizeof(float));
 
 			auto elementBuffer = std::make_shared<Buffer>(chunk->GetIndicesSize(), chunk->GetIndices());
 			elementBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
