@@ -37,6 +37,8 @@ set(SOURCES
 	src/proceduralCity/Application/Renderer.cpp
 	src/proceduralCity/Application/ShaderManager.cpp
 	src/proceduralCity/Application/ShaderLoader.cpp
+	src/proceduralCity/Infrastructure/Street.cpp
+	src/proceduralCity/Infrastructure/StreetMap.cpp
 	src/proceduralCity/Terrain/Builder.cpp
 	src/proceduralCity/Terrain/Generator.cpp
 	src/proceduralCity/Terrain/HeightMap.cpp
@@ -52,6 +54,8 @@ set(INCLUDES
 	src/proceduralCity/Application/Renderer.h
 	src/proceduralCity/Application/ShaderLoader.h
 	src/proceduralCity/Application/ShaderManager.h
+	src/proceduralCity/Infrastructure/Street.h
+	src/proceduralCity/Infrastructure/StreetMap.h
 	src/proceduralCity/Terrain/Fwd.h
 	src/proceduralCity/Terrain/Builder.h
 	src/proceduralCity/Terrain/Generator.h
