@@ -20,7 +20,9 @@
 #include <Terrain/Generator.h>
 #include <Application/Application.h>
 #include <Application/ShaderManager.h>
-//#include <Infrastructure/Street.h>
+#include <Application/Renderer.h>
+#include <Infrastructure/Street.h>
+#include <Infrastructure/StreetMap.h>
 
 using namespace glm;
 using namespace ge::gl;
@@ -175,6 +177,9 @@ int main(int argc, char* argv[])
 	*/
 
 
+	auto streetMap = Infrastructure::StreetMap();
+	Renderer renderer = Renderer(vars);
+
 	std::cerr << "Callback" << std::endl;
 	//	Drawing
     mainLoop->setIdleCallback([&](){
@@ -217,6 +222,21 @@ int main(int argc, char* argv[])
 				glDrawElements(GL_TRIANGLES, vertexArray->getElement()->getSize(), GL_UNSIGNED_INT, (const void*)0);
 				*/
 			}
+		}
+
+		if (keyDown['x'] == true)
+		{
+			streetMap.BuildStep();
+		}
+		else if (keyDown['y'] == true)
+		{
+			printf("Number of streets: %d\n", streetMap.ReadStreets().size());
+		}
+
+		auto streets = streetMap.ReadStreets();
+		for (size_t i = 0; i < streets.size(); i++)
+		{
+			renderer.Render(streets[i]);
 		}
 
 		glFinish();

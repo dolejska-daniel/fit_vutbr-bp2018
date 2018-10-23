@@ -11,11 +11,17 @@
 
 namespace Infrastructure
 {
+	///
+	/// @brief 
+	///
 	struct StreetVertex
 	{
 		glm::vec3 position;
 	};
 
+	///
+	/// @brief 
+	///
 	struct StreetSegment
 	{
 		glm::vec3	startPoint;
@@ -24,28 +30,84 @@ namespace Infrastructure
 		float		length;
 	};
 
+	///
+	/// @brief 
+	///
 	class Street : public Application::IRenderableArray
 	{
 	public:
+		///
+		/// @brief 
+		///
 		Street(glm::vec3 startPoint, glm::vec3 direction, float length);
+		///
+		/// @brief 
+		///
 		~Street();
 
-		inline StreetSegment GetSegment(int segment = -1) const {
-			int segment_id = segment == -1 ? _segments.size() - 1 : segment;
-			assert(segment_id >= 0);
-			assert(segment_id < _segments.size());
-			return _segments[segment_id];
+		///
+		/// @brief 
+		///
+		inline const StreetSegment GetSegment() const {
+			assert(_segments.size() > 0);
+			return _segments[_segments.size() - 1];
 		}
-		inline size_t GetSegmentCount() const { return _segments.size(); }
+		///
+		/// @brief 
+		///
+		inline const StreetSegment GetSegment(size_t segment) const {
+			assert(segment >= 0);
+			assert(segment < _segments.size());
+			return _segments[segment];
+		}
+		///
+		/// @brief 
+		///
+		inline const std::vector<StreetSegment> GetSegments() const { return _segments; }
+		///
+		/// @brief 
+		///
+		inline const size_t GetSegmentCount() const { return _segments.size(); }
 
-		inline glm::vec3 GetStartPoint(int segment = -1) const { return GetSegment(segment).startPoint; }
-		inline glm::vec3 GetDirection(int segment = -1) const { return GetSegment(segment).direction; }
-		inline float GetLength(int segment = -1) const { return GetSegment(segment).length; }
+		///
+		/// @brief 
+		///
+		inline const float Ended() const { return _ended; }
+		///
+		/// @brief 
+		///
+		inline void End() { _ended = true; }
 
-		void Build();
+		///
+		/// @brief 
+		///
+		void BuildStep();
+		///
+		/// @brief 
+		///
+		void BuildStep(glm::vec3 direction);
+		///
+		/// @brief 
+		///
+		void BuildStep(float length);
+		///
+		/// @brief 
+		///
+		void BuildStep(glm::vec3 direction, float length);
 
 	private:
+		///
+		/// @brief 
+		///
 		std::vector<StreetVertex> _vertices;
+		///
+		/// @brief 
+		///
 		std::vector<StreetSegment> _segments;
+
+		///
+		/// @brief 
+		///
+		bool _ended = false;
 	};
 }
