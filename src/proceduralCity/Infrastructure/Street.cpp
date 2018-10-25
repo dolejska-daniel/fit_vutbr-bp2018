@@ -12,7 +12,8 @@
 using namespace ge::gl;
 using namespace Infrastructure;
 
-Street::Street(glm::vec3 startPoint, glm::vec3 direction, float length)
+Street::Street(glm::vec3 startPoint, glm::vec3 direction, float length, short level)
+	: _level(level)
 {
 	SetDrawMode(GL_LINES);
 
@@ -105,21 +106,3 @@ void Street::BuildStep(glm::vec3 direction, float length)
 	//	Aktualizace dat v bufferu
 	GetVB()->setData(&_vertices[0], _vertices.size() * sizeof(StreetVertex));
 }
-
-
-/*
-
-auto s1 = GetSegment();
-for (size_t i = 0; i < street->GetSegmentCount(); i++)
-{
-	//	Segment ulice
-	auto s2 = street->GetSegment();
-	if (s1.direction == s2.direction)
-		//	Směrnice jsou stejné, průsečík neexistuje
-		continue;
-
-	//s1.
-}
-
-*/
-

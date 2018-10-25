@@ -17,7 +17,7 @@ namespace Infrastructure
 	struct StreetSegmentIntersection
 	{
 		bool		exists;
-		glm::vec3	position;
+		glm::vec2	positionRelative;
 	};
 
 	///

@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	// =============================================================
 	vars.addUint32("terrain.seed",			args.getu32("--terrain-seed",			12345,	"Default seed for terrain generation"));
 	vars.addFloat( "terrain.scale",			args.getf32("--terrain-scale",			32.f,	""));
-	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		3.f,	""));
+	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		2.f,	""));
 	vars.addFloat( "terrain.frequency",		args.getf32("--terrain-frequency",		2.f,	""));
 	vars.addFloat( "terrain.persistence",	args.getf32("--terrain-persistence",	0.5f,	""));
 	vars.addFloat( "terrain.lacunarity",	args.getf32("--terrain-lacunarity",		1.25f,	""));
@@ -176,6 +176,7 @@ int main(int argc, char* argv[])
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, map.GetWidth(), map.GetHeight(), 0, GL_RGB, GL_FLOAT, hmapTexture);
 	*/
 
+	auto color = glm::vec3(0, 1, 0);
 
 	auto streetMap = Infrastructure::StreetMap();
 	Renderer renderer = Renderer(vars);
@@ -188,12 +189,15 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (int a = 0; a < 3; ++a)
-			freeLook->move(a, float(keyDown["d s"[a]] - keyDown["acw"[a]]) * .25f);
+			freeLook->move(a, float(keyDown["d s"[a]] - keyDown["acw"[a]]) * float(.25f + keyDown[SDLK_LSHIFT] * 2.f));
 
 		vec3 cameraPosition = freeLook->getPosition();
 		mat4 projectionMatrix = cameraProjection->getProjection();
 		mat4 viewMatrix = freeLook->getView();
 		mat4 modelMatrix(1);
+
+		color = glm::vec3(0, 1, 0);
+		shaders->activeProgram->set3fv("color", &color[0]);
 
 		for (int y = 0; y < mapHeight; y++)
 		{
@@ -202,7 +206,7 @@ int main(int argc, char* argv[])
 				auto vertexArray = vertexArrays[y * mapWidth + x];
 				vertexArray->bind();
 
-				shaders->Use("Phong");
+				//shaders->Use("Phong");
 				shaders->activeProgram->set3fv("lightPosition_worldspace", &cameraPosition[0]);
 				shaders->activeProgram->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
@@ -223,6 +227,9 @@ int main(int argc, char* argv[])
 				*/
 			}
 		}
+
+		color = glm::vec3(1, 1, 1);
+		shaders->activeProgram->set3fv("color", &color[0]);
 
 		if (keyDown['x'] == true)
 		{

@@ -28,6 +28,7 @@ namespace Infrastructure
 		glm::vec3	endPoint;
 		glm::vec3	direction;
 		float		length;
+		int			lastSplit;
 	};
 
 	///
@@ -39,7 +40,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		Street(glm::vec3 startPoint, glm::vec3 direction, float length);
+		Street(glm::vec3 startPoint, glm::vec3 direction, float length, short level = 0);
 		///
 		/// @brief 
 		///
@@ -68,15 +69,44 @@ namespace Infrastructure
 		/// @brief 
 		///
 		inline const size_t GetSegmentCount() const { return _segments.size(); }
+		///
+		/// @brief 
+		///
+		inline const glm::vec3 GetSegmentPoint(float t) const {
+			auto seg = GetSegment(_segments.size() - 1);
+			return (1.f - t) * seg.startPoint + t * seg.endPoint;
+		}
+		///
+		/// @brief 
+		///
+		inline const glm::vec3 GetSegmentPoint(size_t segment, float t) const {
+			auto seg = GetSegment(segment);
+			return (1.f - t) * seg.startPoint + t * seg.endPoint;
+		}
 
 		///
 		/// @brief 
 		///
-		inline const float Ended() const { return _ended; }
+		inline void SetSegmentEndPoint(glm::vec3 endPoint) {
+			assert(GetVB() != nullptr);
+			_segments.back().endPoint = endPoint;
+			_vertices.back().position = endPoint;
+			GetVB()->setData(&_vertices[0]);
+		}
+
+		///
+		/// @brief 
+		///
+		inline const bool Ended() const { return _ended; }
 		///
 		/// @brief 
 		///
 		inline void End() { _ended = true; }
+
+		///
+		/// @brief 
+		///
+		inline const short GetLevel() const { return _level; }
 
 		///
 		/// @brief 
@@ -95,7 +125,7 @@ namespace Infrastructure
 		///
 		void BuildStep(glm::vec3 direction, float length);
 
-	private:
+	protected:
 		///
 		/// @brief 
 		///
@@ -109,5 +139,9 @@ namespace Infrastructure
 		/// @brief 
 		///
 		bool _ended = false;
+		///
+		/// @brief 
+		///
+		short _level;
 	};
 }

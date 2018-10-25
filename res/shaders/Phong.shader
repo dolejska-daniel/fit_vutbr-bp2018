@@ -14,6 +14,7 @@ out vec3 position;
 out vec3 normal;
 
 //	Uniforms
+uniform vec3 color;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
@@ -23,7 +24,7 @@ void main()
 {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition_worldspace, 1);
 
-	fragmentColor = vec3(0, 1, 0);
+	fragmentColor = color;
 
 	position = vertexPosition_worldspace;
 	normal = vertexNormal_worldspace;
@@ -51,6 +52,12 @@ uniform vec3 lightPosition_worldspace;
 
 void main()
 {
+	if (normal == 0)
+	{
+		color = fragmentColor;
+		return;
+	}
+
 	vec3 light_pos = lightPosition_worldspace;
 	vec3 camera_pos = cameraPosition_worldspace;
 
