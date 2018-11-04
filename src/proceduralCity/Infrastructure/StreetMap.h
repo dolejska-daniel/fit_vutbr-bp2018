@@ -52,6 +52,10 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
+		static StreetSegmentIntersection Intersection(StreetSegment const& segment1, StreetSegment const& segment2);
+		///
+		/// @brief 
+		///
 		std::vector<StreetSegmentIntersection> IntersectionsWithAny(StreetSegment const& segment) const;
 
 		///
