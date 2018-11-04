@@ -13,6 +13,8 @@ SCENARIO("Initialization #1 [Position, Size]")
 
 	REQUIRE(node.ReadPosition() == position);
 	REQUIRE(node.ReadSize() == 4.f);
+	REQUIRE(node.ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.ReadMaxPosition() == glm::vec2(4.f, 4.f));
 	REQUIRE(node.GetSegments().empty());
 	REQUIRE(node.ReadSegments().empty());
 	REQUIRE(node.GetChildren().empty());
@@ -26,6 +28,8 @@ SCENARIO("Initialization #2 [Position, Size, Empty Children]")
 
 	REQUIRE(node.ReadPosition() == position);
 	REQUIRE(node.ReadSize() == 4.f);
+	REQUIRE(node.ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.ReadMaxPosition() == glm::vec2(4.f, 4.f));
 	REQUIRE(node.GetSegments().empty());
 	REQUIRE(node.ReadSegments().empty());
 	REQUIRE(node.GetChildren().empty());
@@ -35,56 +39,111 @@ SCENARIO("Initialization #2 [Position, Size, Empty Children]")
 SCENARIO("Initialization #2 [Position, Size, One Child - pos1]")
 {
 	auto position = glm::vec2(0);
-	const auto childNode = std::make_shared<StreetNode>(glm::vec2(0), 4.f / 2.f);
-	StreetNode node(glm::vec2(0), 4.f, { {0, childNode} });
+	const auto childNode = std::make_shared<StreetNode>(glm::vec2{position.x - 2.f, position.y + 2.f}, 2.f);
+	StreetNode node(position, 4.f, { {0, childNode} });
 
 	REQUIRE(node.ReadPosition() == position);
 	REQUIRE(node.ReadSize() == 4.f);
+	REQUIRE(childNode->ReadSize() == 2.f);
+	REQUIRE(node.ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.ReadMaxPosition() == glm::vec2(4.f, 4.f));
 	REQUIRE(node.GetSegments().empty());
 	REQUIRE(node.ReadSegments().empty());
 	REQUIRE_FALSE(node.GetChildren().empty());
 	REQUIRE(node.HasChildren());
+
 	REQUIRE(node.GetChildren()[0] == childNode);
+	REQUIRE(childNode->ReadPosition() == glm::vec2{ position.x - 2.f, position.y + 2.f });
+	REQUIRE(childNode->ReadMinPosition() == glm::vec2(-4.f, 0.f));
+	REQUIRE(childNode->ReadMaxPosition() == glm::vec2(0.f, 4.f));
+
 	REQUIRE_FALSE(node.GetChildren()[1] == nullptr);
+	REQUIRE(node.GetChildren()[1]->ReadPosition() == glm::vec2{ position.x + 2.f, position.y + 2.f });
+	REQUIRE(node.GetChildren()[1]->ReadMinPosition() == glm::vec2(0.f, 0.f));
+	REQUIRE(node.GetChildren()[1]->ReadMaxPosition() == glm::vec2(4.f, 4.f));
+
 	REQUIRE_FALSE(node.GetChildren()[2] == nullptr);
+	REQUIRE(node.GetChildren()[2]->ReadPosition() == glm::vec2{ position.x + 2.f, position.y - 2.f });
+	REQUIRE(node.GetChildren()[2]->ReadMinPosition() == glm::vec2(0.f, -4.f));
+	REQUIRE(node.GetChildren()[2]->ReadMaxPosition() == glm::vec2(4.f, 0.f));
+
 	REQUIRE_FALSE(node.GetChildren()[3] == nullptr);
+	REQUIRE(node.GetChildren()[3]->ReadPosition() == glm::vec2{ position.x - 2.f, position.y - 2.f });
+	REQUIRE(node.GetChildren()[3]->ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.GetChildren()[3]->ReadMaxPosition() == glm::vec2(0.f, 0.f));
 }
 
 SCENARIO("Initialization #2 [Position, Size, One Child - pos3]")
 {
 	auto position = glm::vec2(0);
-	const auto childNode = std::make_shared<StreetNode>(glm::vec2(0), 4.f / 2.f);
+	const auto childNode = std::make_shared<StreetNode>(glm::vec2{ position.x + 2.f, position.y - 2.f }, 2.f);
 	StreetNode node(glm::vec2(0), 4.f, { {2, childNode} });
 
 	REQUIRE(node.ReadPosition() == position);
 	REQUIRE(node.ReadSize() == 4.f);
+	REQUIRE(node.ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.ReadMaxPosition() == glm::vec2(4.f, 4.f));
 	REQUIRE(node.GetSegments().empty());
 	REQUIRE(node.ReadSegments().empty());
 	REQUIRE_FALSE(node.GetChildren().empty());
+
 	REQUIRE(node.HasChildren());
 	REQUIRE_FALSE(node.GetChildren()[0] == nullptr);
+	REQUIRE(node.GetChildren()[0]->ReadPosition() == glm::vec2{ position.x - 2.f, position.y + 2.f });
+	REQUIRE(node.GetChildren()[0]->ReadMinPosition() == glm::vec2(-4.f, 0.f));
+	REQUIRE(node.GetChildren()[0]->ReadMaxPosition() == glm::vec2(0.f, 4.f));
+
 	REQUIRE_FALSE(node.GetChildren()[1] == nullptr);
+	REQUIRE(node.GetChildren()[1]->ReadPosition() == glm::vec2{ position.x + 2.f, position.y + 2.f });
+	REQUIRE(node.GetChildren()[1]->ReadMinPosition() == glm::vec2(0.f, 0.f));
+	REQUIRE(node.GetChildren()[1]->ReadMaxPosition() == glm::vec2(4.f, 4.f));
+
 	REQUIRE(node.GetChildren()[2] == childNode);
+	REQUIRE(childNode->ReadPosition() == glm::vec2{ position.x + 2.f, position.y - 2.f });
+	REQUIRE(childNode->ReadMinPosition() == glm::vec2(0.f, -4.f));
+	REQUIRE(childNode->ReadMaxPosition() == glm::vec2(4.f, 0.f));
+
 	REQUIRE_FALSE(node.GetChildren()[3] == nullptr);
+	REQUIRE(node.GetChildren()[3]->ReadPosition() == glm::vec2{ position.x - 2.f, position.y - 2.f });
+	REQUIRE(node.GetChildren()[3]->ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.GetChildren()[3]->ReadMaxPosition() == glm::vec2(0.f, 0.f));
 }
 
 SCENARIO("Initialization #2 [Position, Size, One Child - pos1 and pos3]")
 {
 	auto position = glm::vec2(0);
-	const auto childNode1 = std::make_shared<StreetNode>(glm::vec2(-2), 4.f / 2.f);
-	const auto childNode2 = std::make_shared<StreetNode>(glm::vec2(2), 4.f / 2.f);
+	const auto childNode1 = std::make_shared<StreetNode>(glm::vec2{ position.x - 2.f, position.y + 2.f }, 2.f);
+	const auto childNode2 = std::make_shared<StreetNode>(glm::vec2{ position.x + 2.f, position.y - 2.f }, 2.f);
 	StreetNode node(glm::vec2(0), 4.f, { {0, childNode1}, {2, childNode2} });
 
 	REQUIRE(node.ReadPosition() == position);
 	REQUIRE(node.ReadSize() == 4.f);
+	REQUIRE(node.ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.ReadMaxPosition() == glm::vec2(4.f, 4.f));
 	REQUIRE(node.GetSegments().empty());
 	REQUIRE(node.ReadSegments().empty());
 	REQUIRE_FALSE(node.GetChildren().empty());
+
 	REQUIRE(node.HasChildren());
 	REQUIRE(node.GetChildren()[0] == childNode1);
+	REQUIRE(childNode1->ReadPosition() == glm::vec2{ position.x - 2.f, position.y + 2.f });
+	REQUIRE(childNode1->ReadMinPosition() == glm::vec2(-4.f, 0.f));
+	REQUIRE(childNode1->ReadMaxPosition() == glm::vec2(0.f, 4.f));
+
 	REQUIRE_FALSE(node.GetChildren()[1] == nullptr);
+	REQUIRE(node.GetChildren()[1]->ReadPosition() == glm::vec2{ position.x + 2.f, position.y + 2.f });
+	REQUIRE(node.GetChildren()[1]->ReadMinPosition() == glm::vec2(0.f, 0.f));
+	REQUIRE(node.GetChildren()[1]->ReadMaxPosition() == glm::vec2(4.f, 4.f));
+
 	REQUIRE(node.GetChildren()[2] == childNode2);
+	REQUIRE(childNode2->ReadPosition() == glm::vec2{ position.x + 2.f, position.y - 2.f });
+	REQUIRE(childNode2->ReadMinPosition() == glm::vec2(0.f, -4.f));
+	REQUIRE(childNode2->ReadMaxPosition() == glm::vec2(4.f, 0.f));
+
 	REQUIRE_FALSE(node.GetChildren()[3] == nullptr);
+	REQUIRE(node.GetChildren()[3]->ReadPosition() == glm::vec2{ position.x - 2.f, position.y - 2.f });
+	REQUIRE(node.GetChildren()[3]->ReadMinPosition() == glm::vec2(-4.f, -4.f));
+	REQUIRE(node.GetChildren()[3]->ReadMaxPosition() == glm::vec2(0.f, 0.f));
 }
 
 SCENARIO("CreateParent [Isn't root]")
@@ -164,7 +223,8 @@ SCENARIO("CreateParent [Is root, LB]")
 
 SCENARIO("CreateChildren [Empty]")
 {
-	StreetNode node(glm::vec2(0), 4.f);
+	auto position = glm::vec2(4.f);
+	StreetNode node(position, 4.f);
 
 	REQUIRE_FALSE(node.HasChildren());
 	REQUIRE(node.GetChildren().empty());
@@ -176,10 +236,26 @@ SCENARIO("CreateChildren [Empty]")
 	node.CreateChildren();
 	REQUIRE(node.HasChildren());
 	REQUIRE_FALSE(node.GetChildren().empty());
+
 	REQUIRE_FALSE(node.GetChildren()[0] == nullptr);
+	REQUIRE(node.GetChildren()[0]->ReadPosition() == glm::vec2{ position.x - 2.f, position.y + 2.f });
+	REQUIRE(node.GetChildren()[0]->ReadMinPosition() == glm::vec2(0.f, 4.f));
+	REQUIRE(node.GetChildren()[0]->ReadMaxPosition() == glm::vec2(4.f, 8.f));
+
 	REQUIRE_FALSE(node.GetChildren()[1] == nullptr);
+	REQUIRE(node.GetChildren()[1]->ReadPosition() == glm::vec2{ position.x + 2.f, position.y + 2.f });
+	REQUIRE(node.GetChildren()[1]->ReadMinPosition() == glm::vec2(4.f, 4.f));
+	REQUIRE(node.GetChildren()[1]->ReadMaxPosition() == glm::vec2(8.f, 8.f));
+
 	REQUIRE_FALSE(node.GetChildren()[2] == nullptr);
+	REQUIRE(node.GetChildren()[2]->ReadPosition() == glm::vec2{ position.x + 2.f, position.y - 2.f });
+	REQUIRE(node.GetChildren()[2]->ReadMinPosition() == glm::vec2(4.f, 0.f));
+	REQUIRE(node.GetChildren()[2]->ReadMaxPosition() == glm::vec2(8.f, 4.f));
+
 	REQUIRE_FALSE(node.GetChildren()[3] == nullptr);
+	REQUIRE(node.GetChildren()[3]->ReadPosition() == glm::vec2{ position.x - 2.f, position.y - 2.f });
+	REQUIRE(node.GetChildren()[3]->ReadMinPosition() == glm::vec2(0.f, 0.f));
+	REQUIRE(node.GetChildren()[3]->ReadMaxPosition() == glm::vec2(4.f, 4.f));
 }
 
 SCENARIO("CreateChildren [Non-empty]")

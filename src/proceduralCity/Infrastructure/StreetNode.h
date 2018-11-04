@@ -74,6 +74,15 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
+		glm::vec2 ReadMinPosition() const { return _minPosition; }
+		///
+		/// @brief
+		///
+		glm::vec2 ReadMaxPosition() const { return _maxPosition; }
+
+		///
+		/// @brief
+		///
 		std::vector<StreetSegment> &GetSegments() { return _segments; }
 		///
 		/// @brief

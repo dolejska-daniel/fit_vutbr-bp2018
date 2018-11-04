@@ -17,15 +17,15 @@ using namespace Infrastructure;
 StreetNode::StreetNode(glm::vec2 const& position, const float size)
 	: _position(position), _size(size), _isRoot(false), _hasChildren(false)
 {
-	_minPosition = position - this->_size;
-	_maxPosition = position + this->_size;
+	_minPosition = position - size;
+	_maxPosition = position + size;
 }
 
 StreetNode::StreetNode(glm::vec2 const& position, const float size, std::map<int, std::shared_ptr<StreetNode>> const& children)
 	: _position(position), _size(size), _isRoot(false), _hasChildren(false)
 {
-	_minPosition = position - this->_size;
-	_maxPosition = position + this->_size;
+	_minPosition = position - size;
+	_maxPosition = position + size;
 
 	for (auto &node : children)
 	{
