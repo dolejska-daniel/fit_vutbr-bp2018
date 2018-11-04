@@ -4,7 +4,6 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#pragma once
 #include <glm/mat2x2.hpp>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
@@ -18,22 +17,21 @@ float stepLevelOffset = .5f;
 
 StreetMap::StreetMap()
 {
-	auto street = std::make_shared<Infrastructure::Street>(glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), stepSize / 2);
+	auto street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), stepSize / 2);
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Infrastructure::Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, -.5), stepSize / 2);
+	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, -.5), stepSize / 2);
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Infrastructure::Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, .5), stepSize / 2);
+	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, .5), stepSize / 2);
 	GetStreets().push_back(street);
 }
 
 StreetMap::~StreetMap()
-{
-}
+= default;
 
 
-StreetSegmentIntersection StreetMap::Intersection(const StreetSegment segment, const std::shared_ptr<Street> street) const
+StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street)
 {
 	StreetSegmentIntersection intersection = {
 		false,
@@ -41,9 +39,8 @@ StreetSegmentIntersection StreetMap::Intersection(const StreetSegment segment, c
 	};
 
 	auto streetSegments = street->GetSegments();
-	for (size_t i = 0; i < streetSegments.size(); i++)
+	for (auto streetSegment : streetSegments)
 	{
-		auto streetSegment = streetSegments[i];
 		if (segment.direction == streetSegment.direction)
 		{
 			//	Segmenty jsou rovnoběžné, kolize není možná
@@ -53,15 +50,15 @@ StreetSegmentIntersection StreetMap::Intersection(const StreetSegment segment, c
 		//--------------------------------------------------------------------
 		//	Tomáš Milet
 		//
-		glm::vec3 C = segment.endPoint - segment.startPoint;
-		glm::vec3 P = streetSegment.startPoint - streetSegment.endPoint;
-		glm::vec3 H = segment.startPoint - streetSegment.startPoint;
+		auto c = segment.endPoint - segment.startPoint;
+		auto p = streetSegment.startPoint - streetSegment.endPoint;
+		auto h = segment.startPoint - streetSegment.startPoint;
 
-		float R = H[2] * P[0] - H[0] * P[2];
-		float X = C[2] * H[0] - C[0] * H[2];
-		float S = C[2] * P[0] - C[0] * P[2];
+		const auto r = h[2] * p[0] - h[0] * p[2];
+		const auto x = c[2] * h[0] - c[0] * h[2];
+		const auto s = c[2] * p[0] - c[0] * p[2];
 
-		glm::vec2 t = intersection.positionRelative = { -R / S, -X / S };
+		auto t = intersection.positionRelative = { -r / s, -x / s };
 		//intersection.exists = t[0] >= 0 && t[0] <= 1 && t[1] >= 0 && t[1] <= 1;
 		intersection.exists = t[0] > 0.f && t[0] < 1.f && t[1] > 0.f && t[1] < 1.f;
 		return intersection;
@@ -71,7 +68,7 @@ StreetSegmentIntersection StreetMap::Intersection(const StreetSegment segment, c
 	return intersection;
 }
 
-std::vector<StreetSegmentIntersection> StreetMap::IntersectionsWithAny(const StreetSegment segment) const
+std::vector<StreetSegmentIntersection> StreetMap::IntersectionsWithAny(StreetSegment const& segment) const
 {
 	std::vector<StreetSegmentIntersection> intersections = {};
 	//	Kontrola lokálních kolizí (tento StreetMap)
@@ -79,7 +76,7 @@ std::vector<StreetSegmentIntersection> StreetMap::IntersectionsWithAny(const Str
 	for (size_t i = 0; i < ReadStreets().size(); i++)
 	{
 		//	Načtení ulice pro ověření
-		auto street = ReadStreets()[i];
+		const auto street = ReadStreets()[i];
 		//	TODO: Vybírat pouze relevantní ulice (nacházející se v blízkosti segmentu)
 
 		//	Kontrola průsečíku
@@ -87,7 +84,7 @@ std::vector<StreetSegmentIntersection> StreetMap::IntersectionsWithAny(const Str
 		if (intersection.exists)
 		{
 			//	Průsečík existuje
-			intersections.push_back(std::move(intersection));
+			intersections.push_back(intersection);
 		}
 	}
 	//	TODO: Kontrolovat na globální úrovni (i v rámci ostatních StreetMap)
@@ -108,11 +105,10 @@ void StreetMap::BuildStep()
 
 		auto segment = street->GetSegment();
 		auto intersections = IntersectionsWithAny(segment);
-		if (intersections.size())
+		if (!intersections.empty())
 		{
-			for (size_t j = 0; j < intersections.size(); j++)
+			for (auto intersection : intersections)
 			{
-				auto intersection = intersections[j];
 				auto endPoint = street->GetSegmentPoint(intersection.positionRelative[0] - 0.001f);
 				street->SetSegmentEndPoint(endPoint);
 			}
@@ -121,12 +117,11 @@ void StreetMap::BuildStep()
 			continue;
 		}
 
-		float split = glm::floor(segment.length / length);
-		if (split > segment.lastSplit && street->GetLevel() < 2)
+		const int split = glm::floor(segment.length / length);
+		if (split > segment.lastSplit && street->GetLevel() < 3)
 		{
 			segment.lastSplit = split;
 
-			//	TODO: Vytváření nových ulic
 			glm::vec3 position = street->GetSegmentPoint(1.f);
 			glm::vec3 direction;
 
@@ -143,7 +138,7 @@ void StreetMap::BuildStep()
 				direction.z = -segment.direction.x;
 			}
 
-			auto newStreet = std::make_shared<Infrastructure::Street>(position, direction, length, street->GetLevel() + 1);
+			auto newStreet = std::make_shared<Street>(position, direction, length, street->GetLevel() + 1);
 			GetStreets().push_back(newStreet);
 		}
 	}

@@ -34,11 +34,11 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		StreetNode(glm::vec2 const &position, float size);
+		StreetNode(glm::vec2 const& position, float size);
 		///
 		/// @brief
 		///
-		StreetNode(glm::vec2 const &position, float size, std::map<int, std::shared_ptr<StreetNode>> const &children);
+		StreetNode(glm::vec2 const& position, float size, std::map<int, std::shared_ptr<StreetNode>> const& children);
 		///
 		/// @brief
 		///

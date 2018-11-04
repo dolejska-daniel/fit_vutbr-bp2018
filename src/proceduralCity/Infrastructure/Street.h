@@ -29,7 +29,14 @@ namespace Infrastructure
 		glm::vec3	direction;
 		float		length;
 		int			lastSplit;
+
+		bool operator==(StreetSegment const& other) const
+		{
+			return this->startPoint == other.startPoint
+				&& this->direction == other.direction;
+		}
 	};
+
 
 	///
 	/// @brief 
@@ -40,7 +47,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		Street(glm::vec3 startPoint, glm::vec3 direction, float length, short level = 0);
+		Street(glm::vec3 const& startPoint, glm::vec3 const& direction, float length, short level = 0);
 		///
 		/// @brief 
 		///
@@ -49,64 +56,43 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		inline const StreetSegment GetSegment() const {
-			assert(_segments.size() > 0);
-			return _segments[_segments.size() - 1];
-		}
+		StreetSegment GetSegment() const;
 		///
 		/// @brief 
 		///
-		inline const StreetSegment GetSegment(size_t segment) const {
-			assert(segment >= 0);
-			assert(segment < _segments.size());
-			return _segments[segment];
-		}
-		///
-		/// @brief 
-		///
-		inline const std::vector<StreetSegment> GetSegments() const { return _segments; }
-		///
-		/// @brief 
-		///
-		inline const size_t GetSegmentCount() const { return _segments.size(); }
-		///
-		/// @brief 
-		///
-		inline const glm::vec3 GetSegmentPoint(float t) const {
-			auto seg = GetSegment(_segments.size() - 1);
-			return (1.f - t) * seg.startPoint + t * seg.endPoint;
-		}
-		///
-		/// @brief 
-		///
-		inline const glm::vec3 GetSegmentPoint(size_t segment, float t) const {
-			auto seg = GetSegment(segment);
-			return (1.f - t) * seg.startPoint + t * seg.endPoint;
-		}
+		StreetSegment GetSegment(const size_t segment) const;
 
 		///
 		/// @brief 
 		///
-		inline void SetSegmentEndPoint(glm::vec3 endPoint) {
-			assert(GetVB() != nullptr);
-			_segments.back().endPoint = endPoint;
-			_vertices.back().position = endPoint;
-			GetVB()->setData(&_vertices[0]);
-		}
+		std::vector<StreetSegment> GetSegments() const { return _segments; }
+		///
+		/// @brief 
+		///
+		glm::vec3 GetSegmentPoint(float t) const;
+		///
+		/// @brief 
+		///
+		glm::vec3 GetSegmentPoint(size_t segment, float t) const;
 
 		///
 		/// @brief 
 		///
-		inline const bool Ended() const { return _ended; }
-		///
-		/// @brief 
-		///
-		inline void End() { _ended = true; }
+		void SetSegmentEndPoint(glm::vec3 const& endPoint);
 
 		///
 		/// @brief 
 		///
-		inline const short GetLevel() const { return _level; }
+		bool Ended() const { return _ended; }
+		///
+		/// @brief 
+		///
+		void End() { _ended = true; }
+
+		///
+		/// @brief 
+		///
+		short GetLevel() const { return _level; }
 
 		///
 		/// @brief 
@@ -115,7 +101,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		void BuildStep(glm::vec3 direction);
+		void BuildStep(glm::vec3 const& direction);
 		///
 		/// @brief 
 		///
@@ -123,7 +109,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		void BuildStep(glm::vec3 direction, float length);
+		void BuildStep(glm::vec3 const& direction, float length);
 
 	protected:
 		///

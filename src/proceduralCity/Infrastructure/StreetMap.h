@@ -20,6 +20,7 @@ namespace Infrastructure
 		glm::vec2	positionRelative;
 	};
 
+
 	///
 	/// @brief 
 	///
@@ -38,20 +39,20 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		inline std::vector<std::shared_ptr<Street>> &GetStreets() { return _streets; }
+		std::vector<std::shared_ptr<Street>> &GetStreets() { return _streets; }
 		///
 		/// @brief 
 		///
-		inline const std::vector<std::shared_ptr<Street>> ReadStreets() const { return _streets; }
+		std::vector<std::shared_ptr<Street>> ReadStreets() const { return _streets; }
 
 		///
 		/// @brief 
 		///
-		StreetSegmentIntersection Intersection(const StreetSegment segment, const std::shared_ptr<Street> street) const;
+		static StreetSegmentIntersection Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street);
 		///
 		/// @brief 
 		///
-		std::vector<StreetSegmentIntersection> IntersectionsWithAny(const StreetSegment segment) const;
+		std::vector<StreetSegmentIntersection> IntersectionsWithAny(StreetSegment const& segment) const;
 
 		///
 		/// @brief 

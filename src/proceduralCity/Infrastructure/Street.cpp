@@ -4,7 +4,6 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#pragma once
 #include <glm/glm.hpp>
 #include <Infrastructure/Street.h>
 
@@ -12,7 +11,7 @@
 using namespace ge::gl;
 using namespace Infrastructure;
 
-Street::Street(glm::vec3 startPoint, glm::vec3 direction, float length, short level)
+Street::Street(glm::vec3 const& startPoint, glm::vec3 const& direction, const float length, const short level)
 	: _level(level)
 {
 	SetDrawMode(GL_LINES);
@@ -23,7 +22,7 @@ Street::Street(glm::vec3 startPoint, glm::vec3 direction, float length, short le
 	auto vb = CreateVB();
 	BindVB();
 
-	StreetSegment newSegment = {
+	const StreetSegment newSegment = {
 		startPoint,
 		startPoint + length * direction,
 		direction,
@@ -43,38 +42,70 @@ Street::Street(glm::vec3 startPoint, glm::vec3 direction, float length, short le
 }
 
 Street::~Street()
+= default;
+
+
+StreetSegment Street::GetSegment() const
 {
+	assert(!_segments.empty());
+	return _segments[_segments.size() - 1];
 }
 
+StreetSegment Street::GetSegment(const size_t segment) const
+{
+	assert(segment >= 0);
+	assert(segment < _segments.size());
+	return _segments[segment];
+}
+
+
+glm::vec3 Street::GetSegmentPoint(const float t) const
+{
+	const auto seg = GetSegment(_segments.size() - 1);
+	return (1.f - t) * seg.startPoint + t * seg.endPoint;
+}
+
+glm::vec3 Street::GetSegmentPoint(const size_t segment, const float t) const
+{
+	const auto seg = GetSegment(segment);
+	return (1.f - t) * seg.startPoint + t * seg.endPoint;
+}
+
+void Street::SetSegmentEndPoint(glm::vec3 const& endPoint)
+{
+	assert(GetVB() != nullptr);
+	_segments.back().endPoint = endPoint;
+	_vertices.back().position = endPoint;
+	GetVB()->setData(&_vertices[0]);
+}
 
 void Street::BuildStep()
 {
 	BuildStep(GetSegment().direction, GetSegment().length);
 }
 
-void Street::BuildStep(glm::vec3 direction)
+void Street::BuildStep(glm::vec3 const& direction)
 {
 	BuildStep(direction, GetSegment().length);
 }
 
-void Infrastructure::Street::BuildStep(float length)
+void Infrastructure::Street::BuildStep(const float length)
 {
 	BuildStep(GetSegment().direction, length);
 }
 
-void Street::BuildStep(glm::vec3 direction, float length)
+void Street::BuildStep(glm::vec3 const& direction, const float length)
 {
 	assert(GetVB() != nullptr);
 
-	//	TODO: Udržovat informace o minX, minZ, maxX a maxZ (určuje obdélník, ve kterém se celá ulice nachází)
-	//	TODO: Předvypočítat determinant
-	StreetSegment newSegment = {
+	const StreetSegment newSegment {
 		GetSegment().endPoint,
 		GetSegment().endPoint + length * direction,
 		direction,
 		length,
+		0
 	};
-	if (newSegment.direction == GetSegment().direction && _vertices.size() && _segments.size())
+	if (newSegment.direction == GetSegment().direction && !_vertices.empty() && !_segments.empty())
 	{
 		//	Směrnice jsou stejné, pouze prodloužíme původní úsečku
 		_segments.back().endPoint = newSegment.endPoint;

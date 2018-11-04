@@ -14,14 +14,14 @@ std::shared_ptr<Infrastructure::StreetNode> Infrastructure::StreetRootNode = nul
 
 using namespace Infrastructure;
 
-StreetNode::StreetNode(glm::vec2 const &position, float const size)
+StreetNode::StreetNode(glm::vec2 const& position, const float size)
 	: _position(position), _size(size), _isRoot(false), _hasChildren(false)
 {
 	_minPosition = position - this->_size;
 	_maxPosition = position + this->_size;
 }
 
-StreetNode::StreetNode(glm::vec2 const& position, float const size, std::map<int, std::shared_ptr<StreetNode>> const &children)
+StreetNode::StreetNode(glm::vec2 const& position, const float size, std::map<int, std::shared_ptr<StreetNode>> const& children)
 	: _position(position), _size(size), _isRoot(false), _hasChildren(false)
 {
 	_minPosition = position - this->_size;
@@ -33,12 +33,14 @@ StreetNode::StreetNode(glm::vec2 const& position, float const size, std::map<int
 		if (node.second != nullptr)
 			SetHasChildren(true);
 	}
+
 	if (HasChildren())
 		CreateChildren();
 }
 
 StreetNode::~StreetNode()
 = default;
+
 
 void StreetNode::CreateChildren()
 {
@@ -48,28 +50,28 @@ void StreetNode::CreateChildren()
 	// Left Top
 	childPosition.x = _position.x - childSize;
 	childPosition.y = _position.y + childSize;
-	if (_children[0] == nullptr)
-		_children[0] = std::make_shared<StreetNode>(childPosition, childSize);
+	if (_children[LT] == nullptr)
+		_children[LT] = std::make_shared<StreetNode>(childPosition, childSize);
 
 	// Right Top
 	childPosition.x = _position.x + childSize;
-	if (_children[1] == nullptr)
-		_children[1] = std::make_shared<StreetNode>(childPosition, childSize);
+	if (_children[RT] == nullptr)
+		_children[RT] = std::make_shared<StreetNode>(childPosition, childSize);
 
 	// Right Bottom
 	childPosition.y = _position.y - childSize;
-	if (_children[2] == nullptr)
-		_children[2] = std::make_shared<StreetNode>(childPosition, childSize);
+	if (_children[RB] == nullptr)
+		_children[RB] = std::make_shared<StreetNode>(childPosition, childSize);
 
 	// Left Bottom
 	childPosition.x = _position.x - childSize;
-	if (_children[3] == nullptr)
-		_children[3] = std::make_shared<StreetNode>(childPosition, childSize);
+	if (_children[LB] == nullptr)
+		_children[LB] = std::make_shared<StreetNode>(childPosition, childSize);
 
 	SetHasChildren(true);
 }
 
-bool StreetNode::CreateParent(RelativePosition const &oldRootPosition)
+bool StreetNode::CreateParent(RelativePosition const& oldRootPosition)
 {
 	if (StreetRootNode == nullptr)
 		return false;
@@ -126,7 +128,7 @@ std::shared_ptr<StreetNode> StreetNode::GetContainingNode(StreetSegment const& s
 	return nullptr;
 }
 
-bool StreetNode::Insert(StreetSegment const &segment)
+bool StreetNode::Insert(StreetSegment const& segment)
 {
 	if (IsInside(segment))
 	{
@@ -155,7 +157,7 @@ bool StreetNode::Insert(StreetSegment const &segment)
 	return false;
 }
 
-bool StreetNode::Remove(StreetSegment const &segment)
+bool StreetNode::Remove(StreetSegment const& segment)
 {
 	//	TODO: Specifikovat přesněji?
 
