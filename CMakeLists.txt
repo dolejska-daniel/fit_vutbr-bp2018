@@ -2,7 +2,7 @@
 ### CMakeLists.txt
 ### Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ###
-cmake_minimum_required(VERSION 3.12.3)
+cmake_minimum_required(VERSION 3.13.0)
 
 project(
 	proceduralCity
@@ -39,6 +39,7 @@ set(SOURCES
 	src/proceduralCity/Application/ShaderLoader.cpp
 	src/proceduralCity/Infrastructure/Street.cpp
 	src/proceduralCity/Infrastructure/StreetMap.cpp
+	src/proceduralCity/Infrastructure/StreetNode.cpp
 	src/proceduralCity/Terrain/Builder.cpp
 	src/proceduralCity/Terrain/Generator.cpp
 	src/proceduralCity/Terrain/HeightMap.cpp
@@ -56,6 +57,7 @@ set(INCLUDES
 	src/proceduralCity/Application/ShaderManager.h
 	src/proceduralCity/Infrastructure/Street.h
 	src/proceduralCity/Infrastructure/StreetMap.h
+	src/proceduralCity/Infrastructure/StreetNode.h
 	src/proceduralCity/Terrain/Fwd.h
 	src/proceduralCity/Terrain/Builder.h
 	src/proceduralCity/Terrain/Generator.h
@@ -112,4 +114,37 @@ target_link_libraries(proceduralCity
 	geGL::geGL
 	Vars::Vars
 	)
+	
+# Build options
+option(${PROJECT_NAME}_BUILD_TESTS "toggle building of unit tests")
+if(${PROJECT_NAME}_BUILD_TESTS)
+	enable_testing()
 
+	add_library(proceduralCityTests STATIC ${SOURCES} ${INCLUDES})
+
+	target_include_directories(proceduralCityTests PUBLIC ${INC_DIR})
+	target_include_directories(proceduralCityTests PUBLIC ${ROOT_DIR}/src/proceduralCity)
+
+	target_link_libraries(proceduralCityTests
+		SDL2::SDL2
+		SDL2::SDL2main
+		SDL2CPP::SDL2CPP
+		BasicCamera::BasicCamera
+		ArgumentViewer::ArgumentViewer
+		imguiSDL2OpenGL::imguiSDL2OpenGL
+		geGL::geGL
+		Vars::Vars
+	)
+
+	add_subdirectory(tests)
+	add_test(NAME InfrastructureTests COMMAND tests_infrastructure)
+
+	add_custom_target(tests COMMAND ${CMAKE_CTEST_COMMAND}
+		--force-new-ctest-process
+		--verbose
+		--output-on-failure
+	)
+	add_dependencies(tests
+		tests_infrastructure
+	)
+endif()
