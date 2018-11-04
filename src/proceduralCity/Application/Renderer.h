@@ -6,30 +6,45 @@
 ///
 #pragma once
 #include <Vars/Vars.h>
-#include <geGL/VertexArray.h>
-#include <Application/IRenderableBase.h>
-#include <Application/IRenderableArray.h>
-#include <Application/IRenderableCollection.h>
 
 
 namespace Application
 {
+	class IRenderableBase;
+	class IRenderableArray;
+	class IRenderableCollection;
+
+	///
+	/// @brief
+	///
 	class Renderer
 	{
 	public:
+		///
+		/// @brief
+		///
 		Renderer(vars::Vars &vars);
+		///
+		/// @brief
+		///
 		~Renderer();
 
-		void Render(const std::shared_ptr<IRenderableArray> object) const;
-		void Render(const std::shared_ptr<IRenderableCollection> collection) const;
+		///
+		/// @brief
+		///
+		void Render(std::shared_ptr<IRenderableArray> const& object) const;
+		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 
-		void Attach(std::shared_ptr<IRenderableBase> object);
-		void Detach(std::shared_ptr<IRenderableBase> object);
+		void Attach(std::shared_ptr<IRenderableBase> const& object);
+		void Detach(std::shared_ptr<IRenderableBase> const& object);
 
-		void Attach(std::shared_ptr<IRenderableCollection> collection);
-		void Detach(std::shared_ptr<IRenderableCollection> collection);
+		void Attach(std::shared_ptr<IRenderableCollection> const& collection);
+		void Detach(std::shared_ptr<IRenderableCollection> const& collection);
 
 	private:
+		///
+		/// @brief
+		///
 		vars::Vars &_vars;
 	};
 }

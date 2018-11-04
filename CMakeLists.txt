@@ -34,6 +34,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR})
 ###
 set(SOURCES
 	src/proceduralCity/main.cpp
+	src/proceduralCity/Application/Application.cpp
 	src/proceduralCity/Application/Renderer.cpp
 	src/proceduralCity/Application/ShaderManager.cpp
 	src/proceduralCity/Application/ShaderLoader.cpp

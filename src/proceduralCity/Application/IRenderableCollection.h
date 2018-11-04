@@ -20,6 +20,6 @@ namespace Application
 		///
 		/// @brief 
 		///
-		virtual std::unordered_map<unsigned int, std::shared_ptr<IRenderableBase>> GetRenderableObjects() = 0;
+		virtual std::vector<std::shared_ptr<IRenderableBase>> GetRenderableObjects() = 0;
 	};
 }

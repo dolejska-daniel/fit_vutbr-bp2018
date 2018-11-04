@@ -7,8 +7,6 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <geGL/Program.h>
-#include <Application/Application.h>
 
 
 namespace Application
@@ -20,20 +18,24 @@ namespace Application
 	{
 	public:
 		///
-		/// @brief Aktuálně běžící program na GPU.
-		///
-		std::shared_ptr<ge::gl::Program> activeProgram;
-
-		///
 		/// @brief Inicializuje novou instanci třídy.
 		///
-		/// @param[in,out]	_vars::Vars&	_vars	Proměnné programu
+		/// @param[in,out]	vars	Proměnné programu
 		///
 		ShaderManager(vars::Vars& vars);
 		///
 		/// @brief Zruší dynamicky alokované prvky a tuto instanci.
 		///
 		~ShaderManager();
+
+		///
+		/// @brief Získá odkaz na aktivní program na GPU.
+		///
+		std::shared_ptr<ge::gl::Program> &GetActiveProgram() { return _activeProgram; }
+		///
+		/// @brief Získá aktivní program na GPU pouze pro čtení.
+		///
+		std::shared_ptr<ge::gl::Program> ReadActiveProgram() const { return _activeProgram; }
 
 		///
 		/// @brief Aktivuje soubor shaderů na GPU na základě jejich jména.
@@ -46,11 +48,15 @@ namespace Application
 		/// Pokud byl soubor se shadery již zpracován, program na GPU pouze
 		/// přebinduje a aktivuje. Aktualizuje proměnnou `activeProgram`.
 		///
-		/// @param[in]	std::string	programName	Název souboru s shadery
+		/// @param[in]	programName	Název souboru s shadery
 		///
-		void Use(const std::string programName);
+		void Use(std::string const& programName);
 
 	private:
+		///
+		/// @brief Aktuálně běžící program na GPU.
+		///
+		std::shared_ptr<ge::gl::Program> _activeProgram;
 		///
 		/// @brief Proměnné programu.
 		///
@@ -63,6 +69,6 @@ namespace Application
 		///
 		/// @brief Provede bind programu na GPU a aktualizaci proměnné `activeProgram`.
 		///
-		void BindProgram(std::shared_ptr<ge::gl::Program> program);
+		void BindProgram(std::shared_ptr<ge::gl::Program> const& program);
 	};
 }

@@ -4,7 +4,7 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#include <stdio.h>
+#include <cstdio>
 #include <SDL2/SDL.h>
 #include <SDL2CPP/Window.h>
 #include <SDL2CPP/MainLoop.h>
@@ -24,6 +24,7 @@
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
 
+
 using namespace glm;
 using namespace ge::gl;
 using namespace vars;
@@ -31,16 +32,13 @@ using namespace argumentViewer;
 using namespace Application;
 using namespace Terrain;
 
-std::map<SDL_Keycode, bool> keyDown;
-
-
 ///
 /// @brief
 ///
-/// @param argc		number of arguments
-/// @param argv[]	array of arguments
+/// @param argc	number of arguments
+/// @param argv	array of arguments
 ///
-int main(int argc, char* argv[])
+int main(const int argc, char* argv[])
 {
 	ArgumentViewer args(argc, argv);
 	Vars vars;
@@ -55,7 +53,7 @@ int main(int argc, char* argv[])
 	// =============================================================
 	vars.addUint32("terrain.seed",			args.getu32("--terrain-seed",			12345,	"Default seed for terrain generation"));
 	vars.addFloat( "terrain.scale",			args.getf32("--terrain-scale",			32.f,	""));
-	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		2.f,	""));
+	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		1.5f,	""));
 	vars.addFloat( "terrain.frequency",		args.getf32("--terrain-frequency",		2.f,	""));
 	vars.addFloat( "terrain.persistence",	args.getf32("--terrain-persistence",	0.5f,	""));
 	vars.addFloat( "terrain.lacunarity",	args.getf32("--terrain-lacunarity",		1.25f,	""));
@@ -65,8 +63,9 @@ int main(int argc, char* argv[])
 	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width",	1, "Terrain map width (count of chunks)"));
 	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 1, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
 
-	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width",	64, "Chunk width"));
-	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64, "Terrain chunk height in 2D (depth/length in 3D)"));
+	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width",	64,		"Chunk width"));
+	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64 ,		"Terrain chunk height in 2D (depth/length in 3D)"));
+	vars.addFloat( "terrain.chunk.scale",	args.getf32("--terrain-chunk-scale",	1.f,	"Chunk scale multiplier"));
 
 	if (args.isPresent("--help", "") || args.validate() == false)
 	{
@@ -96,8 +95,7 @@ int main(int argc, char* argv[])
 	shaders->Use("Phong");
 
 	// Enable debug mode
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	setHighDebugMessage();
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
@@ -109,19 +107,19 @@ int main(int argc, char* argv[])
 	freeLook->setPosition(vec3(1, 1, 4));
 
 
-	Map* map = Generator::GenerateMap(vars);
+	const auto map = Generator::GenerateMap(vars);
 
 	std::cerr << "Setting up VBOs and VAOs" << std::endl;
 
 	int mapWidth = vars.getUint32("terrain.map.width");
 	int mapHeight = vars.getUint32("terrain.map.height");
 
-	std::shared_ptr<VertexArray>* vertexArrays = new std::shared_ptr<VertexArray>[mapWidth * mapHeight];
-	for (int y = 0; y < mapHeight; y++)
+	auto vertexArrays = new std::shared_ptr<VertexArray>[mapWidth * mapHeight];
+	for (auto y = 0; y < mapHeight; y++)
 	{
-		for (int x = 0; x < mapWidth; x++)
+		for (auto x = 0; x < mapWidth; x++)
 		{
-			Chunk* chunk = map->chunks[y * mapWidth + x];
+			auto chunk = map->chunks[y * mapWidth + x];
 
 			auto vertexArray = vertexArrays[y * width + x] = std::make_shared<VertexArray>();
 			vertexArray->bind();
@@ -142,44 +140,10 @@ int main(int argc, char* argv[])
 		}
 	}
 
-
-
-
-	/*
-	unsigned int hmapTex;
-	glGenTextures(1, &hmapTex);
-	glBindTexture(GL_TEXTURE_2D, hmapTex);
-	
-	//	Texture wrapping
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-	//	Texture filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//	Texture border
-	glm::vec4 hmapBorder(0.f, 0.f, 0.f, 0.f);
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float *)&hmapBorder);
-
-	HeightMap map = HeightMap(vars, 32, 32);
-	float *hmap = map.GetMap();
-	glm::vec3 *hmapTexture = new glm::vec3[map.GetWidth() * map.GetHeight()];
-	for (int y = 0; y < map.GetHeight(); y++)
-	{
-		for (int x = 0; x < map.GetWidth(); x++)
-		{
-			int index = y * map.GetWidth() + x;
-			hmapTexture[index].r = hmapTexture[index].g = hmapTexture[index].b = glm::mix(0, 1, hmap[index]);
-		}
-	}
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, map.GetWidth(), map.GetHeight(), 0, GL_RGB, GL_FLOAT, hmapTexture);
-	*/
-
 	auto color = glm::vec3(0, 1, 0);
 
 	auto streetMap = Infrastructure::StreetMap();
-	Renderer renderer = Renderer(vars);
+	auto renderer = Renderer(vars);
 
 	std::cerr << "Callback" << std::endl;
 	//	Drawing
@@ -189,30 +153,30 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (int a = 0; a < 3; ++a)
-			freeLook->move(a, float(keyDown["d s"[a]] - keyDown["acw"[a]]) * float(.25f + keyDown[SDLK_LSHIFT] * 2.f));
+			freeLook->move(a, float(KeyDown["d s"[a]] - KeyDown["acw"[a]]) * float(.25f + KeyDown[SDLK_LSHIFT] * 2.f));
 
-		vec3 cameraPosition = freeLook->getPosition();
-		mat4 projectionMatrix = cameraProjection->getProjection();
-		mat4 viewMatrix = freeLook->getView();
+	    auto cameraPosition = freeLook->getPosition();
+	    auto projectionMatrix = cameraProjection->getProjection();
+	    auto viewMatrix = freeLook->getView();
 		mat4 modelMatrix(1);
 
 		color = glm::vec3(0, 1, 0);
-		shaders->activeProgram->set3fv("color", &color[0]);
+		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 
-		for (int y = 0; y < mapHeight; y++)
+		for (auto y = 0; y < mapHeight; y++)
 		{
-			for (int x = 0; x < mapWidth; x++)
+			for (auto x = 0; x < mapWidth; x++)
 			{
-				auto vertexArray = vertexArrays[y * mapWidth + x];
+				const auto vertexArray = vertexArrays[y * mapWidth + x];
 				vertexArray->bind();
 
 				//shaders->Use("Phong");
-				shaders->activeProgram->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-				shaders->activeProgram->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
-				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
-				shaders->activeProgram->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
-				shaders->activeProgram->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
-				glDrawElements(GL_TRIANGLES, vertexArray->getElement()->getSize(), GL_UNSIGNED_INT, (const void*)0);
+				shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+				shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+				shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
+				shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
+				shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
+				glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getElement()->getSize()), GL_UNSIGNED_INT, nullptr);
 				//glMultiDrawElements(GL_TRIANGLES,);
 				// glMultiDrawElementsIndirect()
 
@@ -229,21 +193,21 @@ int main(int argc, char* argv[])
 		}
 
 		color = glm::vec3(1, 1, 1);
-		shaders->activeProgram->set3fv("color", &color[0]);
+		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 
-		if (keyDown['x'] == true)
+		if (KeyDown['x'])
 		{
 			streetMap.BuildStep();
 		}
-		else if (keyDown['y'] == true)
+		else if (KeyDown['y'])
 		{
-			printf("Number of streets: %d\n", streetMap.ReadStreets().size());
+			printf("Number of streets: %lld\n", streetMap.ReadStreets().size());
 		}
 
 		auto streets = streetMap.ReadStreets();
-		for (size_t i = 0; i < streets.size(); i++)
+		for (const auto& street : streets)
 		{
-			renderer.Render(streets[i]);
+			renderer.Render(street);
 		}
 
 		glFinish();
@@ -276,17 +240,26 @@ int main(int argc, char* argv[])
 	});
 
 	window->setEventCallback(SDL_KEYDOWN, [&](SDL_Event const &event) {
-		keyDown[event.key.keysym.sym] = true;
+		KeyDown[event.key.keysym.sym] = true;
 		return true;
 	});
 
 	window->setEventCallback(SDL_KEYUP, [&](SDL_Event const &event) {
-		keyDown[event.key.keysym.sym] = false;
+		KeyDown[event.key.keysym.sym] = false;
+		return true;
+	});
+
+	window->setWindowEventCallback(SDL_WINDOWEVENT_RESIZED, [&](SDL_Event const &event) {
+		width = event.window.data1;
+		height = event.window.data2;
+		glViewport(0, 0, width, height);
+		cameraProjection->setAspect(float(event.window.data1 / event.window.data2));
 		return true;
 	});
 
 	//	Start main loop
 	(*mainLoop)();
 
+	delete[] vertexArrays;
     return EXIT_SUCCESS;
 }

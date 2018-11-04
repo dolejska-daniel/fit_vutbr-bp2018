@@ -21,17 +21,17 @@ namespace Application
 		///
 		/// @brief Otevře nový souborový stream pro poskytnutou cestu.
 		///
-		/// @param[in]	std::string	filepath	Cesta k `.shader` souboru
+		/// @param[in]	filepath	Cesta k `.shader` souboru
 		///
 		/// @returns	Souborový stream
 		///
-		std::ifstream OpenFile(const std::string filepath);
+		std::ifstream OpenFile(std::string const& filepath);
 		///
 		/// @brief Uzavře poskytnutý souborový stream.
 		///
-		/// @param[in,out]	std::ifstream	file	Otevřený souborový stream
+		/// @param[in,out]	file	Otevřený souborový stream
 		///
-		void CloseFile(std::ifstream file);
+		void CloseFile(std::ifstream& file);
 		///
 		/// @brief Získá zdrojový kód ze souboru daného jména.
 		///
@@ -39,12 +39,12 @@ namespace Application
 		/// jména z aktuální `resources` složky a podsložky `shaders` (
 		///	`{RESOURCES}/shaders/{filename}.shader`).
 		///
-		/// @param[in]	vars::Vars&	vars		Proměnné programu
-		/// @param[in]	std::string	filename	Název `.shader` souboru
+		/// @param[in]	vars		Proměnné programu
+		/// @param[in]	filename	Název `.shader` souboru
 		///
 		/// @returns	Zdrojový kód z daného souboru
 		///
-		ShaderSources GetShaderSources(const vars::Vars& vars, const std::string filename);
+		ShaderSources GetShaderSources(vars::Vars const& vars, std::string const& filename);
 
 		///
 		/// @brief Seznam podporovaných typů.
@@ -52,7 +52,7 @@ namespace Application
 		///	Obsahuje enum typ shaderu (@see ShaderLoader::ShaderType) mapovaný
 		/// na svou textovou reprezentaci (`string` => `ShaderType`).
 		///
-		extern const std::unordered_map<std::string, ShaderType> types;
+		extern const std::unordered_map<std::string, ShaderType> Types;
 		///
 		/// @brief Seznam zpracovaných souborů.
 		///
@@ -60,6 +60,6 @@ namespace Application
 		///	mapovaný na jméno souboru, ze kterého byl kód načten (`string` =>
 		///	`ShaderSources`).
 		///
-		extern std::unordered_map<std::string, ShaderSources> files;
+		extern std::unordered_map<std::string, ShaderSources> Files;
 	}
 }

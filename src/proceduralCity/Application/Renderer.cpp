@@ -4,10 +4,10 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#pragma once
 #include <geGL/geGL.h>
 #include <geGL/StaticCalls.h>
 #include <Application/Renderer.h>
+#include <Application/IRenderableArray.h>
 
 
 using namespace Application;
@@ -19,10 +19,10 @@ Renderer::Renderer(vars::Vars &vars)
 }
 
 Renderer::~Renderer()
-{
-}
+= default;
 
-void Renderer::Render(const std::shared_ptr<IRenderableArray> object) const
+
+void Renderer::Render(std::shared_ptr<IRenderableArray> const& object) const
 {
 	object->BindVA();
 	glDrawArrays(object->GetDrawMode(), 0, object->GetVB()->getSize());

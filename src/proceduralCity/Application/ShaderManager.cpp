@@ -4,7 +4,6 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#include <iostream>
 #include <vector>
 #include <Vars/Vars.h>
 #include <geGL/geGL.h>
@@ -12,9 +11,9 @@
 #include <Application/ShaderManager.h>
 #include <Application/ShaderLoader.h>
 
+
 using namespace Application;
 using namespace ge::gl;
-
 
 ShaderManager::ShaderManager(vars::Vars& vars)
 	: _vars(vars)
@@ -22,41 +21,40 @@ ShaderManager::ShaderManager(vars::Vars& vars)
 }
 
 ShaderManager::~ShaderManager()
-{
-}
+= default;
 
 
-void Application::ShaderManager::Use(const std::string programName)
+void Application::ShaderManager::Use(std::string const& programName)
 {
-	auto existingProgram = _programs.find(programName);
+	const auto existingProgram = _programs.find(programName);
 	if (existingProgram != _programs.end())
 		return BindProgram(existingProgram->second);
 
 	std::shared_ptr<Shader> shader;
 	std::vector<std::shared_ptr<Shader>> shaders;
 
-	ShaderSources sources = ShaderLoader::GetShaderSources(_vars, programName);
-	if (sources.Vertex.length())
+	auto sources = ShaderLoader::GetShaderSources(_vars, programName);
+	if (sources.vertex.length())
 	{
 		shader = std::make_shared<Shader>();
 		shader->create(GL_VERTEX_SHADER);
-		shader->compile(sources.Vertex);
+		shader->compile(sources.vertex);
 
 		shaders.push_back(shader);
 	}
-	if (sources.Geometry.length())
+	if (sources.geometry.length())
 	{
 		shader = std::make_shared<Shader>();
 		shader->create(GL_GEOMETRY_SHADER);
-		shader->compile(sources.Geometry);
+		shader->compile(sources.geometry);
 
 		shaders.push_back(shader);
 	}
-	if (sources.Fragment.length())
+	if (sources.fragment.length())
 	{
 		shader = std::make_shared<Shader>();
 		shader->create(GL_FRAGMENT_SHADER);
-		shader->compile(sources.Fragment);
+		shader->compile(sources.fragment);
 
 		shaders.push_back(shader);
 	}
@@ -68,8 +66,8 @@ void Application::ShaderManager::Use(const std::string programName)
 	BindProgram(program);
 }
 
-void Application::ShaderManager::BindProgram(std::shared_ptr<Program> program)
+void Application::ShaderManager::BindProgram(std::shared_ptr<Program> const& program)
 {
-	activeProgram = program;
+	_activeProgram = program;
 	program->use();
 }

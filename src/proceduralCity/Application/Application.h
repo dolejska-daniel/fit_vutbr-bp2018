@@ -6,7 +6,8 @@
 ///
 #pragma once
 #include <string>
-#include <geGL/Program.h>
+#include <map>
+#include <SDL2/SDL.h>
 
 
 ///
@@ -14,6 +15,11 @@
 ///
 namespace Application
 {
+	///
+	/// @brief
+	///
+	extern std::map<SDL_Keycode, bool> KeyDown;
+
 	///
 	/// @brief
 	///
@@ -25,14 +31,14 @@ namespace Application
 		FRAGMENT	= 2,	///<
 	};
 
+
 	///
 	/// @brief
 	///
 	struct ShaderSources
 	{
-		std::string Vertex;		///< Zdrojový kód pro Vertex Shader
-		std::string Geometry;	///< Zdrojový kód pro Geometry Shader
-		std::string Fragment;	///< Zdrojový kód pro Fragment Shader
+		std::string vertex;		///< Zdrojový kód pro Vertex Shader
+		std::string geometry;	///< Zdrojový kód pro Geometry Shader
+		std::string fragment;	///< Zdrojový kód pro Fragment Shader
 	};
-	
 }
