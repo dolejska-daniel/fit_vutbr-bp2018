@@ -9,39 +9,41 @@
 #include <Terrain/HeightMap.h>
 
 
-Terrain::HeightMap::HeightMap(vars::Vars& vars)
-	: vars(vars)
+using namespace Terrain;
+
+HeightMap::HeightMap(vars::Vars& vars)
+	: _vars(vars)
 {
 	//	TODO: vars:
 	//	- terrain.seed
 	//	- terrain.scale
-	//	- ?terrain.detail
-	//	- terrain.chunk.width
-	//	- terrain.chunk.height
+	//	- ?terrain._detail
+	//	- terrain.chunk._width
+	//	- terrain.chunk._height
 }
 
-Terrain::HeightMap::~HeightMap()
-{
+HeightMap::~HeightMap()
+= default;
 
-}
 
-float Terrain::HeightMap::GetData(float globalX, float globalY, unsigned int detail)
+float HeightMap::GetData(const float globalX, const float globalY, unsigned int detail) const
 {
+	//	TODO: Detail?
+
 	//
 	// https://github.com/SebLague/Procedural-Landmass-Generation
 	//
+	const auto scale = _vars.getFloat("terrain.scale");
+	auto amplitude = _vars.getFloat("terrain.amplitude");
+	auto frequency = _vars.getFloat("terrain.frequency");
 
-	float scale = vars.getFloat("terrain.scale");
-	float amplitude = vars.getFloat("terrain.amplitude");
-	float frequency = vars.getFloat("terrain.frequency");
+	const auto persistence = _vars.getFloat("terrain.persistence");
+	const auto lacunarity = _vars.getFloat("terrain.lacunarity");
+	const auto octaveCount = _vars.getUint32("terrain.octaves");
 
-	float persistence = vars.getFloat("terrain.persistence");
-	float lacunarity = vars.getFloat("terrain.lacunarity");
-	unsigned int octaveCount = vars.getUint32("terrain.octaves");
+	srand(_vars.getUint32("terrain.seed"));
 
-	srand(vars.getUint32("terrain.seed"));
-
-	glm::vec2 *offsets = new glm::vec2[octaveCount];
+	auto* offsets = new glm::vec2[octaveCount];
 	for (unsigned int i = 0; i < octaveCount; i++)
 	{
 		offsets[i].x = float(rand() % 200000 - 100000);
@@ -56,7 +58,7 @@ float Terrain::HeightMap::GetData(float globalX, float globalY, unsigned int det
 		sample.x = globalX / scale * frequency + offsets[i].y;
 
 		//	Posunutí intervalu do <-1, 1>
-		float h = glm::perlin(sample) * 2 - 1;
+		const auto h = glm::perlin(sample) * 2 - 1;
 		result += h * amplitude;
 
 		amplitude *= persistence;
@@ -65,4 +67,14 @@ float Terrain::HeightMap::GetData(float globalX, float globalY, unsigned int det
 
 	//printf("perlin[%2d, %2d] = (%f, %f, %f)\n", globalX, globalY, sample.globalX, sample.globalY, h);
 	return result;
+}
+
+float HeightMap::GetData(glm::vec2 const& v, const unsigned detail)
+{
+	return GetData(v.x, v.y, detail);
+}
+
+float HeightMap::GetData(glm::vec3 const& v, const unsigned detail)
+{
+	return GetData(v.x, v.z, detail);
 }

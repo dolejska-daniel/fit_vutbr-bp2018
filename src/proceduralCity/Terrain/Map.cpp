@@ -10,46 +10,48 @@
 #include <Terrain/Generator.h>
 
 
-Terrain::Map::Map(vars::Vars& vars)
-	: vars(vars)
+using namespace Terrain;
+
+Map::Map(vars::Vars& vars)
+	: _vars(vars)
 {
-	int width = vars.getUint32("terrain.map.width");
-	int halfWidth = width / 2;
-	int height = vars.getUint32("terrain.map.height");
-	int halfHeight = height / 2;
+	const auto width = vars.getUint32("terrain.map.width");
+	const auto halfWidth = width / 2;
+	const auto height = vars.getUint32("terrain.map.height");
+	const auto halfHeight = height / 2;
 
-	int chunkWidth = vars.getUint32("terrain.chunk.width");
-	int chunkHeight = vars.getUint32("terrain.chunk.height");
+	const auto chunkWidth = vars.getUint32("terrain.chunk.width");
+	const auto chunkHeight = vars.getUint32("terrain.chunk.height");
 
-	int globalX = -(chunkWidth / 2);
-	int globalY = -(chunkHeight / 2);
+	const auto globalX = -(static_cast<int>(chunkWidth) / 2);
+	const auto globalY = -(static_cast<int>(chunkHeight) / 2);
 
-	heightMap = new HeightMap(vars);
-	chunks = new Chunk*[width * height];
+	_heightMap = new HeightMap(vars);
+	_chunks = new Chunk*[width * height];
 
-	auto GetChunk = [&](int x, int y) -> Chunk*& {
-		return chunks[y * width + x];
+	const auto GetChunk = [&](const int x, const int y) -> Chunk*& {
+		return _chunks[y * width + x];
 	};
 
-	auto GetChunkOffsetX = [&](int x) -> int {
+	const auto GetChunkOffsetX = [&](const int x) -> int {
 		return globalX + (x - halfWidth) * chunkWidth;
 	};
 
-	auto GetChunkOffsetY = [&](int y) -> int {
+	const auto GetChunkOffsetY = [&](const int y) -> int {
 		return globalX + (y - halfHeight) * chunkHeight;
 	};
 
-	for (int y = 0; y < height; y++)
+	for (unsigned int y = 0; y < height; y++)
 	{
-		for (int x = 0; x < width; x++)
+		for (unsigned int x = 0; x < width; x++)
 		{
-			GetChunk(x, y) = Terrain::Generator::GenerateChunk(this, GetChunkOffsetX(x), GetChunkOffsetY(y));
+			GetChunk(x, y) = Generator::GenerateChunk(this, GetChunkOffsetX(x), GetChunkOffsetY(y));
 		}
 	}
 }
 
-Terrain::Map::~Map()
+Map::~Map()
 {
-	//	TODO: Free individual chunks
-	delete[] chunks;
+	//	TODO: Free individual _chunks
+	delete[] _chunks;
 }

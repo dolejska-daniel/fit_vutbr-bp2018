@@ -119,7 +119,8 @@ int main(const int argc, char* argv[])
 	{
 		for (auto x = 0; x < mapWidth; x++)
 		{
-			auto chunk = map->chunks[y * mapWidth + x];
+			//	TODO: Vytvořit funkci f(x, y) -> Chunk*
+			const auto chunk = map->GetChunks()[y * mapWidth + x];
 
 			auto vertexArray = vertexArrays[y * width + x] = std::make_shared<VertexArray>();
 			vertexArray->bind();

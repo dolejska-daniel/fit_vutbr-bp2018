@@ -14,20 +14,35 @@
 namespace Terrain
 {
 	///
-	/// @class HeightMap
 	/// @brief
 	///
 	class HeightMap
 	{
 	public:
+		///
+		/// @brief
+		///
 		HeightMap(vars::Vars& vars);
+		///
+		/// @brief
+		///
 		~HeightMap();
 
-		float GetData(float x, float y, unsigned int detail);
-		inline float GetData(glm::vec2 v, unsigned int detail) { return GetData(v.x, v.y, detail); }
-		inline float GetData(glm::vec3 v, unsigned int detail) { return GetData(v.x, v.z, detail); }
+		///
+		/// @brief
+		///
+		float GetData(float x, float y, unsigned int detail) const;
+		///
+		/// @brief
+		///
+		float GetData(glm::vec2 const& v, const unsigned int detail);
+
+		///
+		/// @brief
+		///
+		float GetData(glm::vec3 const& v, const unsigned int detail);
 
 	private:
-		vars::Vars &vars;
+		vars::Vars& _vars;	///< 
 	};
 }

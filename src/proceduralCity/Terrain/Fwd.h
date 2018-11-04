@@ -8,7 +8,6 @@
 
 
 ///
-/// @namespace Terrain
 /// @brief
 ///
 namespace Terrain

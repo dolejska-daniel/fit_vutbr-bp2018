@@ -10,22 +10,24 @@
 #include <Terrain/Generator.h>
 
 
-Terrain::Map* Terrain::Generator::GenerateMap(vars::Vars& vars)
+using namespace Terrain;
+
+Map* Generator::GenerateMap(vars::Vars& vars)
 {
 	return new Map(vars);
 }
 
-Terrain::Chunk* Terrain::Generator::GenerateChunk(Terrain::Map* map, int globalOffsetX, int globalOffsetY)
+Chunk* Generator::GenerateChunk(Map* map, const int globalOffsetX, const int globalOffsetY)
 {
 	assert(map != nullptr);
 
 	//	Vytvoření instance chunku
 	//	- vygenerování výškové mapy a inicializace objektu proběhne automaticky
-	Chunk* chunk = new Chunk(map->vars, globalOffsetX, globalOffsetY);
+	const auto chunk = new Chunk(map->GetVars(), globalOffsetX, globalOffsetY);
 
 	//	Sestavení vertexů a indexů chunku
-	Terrain::Builder::BuildVertices(chunk, map->GetHeightMap());
-	Terrain::Builder::BuildIndices(chunk);
+	Builder::BuildVertices(chunk, map->GetHeightMap());
+	Builder::BuildIndices(chunk);
 
 	return chunk;
 }

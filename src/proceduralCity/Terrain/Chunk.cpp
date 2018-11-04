@@ -7,19 +7,51 @@
 #include <Vars/Vars.h>
 #include <Terrain/Map.h>
 #include <Terrain/Chunk.h>
-#include <Terrain/HeightMap.h>
 
 
-Terrain::Chunk::Chunk(vars::Vars& vars, int globalOffsetX, int globalOffsetY)
-	: globalOffsetX(globalOffsetX), globalOffsetY(globalOffsetY)
+using namespace Terrain;
+
+Chunk::Chunk(vars::Vars& vars, const int globalOffsetX, const int globalOffsetY)
+	: _globalOffsetX(globalOffsetX), _globalOffsetY(globalOffsetY)
 {
-	detail = vars.getUint32("terrain.detail");
-	width  = vars.getUint32("terrain.chunk.width");
-	height = vars.getUint32("terrain.chunk.height");
+	_detail = vars.getUint32("terrain.detail");
+	_width  = vars.getUint32("terrain.chunk.width");
+	_height = vars.getUint32("terrain.chunk.height");
+	_scale  = vars.getFloat("terrain.chunk.scale");
 }
 
-Terrain::Chunk::~Chunk()
+Chunk::~Chunk()
 {
-	delete[] vertices;
-	delete[] indices;
+	delete[] _vertices;
+	delete[] _indices;
+}
+
+unsigned Chunk::GetIndicesWidth() const
+{
+	return GetWidth() * GetDetail();
+}
+
+unsigned Chunk::GetIndicesHeight() const
+{
+	return GetHeight() * GetDetail();
+}
+
+unsigned Chunk::GetIndicesSize() const
+{
+	return GetIndicesWidth() * GetIndicesHeight() * sizeof(ChunkIndex);
+}
+
+unsigned Chunk::GetVerticesWidth() const
+{
+	return (GetWidth() + 1) * GetDetail();
+}
+
+unsigned Chunk::GetVerticesHeight() const
+{
+	return (GetHeight() + 1) * GetDetail();
+}
+
+unsigned Chunk::GetVerticesSize() const
+{
+	return GetVerticesWidth() * GetVerticesHeight() * sizeof(ChunkVertex);
 }

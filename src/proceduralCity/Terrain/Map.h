@@ -5,28 +5,44 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
-#include <Vars/Vars.h>
+#include <Vars/Fwd.h>
 #include <Terrain/Fwd.h>
 
 
 namespace Terrain
 {
 	///
-	/// @class Map
 	/// @brief
 	///
 	class Map
 	{
 	public:
-		vars::Vars& vars;
-		Chunk** chunks;
-
+		///
+		/// @brief
+		///
 		Map(vars::Vars& vars);
+		///
+		/// @brief
+		///
 		~Map();
 
-		inline HeightMap* GetHeightMap() { return heightMap; }
+		///
+		/// @brief
+		///
+		vars::Vars& GetVars() const { return _vars; }
+		///
+		/// @brief
+		///
+		HeightMap* GetHeightMap() const { return _heightMap; }
+		///
+		/// @brief
+		///
+		Chunk** GetChunks() const { return _chunks; }
 
 	private:
-		HeightMap* heightMap;
+		vars::Vars& _vars;	///<
+
+		HeightMap* _heightMap;	///<
+		Chunk** _chunks;		///<
 	};
 }

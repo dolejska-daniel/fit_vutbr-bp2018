@@ -15,9 +15,9 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 	assert(chunk != nullptr);
 
 	//	Načtení potřebných proměnných
-	unsigned int width = chunk->GetVerticesWidth();
-	unsigned int height = chunk->GetVerticesHeight();
-	float detail = (float)chunk->GetDetail();
+	auto width = chunk->GetVerticesWidth();
+	auto height = chunk->GetVerticesHeight();
+	auto detail = static_cast<float>(chunk->GetDetail());
 
 	Terrain::ChunkVertex* vertices;
 
@@ -27,14 +27,14 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 	chunk->SetVertices(vertices = new Terrain::ChunkVertex[width * height]);
 
 	//	Lokální lambda pro jednoduché načtení vertexu  
-	static auto GetVertex = [&](int x, int y) -> Terrain::ChunkVertex& {
+	static auto GetVertex = [&](const int x, const int y) -> Terrain::ChunkVertex& {
 		return vertices[y * width + x];
 	};
 
 	//	Lokální lambda pro výpočet normály
-	static auto CalculatePosition = [&](unsigned int x, unsigned int y, glm::vec3& target)  {
-		float globalX = float(float(x / detail) + chunk->GetGlobalOffsetX());
-		float globalY = float(float(y / detail) + chunk->GetGlobalOffsetY());
+	static auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
+		const auto globalX = float(float(x / detail) + chunk->GetGlobalOffsetX());
+		const auto globalY = float(float(y / detail) + chunk->GetGlobalOffsetY());
 
 		target.x = globalX; // Šířka
 		target.y = 0; // 3D Výška
@@ -49,9 +49,8 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 		for (unsigned int x = 0; x < width; x++)
 		{
 			CalculatePosition(x, y, GetVertex(x, y).position);
-
 			/*
-			printf("position[%2d, %2d] = (%f, %f, %f), chunk offset (%d, %d), detail %d;\n",
+			printf("position[%2d, %2d] = (%f, %f, %f), chunk offset (%d, %d), _detail %d;\n",
 				x, y, GetVertex(x, y).position.x, GetVertex(x, y).position.y, GetVertex(x, y).position.z,
 				chunk->GetGlobalOffsetX(), chunk->GetGlobalOffsetY(), chunk->GetDetail()
 			);*/
@@ -64,12 +63,12 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 	}
 
 	//	Lokální lambda pro výpočet normály
-	static auto GetOrCalculatePosition = [&](unsigned int x, unsigned int y) -> glm::vec3 {
+	static auto GetOrCalculatePosition = [&](const unsigned int x, const unsigned int y) -> glm::vec3 {
 		if (x >= 0 && x < width && y >= 0 && y < height)
 			return GetVertex(x, y).position;
 
-		float globalX = float((int)x + chunk->GetGlobalOffsetX());
-		float globalY = float((int)y + chunk->GetGlobalOffsetY());
+		const auto globalX = float(float(static_cast<int>(x) / detail) + chunk->GetGlobalOffsetX());
+		const auto globalY = float(float(static_cast<int>(y) / detail) + chunk->GetGlobalOffsetY());
 
 		glm::vec3 result(globalX / detail, 0, globalY / detail);
 		result.y = heightMap->GetData(result, chunk->GetDetail()); // Souřadnice Y je výška
@@ -77,19 +76,20 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 	};
 
 	//	Lokální lambda pro výpočet normály
-	static auto CalculateNormal = [&](unsigned int x, unsigned int y, glm::vec3 p1, glm::vec3 p2) {
+	static auto CalculateNormal = [&](const unsigned int x, const unsigned int y, glm::vec3 const& p1, glm::vec3 const& p2) {
 		assert(x >= 0);
 		assert(x < width);
 		assert(y >= 0);
 		assert(y < height);
-		glm::vec3 p0 = GetVertex(x, y).position;
+
+		const auto p0 = GetVertex(x, y).position;
 
 		//	Vytvoření směrových vektorů v dané rovině
-		glm::vec3 v0 = p0 - p1;
-		glm::vec3 v1 = p0 - p2;
+		const auto v0 = p0 - p1;
+		const auto v1 = p0 - p2;
 
 		//	Výpočet normály z cross-product-u směrových vektorů
-		glm::vec3 n = glm::cross(v1, v0);
+		const auto n = glm::cross(v1, v0);
 
 		//printf("normal[%2d, %2d] = (%f, %f, %f);\n", x, y, n.x, n.y, n.z);
 		GetVertex(x, y).normal = glm::normalize(n);
@@ -107,6 +107,15 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 			);
 		}
 	}
+
+	//	Cyklus pro scale vertexů
+	for (unsigned int y = 0; y < height; y++)
+	{
+		for (unsigned int x = 0; x < width; x++)
+		{
+			GetVertex(x, y).position *= chunk->GetScale();
+		}
+	}
 }
 
 void Terrain::Builder::BuildIndices(Chunk* chunk)
@@ -116,8 +125,8 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 	assert(chunk->GetVertices() != nullptr);
 
 	//	Načtení potřebných proměnných
-	unsigned int width = chunk->GetIndicesWidth();
-	unsigned int height = chunk->GetIndicesHeight();
+	const auto width = chunk->GetIndicesWidth();
+	const auto height = chunk->GetIndicesHeight();
 
 	Terrain::ChunkIndex* indices;
 
@@ -127,7 +136,7 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 	chunk->SetIndices(indices = new Terrain::ChunkIndex[width * height]);
 
 	//	Lokální lambda pro jednoduché načtení vertexu
-	static auto GetIndex = [&](int x, int y) -> Terrain::ChunkIndex& {
+	static auto GetIndex = [&](const int x, const int y) -> Terrain::ChunkIndex& {
 		return indices[y * width + x];
 	};
 
@@ -136,8 +145,8 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 	{
 		for (unsigned int x = 0; x < width; x++)
 		{
-			int xy0 =  y      * chunk->GetVerticesWidth() + x;
-			int xy1 = (y + 1) * chunk->GetVerticesWidth() + x;
+			const int xy0 =  y      * chunk->GetVerticesWidth() + x;
+			const int xy1 = (y + 1) * chunk->GetVerticesWidth() + x;
 
 			//	První trojúhelník segmentu
 			GetIndex(x, y).triangle1[0] = xy0;
