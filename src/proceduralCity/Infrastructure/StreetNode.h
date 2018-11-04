@@ -96,47 +96,47 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		bool CreateParent(RelativePosition const &oldRootPosition = LT);
+		bool CreateParent(RelativePosition const& oldRootPosition = LT);
 
 		///
 		/// @brief
 		///
-		std::shared_ptr<StreetNode> GetContainingNode(StreetSegment const &segment);
+		std::shared_ptr<StreetNode> GetContainingNode(StreetSegment const& segment);
 
 		///
 		/// @brief
 		///
-		bool Insert(StreetSegment const &segment);
+		bool Insert(StreetSegment const& segment);
 		///
 		/// @brief
 		///
-		bool Remove(StreetSegment const &segment);
+		bool Remove(StreetSegment const& segment);
 		///
 		/// @brief
 		///
-		bool Contains(StreetSegment const &segment) const;
+		bool Contains(StreetSegment const& segment) const;
 
 		///
 		/// @brief
 		///
-		bool IsPartiallyInside(StreetSegment const &segment) const;
+		bool IsPartiallyInside(StreetSegment const& segment) const;
 		///
 		/// @brief
 		///
-		bool IsInside(StreetSegment const &segment) const;
+		bool IsInside(StreetSegment const& segment) const;
 		///
 		/// @brief
 		///
-		bool IsInside(glm::vec3 const &point) const;
+		bool IsInside(glm::vec3 const& point) const;
 
 		///
 		/// @brief
 		///
-		RelativePosition RelativePositionTo(StreetSegment const &segment) const;
+		RelativePosition RelativePositionTo(StreetSegment const& segment) const;
 		///
 		/// @brief
 		///
-		RelativePosition RelativePositionTo(glm::vec3 const &point) const;
+		RelativePosition RelativePositionTo(glm::vec3 const& point) const;
 
 	protected:
 		///

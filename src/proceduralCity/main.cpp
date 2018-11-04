@@ -91,7 +91,7 @@ int main(const int argc, char* argv[])
 	std::cerr << "Using " << glGetString(GL_VERSION) << std::endl;
 
 	//	Initialize ShaderManager
-	ShaderManager* shaders = new ShaderManager(vars);
+	auto shaders = std::make_shared<ShaderManager>(vars);
 	shaders->Use("Phong");
 
 	// Enable debug mode
@@ -153,7 +153,7 @@ int main(const int argc, char* argv[])
 		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		for (int a = 0; a < 3; ++a)
+		for (auto a = 0; a < 3; a++)
 			freeLook->move(a, float(KeyDown["d s"[a]] - KeyDown["acw"[a]]) * float(.25f + KeyDown[SDLK_LSHIFT] * 2.f));
 
 	    auto cameraPosition = freeLook->getPosition();
@@ -216,7 +216,7 @@ int main(const int argc, char* argv[])
     });
 
 	//	Camera rotation
-	window->setEventCallback(SDL_MOUSEMOTION, [&](SDL_Event const &event) {
+	window->setEventCallback(SDL_MOUSEMOTION, [&](SDL_Event const& event) {
 		if (event.motion.state & SDL_BUTTON_LMASK)
 		{
 			//	Trap mouse
@@ -229,28 +229,25 @@ int main(const int argc, char* argv[])
 			freeLook->setAngle(1, freeLook->getAngle(1) + xrel * sensitivity);
 			freeLook->setAngle(0, freeLook->getAngle(0) + yrel * sensitivity);
 
-			return  true;
-		}
-		else
-		{
-			//	Free mouse
-			SDL_SetRelativeMouseMode(SDL_FALSE);
+			return true;
 		}
 
+		//	Free mouse
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 		return false;
 	});
 
-	window->setEventCallback(SDL_KEYDOWN, [&](SDL_Event const &event) {
+	window->setEventCallback(SDL_KEYDOWN, [&](SDL_Event const& event) {
 		KeyDown[event.key.keysym.sym] = true;
 		return true;
 	});
 
-	window->setEventCallback(SDL_KEYUP, [&](SDL_Event const &event) {
+	window->setEventCallback(SDL_KEYUP, [&](SDL_Event const& event) {
 		KeyDown[event.key.keysym.sym] = false;
 		return true;
 	});
 
-	window->setWindowEventCallback(SDL_WINDOWEVENT_RESIZED, [&](SDL_Event const &event) {
+	window->setWindowEventCallback(SDL_WINDOWEVENT_RESIZED, [&](SDL_Event const& event) {
 		width = event.window.data1;
 		height = event.window.data2;
 		glViewport(0, 0, width, height);

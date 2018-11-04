@@ -347,7 +347,7 @@ SCENARIO("IsInside - Edges / Corners [Contained]")
 		}
 	};
 
-	for (auto const &segment : segments)
+	for (auto const& segment : segments)
 		REQUIRE(node.IsInside(segment));
 }
 
