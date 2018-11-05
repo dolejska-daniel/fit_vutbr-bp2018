@@ -23,6 +23,6 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		Chunk* GenerateChunk(Map* map, int globalOffsetX, int globalOffsetY);
+		std::shared_ptr<Chunk> GenerateChunk(Map* map, int globalOffsetX, int globalOffsetY);
 	};
 }

@@ -17,13 +17,13 @@ Map* Generator::GenerateMap(vars::Vars& vars)
 	return new Map(vars);
 }
 
-Chunk* Generator::GenerateChunk(Map* map, const int globalOffsetX, const int globalOffsetY)
+std::shared_ptr<Chunk> Generator::GenerateChunk(Map* map, const int globalOffsetX, const int globalOffsetY)
 {
 	assert(map != nullptr);
 
 	//	Vytvoření instance chunku
 	//	- vygenerování výškové mapy a inicializace objektu proběhne automaticky
-	const auto chunk = new Chunk(map->GetVars(), globalOffsetX, globalOffsetY);
+	auto chunk = std::make_shared<Chunk>(map->GetVars(), globalOffsetX, globalOffsetY);
 
 	//	Sestavení vertexů a indexů chunku
 	Builder::BuildVertices(chunk, map->GetHeightMap());

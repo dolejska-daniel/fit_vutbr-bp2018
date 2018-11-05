@@ -8,6 +8,7 @@
 #include <glm/vec3.hpp>
 #include <Vars/Vars.h>
 #include <Terrain/Fwd.h>
+#include <Application/IRenderableElementArray.h>
 
 
 namespace Terrain
@@ -34,7 +35,7 @@ namespace Terrain
 	///
 	/// @brief
 	///
-	class Chunk
+	class Chunk : public Application::IRenderableElementArray
 	{
 	public:
 		///
@@ -53,7 +54,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		void SetVertices(ChunkVertex *vertices) { this->_vertices = vertices; }
+		void SetVertices(ChunkVertex* vertices);
 
 		///
 		/// @brief
@@ -62,7 +63,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		void SetIndices(ChunkIndex *indices) { this->_indices = indices; }
+		void SetIndices(ChunkIndex* indices);
 
 		///
 		/// @brief

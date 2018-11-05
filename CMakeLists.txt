@@ -52,6 +52,7 @@ set(INCLUDES
 	src/proceduralCity/Application/Application.h
 	src/proceduralCity/Application/IRenderableBase.h
 	src/proceduralCity/Application/IRenderableArray.h
+	src/proceduralCity/Application/IRenderableElementArray.h
 	src/proceduralCity/Application/IRenderableCollection.h
 	src/proceduralCity/Application/Renderer.h
 	src/proceduralCity/Application/ShaderLoader.h

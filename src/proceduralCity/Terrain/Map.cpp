@@ -13,37 +13,27 @@
 using namespace Terrain;
 
 Map::Map(vars::Vars& vars)
-	: _vars(vars)
+	: _vars(vars), _width(vars.getUint32("terrain.map.width")), _height(vars.getUint32("terrain.map.height")), _chunkWidth(vars.getUint32("terrain.chunk.width")), _chunkHeight(vars.getUint32("terrain.chunk.height"))
 {
-	const auto width = vars.getUint32("terrain.map.width");
-	const auto halfWidth = width / 2;
-	const auto height = vars.getUint32("terrain.map.height");
-	const auto halfHeight = height / 2;
+	const auto halfWidth = _width / 2;
+	const auto halfHeight = _height / 2;
 
-	const auto chunkWidth = vars.getUint32("terrain.chunk.width");
-	const auto chunkHeight = vars.getUint32("terrain.chunk.height");
-
-	const auto globalX = -(static_cast<int>(chunkWidth) / 2);
-	const auto globalY = -(static_cast<int>(chunkHeight) / 2);
+	const auto globalX = -(static_cast<int>(_chunkWidth) / 2);
+	const auto globalY = -(static_cast<int>(_chunkHeight) / 2);
 
 	_heightMap = new HeightMap(vars);
-	_chunks = new Chunk*[width * height];
-
-	const auto GetChunk = [&](const int x, const int y) -> Chunk*& {
-		return _chunks[y * width + x];
-	};
 
 	const auto GetChunkOffsetX = [&](const int x) -> int {
-		return globalX + (x - halfWidth) * chunkWidth;
+		return globalX + (x - halfWidth) * _chunkWidth;
 	};
 
 	const auto GetChunkOffsetY = [&](const int y) -> int {
-		return globalX + (y - halfHeight) * chunkHeight;
+		return globalX + (y - halfHeight) * _chunkHeight;
 	};
 
-	for (unsigned int y = 0; y < height; y++)
+	for (unsigned int y = 0; y < _height; y++)
 	{
-		for (unsigned int x = 0; x < width; x++)
+		for (unsigned int x = 0; x < _width; x++)
 		{
 			GetChunk(x, y) = Generator::GenerateChunk(this, GetChunkOffsetX(x), GetChunkOffsetY(y));
 		}
@@ -51,7 +41,19 @@ Map::Map(vars::Vars& vars)
 }
 
 Map::~Map()
+= default;
+
+
+std::shared_ptr<Chunk>& Map::GetChunk(const unsigned int x, const unsigned int y)
 {
-	//	TODO: Free individual _chunks
-	delete[] _chunks;
+	assert(x < _width);
+	assert(y < _height);
+	return _chunks[y * _width + x];
+}
+
+std::shared_ptr<Chunk> Map::ReadChunk(const unsigned int x, const unsigned int y) const
+{
+	assert(x < _width);
+	assert(y < _height);
+	return _chunks.at(y * _width + x);
 }

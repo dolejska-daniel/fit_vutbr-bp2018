@@ -12,6 +12,7 @@ namespace Application
 {
 	class IRenderableBase;
 	class IRenderableArray;
+	class IRenderableElementArray;
 	class IRenderableCollection;
 
 	///
@@ -23,7 +24,7 @@ namespace Application
 		///
 		/// @brief
 		///
-		Renderer(vars::Vars &vars);
+		Renderer(vars::Vars& vars);
 		///
 		/// @brief
 		///
@@ -32,7 +33,11 @@ namespace Application
 		///
 		/// @brief
 		///
-		void Render(std::shared_ptr<IRenderableArray> const& object) const;
+		void Render(std::shared_ptr<IRenderableArray> const& object);
+		///
+		/// @brief
+		///
+		void Render(std::shared_ptr<IRenderableElementArray> const& object);
 		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 
 		void Attach(std::shared_ptr<IRenderableBase> const& object);

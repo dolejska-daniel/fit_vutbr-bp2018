@@ -10,7 +10,9 @@
 #include <Terrain/HeightMap.h>
 
 
-void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
+using namespace Terrain;
+
+void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 {
 	assert(chunk != nullptr);
 
@@ -19,15 +21,13 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 	auto height = chunk->GetVerticesHeight();
 	auto detail = static_cast<float>(chunk->GetDetail());
 
-	Terrain::ChunkVertex* vertices;
-
 	//	Kontrola inicializace pole s vertexy
 	if (chunk->GetVertices() != nullptr)
 		delete[] chunk->GetVertices();
-	chunk->SetVertices(vertices = new Terrain::ChunkVertex[width * height]);
+	auto vertices = new ChunkVertex[width * height];
 
 	//	Lokální lambda pro jednoduché načtení vertexu  
-	static auto GetVertex = [&](const int x, const int y) -> Terrain::ChunkVertex& {
+	static auto GetVertex = [&](const int x, const int y) -> ChunkVertex& {
 		return vertices[y * width + x];
 	};
 
@@ -116,9 +116,11 @@ void Terrain::Builder::BuildVertices(Chunk* chunk, HeightMap* heightMap)
 			GetVertex(x, y).position *= chunk->GetScale();
 		}
 	}
+
+	chunk->SetVertices(vertices);
 }
 
-void Terrain::Builder::BuildIndices(Chunk* chunk)
+void Builder::BuildIndices(std::shared_ptr<Chunk> const& chunk)
 {
 	//	Výstavba indexů vyžaduje již vystavené vertexy
 	assert(chunk != nullptr);
@@ -128,15 +130,13 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 	const auto width = chunk->GetIndicesWidth();
 	const auto height = chunk->GetIndicesHeight();
 
-	Terrain::ChunkIndex* indices;
-
 	//	Kontrola inicializace pole s vertexy
 	if (chunk->GetIndices() != nullptr)
 		delete[] chunk->GetIndices();
-	chunk->SetIndices(indices = new Terrain::ChunkIndex[width * height]);
+	auto indices = new ChunkIndex[width * height];
 
 	//	Lokální lambda pro jednoduché načtení vertexu
-	static auto GetIndex = [&](const int x, const int y) -> Terrain::ChunkIndex& {
+	static auto GetIndex = [&](const int x, const int y) -> ChunkIndex& {
 		return indices[y * width + x];
 	};
 
@@ -159,5 +159,6 @@ void Terrain::Builder::BuildIndices(Chunk* chunk)
 			GetIndex(x, y).triangle2[2] = xy1 + 1;
 		}
 	}
-}
 
+	chunk->SetIndices(indices);
+}

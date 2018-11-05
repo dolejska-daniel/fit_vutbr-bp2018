@@ -18,10 +18,10 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		void BuildVertices(Chunk* chunk, HeightMap* heightMap);
+		void BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap);
 		///
 		/// @brief
 		///
-		void BuildIndices(Chunk* chunk);
+		void BuildIndices(std::shared_ptr<Chunk> const& chunk);
 	}
 }

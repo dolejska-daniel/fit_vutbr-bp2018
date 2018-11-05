@@ -8,12 +8,13 @@
 #include <geGL/StaticCalls.h>
 #include <Application/Renderer.h>
 #include <Application/IRenderableArray.h>
+#include <Application/IRenderableElementArray.h>
 
 
-using namespace Application;
 using namespace ge::gl;
+using namespace Application;
 
-Renderer::Renderer(vars::Vars &vars)
+Renderer::Renderer(vars::Vars& vars)
 	: _vars(vars)
 {
 }
@@ -22,8 +23,15 @@ Renderer::~Renderer()
 = default;
 
 
-void Renderer::Render(std::shared_ptr<IRenderableArray> const& object) const
+void Renderer::Render(std::shared_ptr<IRenderableArray> const& object)
 {
 	object->BindVA();
-	glDrawArrays(object->GetDrawMode(), 0, object->GetVB()->getSize());
+	glDrawArrays(object->GetDrawMode(), 0, static_cast<GLsizei>(object->GetVB()->getSize()));
+}
+
+void Renderer::Render(std::shared_ptr<IRenderableElementArray> const& object)
+{
+	object->BindVA();
+	//object->BindVB();
+	glDrawElements(object->GetDrawMode(), static_cast<GLsizei>(object->GetVA()->getElement()->getSize()), GL_UNSIGNED_INT, nullptr);
 }

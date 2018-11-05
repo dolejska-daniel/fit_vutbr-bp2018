@@ -23,6 +23,7 @@
 #include <Application/Renderer.h>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
+#include <Infrastructure/StreetNode.h>
 
 
 using namespace glm;
@@ -73,6 +74,7 @@ int main(const int argc, char* argv[])
 		exit(EXIT_SUCCESS);
 	}
 
+
 	// ==========================================================dd=
 	//	INICIALIZACE OKNA, geGL, ...
 	// =============================================================
@@ -86,13 +88,7 @@ int main(const int argc, char* argv[])
     mainLoop->addWindow("mainWindow", window);
 
 	//	Initialize geGL
-	ge::gl::init();
-
-	std::cerr << "Using " << glGetString(GL_VERSION) << std::endl;
-
-	//	Initialize ShaderManager
-	auto shaders = std::make_shared<ShaderManager>(vars);
-	shaders->Use("Phong");
+	init();
 
 	// Enable debug mode
 	setHighDebugMessage();
@@ -101,50 +97,35 @@ int main(const int argc, char* argv[])
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
+	std::cerr << "Using " << glGetString(GL_VERSION) << std::endl;
+
+
+	// ==========================================================dd=
+	//	DALŠÍ INICIALIZACE
+	// =============================================================
+	Infrastructure::StreetRootNode = std::make_shared<Infrastructure::StreetNode>(vec2(0.f), 8.f);
+	Infrastructure::StreetRootNode->SetRoot();
+
+	//	Initialize ShaderManager
+	auto shaders = std::make_shared<ShaderManager>(vars);
+	shaders->Use("Phong");
+
+	auto renderer = std::make_shared<Renderer>(vars);
+	auto color = vec3(0, 1, 0);
+
 	//	Setup main camera
-	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(glm::radians(45.f), width / height, 0.1f, std::numeric_limits<float>::infinity());
+	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, std::numeric_limits<float>::infinity());
 	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
 	freeLook->setPosition(vec3(1, 1, 4));
 
-
 	const auto map = Generator::GenerateMap(vars);
 
-	std::cerr << "Setting up VBOs and VAOs" << std::endl;
-
-	int mapWidth = vars.getUint32("terrain.map.width");
-	int mapHeight = vars.getUint32("terrain.map.height");
-
-	auto vertexArrays = new std::shared_ptr<VertexArray>[mapWidth * mapHeight];
-	for (auto y = 0; y < mapHeight; y++)
-	{
-		for (auto x = 0; x < mapWidth; x++)
-		{
-			//	TODO: Vytvořit funkci f(x, y) -> Chunk*
-			const auto chunk = map->GetChunks()[y * mapWidth + x];
-
-			auto vertexArray = vertexArrays[y * width + x] = std::make_shared<VertexArray>();
-			vertexArray->bind();
-
-			auto vertexBuffer = std::make_shared<Buffer>(chunk->GetVerticesSize(), chunk->GetVertices());
-			vertexBuffer->bind(GL_ARRAY_BUFFER);
-
-			//	POSITION
-			vertexArray->addAttrib(vertexBuffer, 0, 3, GL_FLOAT, 6 * sizeof(float));
-			//	NORMAL
-			vertexArray->addAttrib(vertexBuffer, 1, 3, GL_FLOAT, 6 * sizeof(float), 3 * sizeof(float));
-
-			auto elementBuffer = std::make_shared<Buffer>(chunk->GetIndicesSize(), chunk->GetIndices());
-			elementBuffer->bind(GL_ELEMENT_ARRAY_BUFFER);
-			vertexArray->addElementBuffer(elementBuffer);
-
-			std::cerr << "Number of buffers:" << vertexArray->getNofBuffers() << std::endl;
-		}
-	}
-
-	auto color = glm::vec3(0, 1, 0);
-
 	auto streetMap = Infrastructure::StreetMap();
-	auto renderer = Renderer(vars);
+
+
+	// ==========================================================dd=
+	//	VYKRESLOVÁNÍ
+	// =============================================================
 
 	std::cerr << "Callback" << std::endl;
 	//	Drawing
@@ -161,39 +142,25 @@ int main(const int argc, char* argv[])
 	    auto viewMatrix = freeLook->getView();
 		mat4 modelMatrix(1);
 
-		color = glm::vec3(0, 1, 0);
+		color = vec3(0, 1, 0);
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 
-		for (auto y = 0; y < mapHeight; y++)
+		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+		shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+		shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
+		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
+		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
+
+		for (unsigned int y = 0; y < map->GetHeight(); y++)
 		{
-			for (auto x = 0; x < mapWidth; x++)
+			for (unsigned int x = 0; x < map->GetWidth(); x++)
 			{
-				const auto vertexArray = vertexArrays[y * mapWidth + x];
-				vertexArray->bind();
-
-				//shaders->Use("Phong");
-				shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-				shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
-				shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
-				shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
-				shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
-				glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getElement()->getSize()), GL_UNSIGNED_INT, nullptr);
-				//glMultiDrawElements(GL_TRIANGLES,);
-				// glMultiDrawElementsIndirect()
-
-
-
-				/*
-				shaders->Use("Geometry_Normals");
-				shaders->activeProgram->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
-				shaders->activeProgram->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
-				shaders->activeProgram->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
-				glDrawElements(GL_TRIANGLES, vertexArray->getElement()->getSize(), GL_UNSIGNED_INT, (const void*)0);
-				*/
+				const auto chunk = map->ReadChunk(x, y);
+				renderer->Render(chunk);
 			}
 		}
 
-		color = glm::vec3(1, 1, 1);
+		color = vec3(1, 1, 1);
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 
 		if (KeyDown['x'])
@@ -208,7 +175,7 @@ int main(const int argc, char* argv[])
 		auto streets = streetMap.ReadStreets();
 		for (const auto& street : streets)
 		{
-			renderer.Render(street);
+			renderer->Render(street);
 		}
 
 		glFinish();
@@ -251,13 +218,12 @@ int main(const int argc, char* argv[])
 		width = event.window.data1;
 		height = event.window.data2;
 		glViewport(0, 0, width, height);
-		cameraProjection->setAspect(float(event.window.data1 / event.window.data2));
+		cameraProjection->setAspect(float(width / height));
 		return true;
 	});
 
 	//	Start main loop
 	(*mainLoop)();
 
-	delete[] vertexArrays;
     return EXIT_SUCCESS;
 }
