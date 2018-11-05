@@ -23,6 +23,8 @@ set(TESTS_BASE
 )
 
 set(INFRASTRUCTURE_TESTS
+	Infrastructure/Street.cpp
+	Infrastructure/StreetMap.cpp
 	Infrastructure/StreetNode.cpp
 )
 

@@ -89,7 +89,7 @@ void Street::BuildStep(glm::vec3 const& direction)
 	BuildStep(direction, GetSegment().length);
 }
 
-void Infrastructure::Street::BuildStep(const float length)
+void Street::BuildStep(const float length)
 {
 	BuildStep(GetSegment().direction, length);
 }

@@ -18,6 +18,12 @@ namespace Infrastructure
 	{
 		bool		exists;
 		glm::vec2	positionRelative;
+
+		bool operator==(StreetSegmentIntersection const& other) const
+		{
+			return this->exists == other.exists
+				&& this->positionRelative == other.positionRelative;
+		}
 	};
 
 

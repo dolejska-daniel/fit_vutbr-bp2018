@@ -101,23 +101,6 @@ std::vector<StreetSegmentIntersection> StreetMap::IntersectionsWithAny(StreetSeg
 		}
 	}
 
-	/*
-	//	Kontrola lokálních kolizí (tento StreetMap)
-	for (size_t i = 0; i < ReadStreets().size(); i++)
-	{
-		//	Načtení ulice pro ověření
-		const auto street = ReadStreets()[i];
-
-		//	Kontrola průsečíku
-		auto intersection = Intersection(segment, street);
-		if (intersection.exists)
-		{
-			//	Průsečík existuje
-			intersections.push_back(intersection);
-		}
-	}
-	*/
-
 	return intersections;
 }
 
