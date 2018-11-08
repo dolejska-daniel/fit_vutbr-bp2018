@@ -66,7 +66,8 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, 
 
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1, StreetSegment const& segment2)
 {
-	if (segment1.direction == segment2.direction)
+	if (segment1.direction == segment2.direction
+		|| segment1.direction == -segment2.direction)
 	{
 		//	Segmenty jsou rovnoběžné, kolize není možná
 		return  {
@@ -101,36 +102,42 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 	return intersection;
 }
 
-std::vector<StreetSegmentIntersection> StreetMap::IntersectionsInNode(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node) const
+std::shared_ptr<std::vector<StreetSegmentIntersection>> StreetMap::Intersections(StreetSegment const& segment) const
 {
-	std::vector<StreetSegmentIntersection> intersections = {};
+	auto intersections = std::make_shared<std::vector<StreetSegmentIntersection>>();
+	Intersections(segment, StreetRootNode, intersections);
+	return intersections;
+}
 
-	for (auto const& streetSegment : node->ReadSegments())
+void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const
+{
+	for (auto const& streetSegment : node->GetSegments())
 	{
 		auto intersection = Intersection(segment, streetSegment);
 		if (intersection.exists)
 		{
 			//	Průsečík existuje
-			intersections.push_back(intersection);
+			intersections->push_back(intersection);
 		}
 	}
 
-	return intersections;
-}
-
-std::vector<StreetSegmentIntersection> StreetMap::IntersectionsWithAny(StreetSegment const& segment) const
-{
-	std::vector<StreetSegmentIntersection> intersections = {};
-
-	auto node = StreetRootNode->GetContainingNode(segment);;
-	do
+	auto enteredChild = false;
+	for (auto const& childNode : node->GetChildren())
 	{
-		auto intersectionsNode = IntersectionsInNode(segment, node);
-		intersections.insert(intersections.end(), intersectionsNode.begin(), intersectionsNode.end());
-	}
-	while (!node->IsRoot() && ((node = node->ReadParent())));
+		if (!childNode.second->IsInside(segment))
+			continue;
 
- 	return intersections;
+		enteredChild = true;
+		Intersections(segment, childNode.second, intersections);
+	}
+
+	if (!enteredChild)
+	{
+		for (auto const& childNode : node->GetChildren())
+		{
+			Intersections(segment, childNode.second, intersections);
+		}
+	}
 }
 
 void StreetMap::BuildStep()
@@ -146,17 +153,18 @@ void StreetMap::BuildStep()
 		StreetRootNode->Insert(street->GetSegment());
 
 		auto segment = street->GetSegment();
-		auto intersections = IntersectionsWithAny(segment);
-		if (!intersections.empty())
+		auto intersections = Intersections(segment);
+		if (!intersections->empty())
 		{
 			//	Průsečíky byly nalezeny
-			auto intersectionPoint = street->GetSegmentPoint(intersections[0].positionRelative[0]);
+			auto intersectionPoint = street->GetSegmentPoint(intersections->begin()[0].positionRelative[0]);
 			auto intersectionDistance = distance(intersectionPoint, segment.startPoint);
 
-			for (auto intersection : intersections)
+			for (auto intersection : *intersections)
 			{
 				const auto intersectionPoint_ = street->GetSegmentPoint(intersection.positionRelative[0]);
 				const auto intersectionDistance_ = distance(intersectionPoint_, segment.startPoint);
+
 				if (intersectionDistance_ < intersectionDistance)
 				{
 					intersectionDistance = intersectionDistance_;
@@ -173,9 +181,9 @@ void StreetMap::BuildStep()
 		}
 
 		const int split = glm::floor(segment.length / length);
-		if (split > segment.lastSplit && street->GetLevel() < 3/* && std::rand() % 100 <= 4*/)
+		if (split > segment.lastSplit && street->GetLevel() < 3 && std::rand() % 100 <= 3) // 4 dobrá, 3 velmi dobrá
 		{
-			segment.lastSplit = split;
+			segment.lastSplit = split; 
 
 			glm::vec3 position = street->GetSegmentPoint(1.f);
 			glm::vec3 direction;
