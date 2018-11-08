@@ -6,11 +6,13 @@
 ///
 #pragma once
 #include <Application/IRenderableCollection.h>
-#include <Infrastructure/Street.h>
 
 
 namespace Infrastructure
 {
+	class Street;
+	class StreetNode;
+
 	///
 	/// @brief 
 	///
@@ -62,7 +64,12 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
+		std::vector<StreetSegmentIntersection> IntersectionsInNode(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node) const;
+		///
+		/// @brief 
+		///
 		std::vector<StreetSegmentIntersection> IntersectionsWithAny(StreetSegment const& segment) const;
+
 
 		///
 		/// @brief 

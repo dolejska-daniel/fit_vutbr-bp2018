@@ -34,11 +34,11 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		StreetNode(glm::vec2 const& position, float size);
+		StreetNode(glm::vec2 const& position, float size, std::shared_ptr<StreetNode> parent = nullptr);
 		///
 		/// @brief
 		///
-		StreetNode(glm::vec2 const& position, float size, std::map<int, std::shared_ptr<StreetNode>> const& children);
+		StreetNode(glm::vec2 const& position, float size, std::map<int, std::shared_ptr<StreetNode>> const& children, std::shared_ptr<StreetNode> parent = nullptr);
 		///
 		/// @brief
 		///
@@ -51,7 +51,16 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		void SetRoot(bool const isRoot = true) { this->_isRoot = isRoot; };
+		void SetRoot(bool const isRoot = true) { _isRoot = isRoot; }
+
+		///
+		/// @brief
+		///
+		void SetParent(std::shared_ptr<StreetNode> const& parent) { _parent = parent; }
+		///
+		/// @brief
+		///
+		std::shared_ptr<StreetNode> ReadParent() const { return _parent; }
 
 		///
 		/// @brief
@@ -60,7 +69,7 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		void SetHasChildren(bool const hasChildren = true) { this->_hasChildren = hasChildren; };
+		void SetHasChildren(bool const hasChildren = true) { this->_hasChildren = hasChildren; }
 
 		///
 		/// @brief
@@ -101,7 +110,7 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		void CreateChildren();
+		bool CreateChildren();
 		///
 		/// @brief
 		///
@@ -148,6 +157,10 @@ namespace Infrastructure
 		RelativePosition RelativePositionTo(glm::vec3 const& point) const;
 
 	protected:
+		///
+		/// @brief
+		///
+		std::shared_ptr<StreetNode> _parent;
 		///
 		/// @brief
 		///

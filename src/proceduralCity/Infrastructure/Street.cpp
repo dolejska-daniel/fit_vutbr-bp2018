@@ -27,6 +27,7 @@ Street::Street(glm::vec3 const& startPoint, glm::vec3 const& direction, const fl
 		startPoint + length * direction,
 		direction,
 		length,
+		0
 	};
 	_segments.push_back(newSegment);
 	_vertices.push_back({
