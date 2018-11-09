@@ -7,7 +7,9 @@
 #include <Infrastructure/StreetNode.h>
 #include <Infrastructure/Street.h>
 #include <glm/integer.hpp>
+#include <algorithm>
 #include <utility>
+
 
 
 std::shared_ptr<Infrastructure::StreetNode> Infrastructure::StreetRootNode = nullptr;
@@ -92,7 +94,7 @@ bool StreetNode::CreateParent(RelativePosition const& oldRootPosition)
 
 	if (!IsRoot())
 		//	Pokus o vytvoření nadřazeného uzlu i přes to, že tento uzel není na nejvyšší úrovni
-		throw std::exception("Only root node can create parent.");
+		throw std::logic_error("Only root node can create parent.");
 
 	auto position = _position;
 	const auto size = _size * 2.f;
@@ -119,7 +121,7 @@ bool StreetNode::CreateParent(RelativePosition const& oldRootPosition)
 		position.y += _size;
 		break;
 	default:
-		throw std::exception("Invalid old root relative position specified.");
+		throw std::logic_error("Invalid old root relative position specified.");
 	}
 
 	//	Nový uzel nejvyšší úrovně
