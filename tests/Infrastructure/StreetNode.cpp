@@ -345,7 +345,7 @@ SCENARIO("GetContainingNode [Sub-node]", "[Infrastructure/StreetNode]")
 	REQUIRE(node->GetContainingNode(segment) == node->GetChildren()[StreetNode::RT]);
 }
 
-SCENARIO("IsInside - One Segment [Contained]", "[Infrastructure/StreetNode]")
+SCENARIO("HasInside - One Segment [Contained]", "[Infrastructure/StreetNode]")
 {
 	const StreetNode node(glm::vec2(0), 4.f);
 	const StreetSegment segment = {
@@ -354,10 +354,10 @@ SCENARIO("IsInside - One Segment [Contained]", "[Infrastructure/StreetNode]")
 		glm::vec3(0.f),
 	};
 
-	REQUIRE(node.IsInside(segment));
+	REQUIRE(node.HasInside(segment));
 }
 
-SCENARIO("IsInside - One Segment [Partially contained]", "[Infrastructure/StreetNode]")
+SCENARIO("HasInside - One Segment [Partially contained]", "[Infrastructure/StreetNode]")
 {
 	const StreetNode node(glm::vec2(0), 4.f);
 	const StreetSegment segment = {
@@ -366,10 +366,10 @@ SCENARIO("IsInside - One Segment [Partially contained]", "[Infrastructure/Street
 		glm::vec3(0.f),
 	};
 
-	REQUIRE_FALSE(node.IsInside(segment));
+	REQUIRE_FALSE(node.HasInside(segment));
 }
 
-SCENARIO("IsInside - One Segment [Not contained]", "[Infrastructure/StreetNode]")
+SCENARIO("HasInside - One Segment [Not contained]", "[Infrastructure/StreetNode]")
 {
 	const StreetNode node(glm::vec2(0), 4.f);
 	const StreetSegment segment = {
@@ -378,10 +378,10 @@ SCENARIO("IsInside - One Segment [Not contained]", "[Infrastructure/StreetNode]"
 		glm::vec3(0.f),
 	};
 
-	REQUIRE_FALSE(node.IsInside(segment));
+	REQUIRE_FALSE(node.HasInside(segment));
 }
 
-SCENARIO("IsInside - Edges / Corners [Contained]", "[Infrastructure/StreetNode]")
+SCENARIO("HasInside - Edges / Corners [Contained]", "[Infrastructure/StreetNode]")
 {
 	const StreetNode node(glm::vec2(0), 4.f);
 	const std::vector<StreetSegment> segments = {
@@ -428,7 +428,7 @@ SCENARIO("IsInside - Edges / Corners [Contained]", "[Infrastructure/StreetNode]"
 	};
 
 	for (auto const& segment : segments)
-		REQUIRE(node.IsInside(segment));
+		REQUIRE(node.HasInside(segment));
 }
 
 SCENARIO("RelativePositionTo [Point]", "[Infrastructure/StreetNode]")
@@ -528,6 +528,21 @@ SCENARIO("RelativePositionTo [Segment, Extended]", "[Infrastructure/StreetNode]"
 	REQUIRE(node.RelativePositionTo(segment) == StreetNode::RelativePosition::LB);
 }
 
+SCENARIO("RelativePositionFor [Point]", "[Infrastructure/StreetNode]")
+{
+	const StreetNode node(glm::vec2(0), 4.f);
+
+	REQUIRE(node.RelativePositionFor(glm::vec3(5.f, 0, -8.f)) == StreetNode::RelativePosition::NONE);
+	REQUIRE(node.RelativePositionFor(glm::vec3(-5.f, 0, -8.f)) == StreetNode::RelativePosition::NONE);
+	REQUIRE(node.RelativePositionFor(glm::vec3(-5.f, 0, 8.f)) == StreetNode::RelativePosition::NONE);
+	REQUIRE(node.RelativePositionFor(glm::vec3(5.f, 0, 8.f)) == StreetNode::RelativePosition::NONE);
+
+	REQUIRE(node.RelativePositionFor(glm::vec3(-1.f, 0, 3.f)) == StreetNode::RelativePosition::LT);
+	REQUIRE(node.RelativePositionFor(glm::vec3(1.f, 0, 3.f)) == StreetNode::RelativePosition::RT);
+	REQUIRE(node.RelativePositionFor(glm::vec3(1.f, 0, -3.f)) == StreetNode::RelativePosition::RB);
+	REQUIRE(node.RelativePositionFor(glm::vec3(-1.f, 0, -3.f)) == StreetNode::RelativePosition::LB);
+}
+
 SCENARIO("Insert [Contained, whole]", "[Infrastructure/StreetNode]")
 {
 	auto node = std::make_shared<StreetNode>(glm::vec2(0.f), 4.f);
@@ -537,7 +552,7 @@ SCENARIO("Insert [Contained, whole]", "[Infrastructure/StreetNode]")
 		glm::vec3(-3, 0, -2),
 		glm::vec3(0.f),
 	};
-	REQUIRE(node->IsInside(segment1));
+	REQUIRE(node->HasInside(segment1));
 	REQUIRE(node->Insert(segment1));
 	REQUIRE(node->GetSegments() == std::vector<StreetSegment>{segment1});
 	REQUIRE(node->ReadSegments() == std::vector<StreetSegment>{segment1});
@@ -549,7 +564,7 @@ SCENARIO("Insert [Contained, whole]", "[Infrastructure/StreetNode]")
 		glm::vec3(3, 0, -4),
 		glm::vec3(0.f),
 	};
-	REQUIRE(node->IsInside(segment2));
+	REQUIRE(node->HasInside(segment2));
 	REQUIRE(node->Insert(segment2));
 	REQUIRE(node->GetSegments() == std::vector<StreetSegment>{segment1, segment2});
 	REQUIRE(node->ReadSegments() == std::vector<StreetSegment>{segment1, segment2});
@@ -565,14 +580,14 @@ SCENARIO("Insert [Contained, sub-node]", "[Infrastructure/StreetNode]")
 		glm::vec3(3, 0, 1),
 		glm::vec3(0.f),
 	};
-	REQUIRE(node->IsInside(segment1));
+	REQUIRE(node->HasInside(segment1));
 	REQUIRE(node->Insert(segment1));
 	REQUIRE(node->ReadSegments().empty());
 
-	REQUIRE_FALSE(node->ReadChildren()[0]->IsInside(segment1));
-	REQUIRE(node->ReadChildren()[1]->IsInside(segment1));
-	REQUIRE_FALSE(node->ReadChildren()[2]->IsInside(segment1));
-	REQUIRE_FALSE(node->ReadChildren()[3]->IsInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[0]->HasInside(segment1));
+	REQUIRE(node->ReadChildren()[1]->HasInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[2]->HasInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[3]->HasInside(segment1));
 
 	REQUIRE(node->ReadChildren()[1]->GetSegments() == std::vector<StreetSegment>{segment1});
 
@@ -582,14 +597,14 @@ SCENARIO("Insert [Contained, sub-node]", "[Infrastructure/StreetNode]")
 		glm::vec3(-3, 0, -1),
 		glm::vec3(0.f),
 	};
-	REQUIRE(node->IsInside(segment2));
+	REQUIRE(node->HasInside(segment2));
 	REQUIRE(node->Insert(segment2));
 	REQUIRE(node->ReadSegments().empty());
 
-	REQUIRE_FALSE(node->ReadChildren()[0]->IsInside(segment2));
-	REQUIRE_FALSE(node->ReadChildren()[1]->IsInside(segment2));
-	REQUIRE_FALSE(node->ReadChildren()[2]->IsInside(segment2));
-	REQUIRE(node->ReadChildren()[3]->IsInside(segment2));
+	REQUIRE_FALSE(node->ReadChildren()[0]->HasInside(segment2));
+	REQUIRE_FALSE(node->ReadChildren()[1]->HasInside(segment2));
+	REQUIRE_FALSE(node->ReadChildren()[2]->HasInside(segment2));
+	REQUIRE(node->ReadChildren()[3]->HasInside(segment2));
 
 	REQUIRE(node->ReadChildren()[3]->GetSegments() == std::vector<StreetSegment>{segment2});
 
@@ -598,14 +613,14 @@ SCENARIO("Insert [Contained, sub-node]", "[Infrastructure/StreetNode]")
 		glm::vec3(-1, 0, -3),
 		glm::vec3(0.f),
 	};
-	REQUIRE(node->IsInside(segment3));
+	REQUIRE(node->HasInside(segment3));
 	REQUIRE(node->Insert(segment3));
 	REQUIRE(node->ReadSegments().empty());
 
-	REQUIRE_FALSE(node->ReadChildren()[0]->IsInside(segment3));
-	REQUIRE_FALSE(node->ReadChildren()[1]->IsInside(segment3));
-	REQUIRE_FALSE(node->ReadChildren()[2]->IsInside(segment3));
-	REQUIRE(node->ReadChildren()[3]->IsInside(segment3));
+	REQUIRE_FALSE(node->ReadChildren()[0]->HasInside(segment3));
+	REQUIRE_FALSE(node->ReadChildren()[1]->HasInside(segment3));
+	REQUIRE_FALSE(node->ReadChildren()[2]->HasInside(segment3));
+	REQUIRE(node->ReadChildren()[3]->HasInside(segment3));
 
 	REQUIRE(node->ReadChildren()[3]->ReadSegments() == std::vector<StreetSegment>{segment2, segment3});
 }
@@ -619,21 +634,21 @@ SCENARIO("Insert [Contained, sub-sub-node]", "[Infrastructure/StreetNode]")
 		glm::vec3(1.5f, 0, .5f),
 		glm::vec3(0.f),
 	};
-	REQUIRE(node->IsInside(segment1));
+	REQUIRE(node->HasInside(segment1));
 	REQUIRE(node->Insert(segment1));
 	REQUIRE(node->ReadSegments().empty());
 
-	REQUIRE_FALSE(node->ReadChildren()[0]->IsInside(segment1));
-	REQUIRE(node->ReadChildren()[1]->IsInside(segment1));
-	REQUIRE_FALSE(node->ReadChildren()[2]->IsInside(segment1));
-	REQUIRE_FALSE(node->ReadChildren()[3]->IsInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[0]->HasInside(segment1));
+	REQUIRE(node->ReadChildren()[1]->HasInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[2]->HasInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[3]->HasInside(segment1));
 	REQUIRE(node->ReadChildren()[1]->ReadSegments().empty());
 
 	REQUIRE(node->ReadChildren()[1]->HasChildren());
-	REQUIRE_FALSE(node->ReadChildren()[1]->ReadChildren()[0]->IsInside(segment1));
-	REQUIRE_FALSE(node->ReadChildren()[1]->ReadChildren()[1]->IsInside(segment1));
-	REQUIRE_FALSE(node->ReadChildren()[1]->ReadChildren()[2]->IsInside(segment1));
-	REQUIRE(node->ReadChildren()[1]->ReadChildren()[3]->IsInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[1]->ReadChildren()[0]->HasInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[1]->ReadChildren()[1]->HasInside(segment1));
+	REQUIRE_FALSE(node->ReadChildren()[1]->ReadChildren()[2]->HasInside(segment1));
+	REQUIRE(node->ReadChildren()[1]->ReadChildren()[3]->HasInside(segment1));
 	REQUIRE(node->ReadChildren()[1]->ReadChildren()[3]->ReadSegments() == std::vector<StreetSegment>{segment1});
 }
 
@@ -646,7 +661,7 @@ SCENARIO("Insert [Not contained, No global root]", "[Infrastructure/StreetNode]"
 		glm::vec3(7.f, 0, 5.f),
 		glm::vec3(0.f),
 	};
-	REQUIRE_FALSE(node->IsInside(segment));
+	REQUIRE_FALSE(node->HasInside(segment));
 	//	Globální root není nastaven, vložení selže
 	StreetRootNode = nullptr;
 	REQUIRE_FALSE(node->Insert(segment));
@@ -662,13 +677,13 @@ SCENARIO("Insert [Parent-contained]", "[Infrastructure/StreetNode]")
 		glm::vec3(7.f, 0, 7.f),
 		glm::vec3(0.f),
 	};
-	REQUIRE_FALSE(node->IsInside(segment));
+	REQUIRE_FALSE(node->HasInside(segment));
 	REQUIRE(node->Insert(segment));
 	REQUIRE(node->ReadSegments().empty());
 
 	//	Po vložení bude vytvořen nový root
 	REQUIRE_FALSE(StreetRootNode == node);
-	REQUIRE(StreetRootNode->IsInside(segment));
+	REQUIRE(StreetRootNode->HasInside(segment));
 	REQUIRE(StreetRootNode->ReadSegments() == std::vector<StreetSegment>{segment});
 }
 
@@ -682,23 +697,23 @@ SCENARIO("Insert [Parent-sub-contained, LB]", "[Infrastructure/StreetNode]")
 		glm::vec3(-5.f, 0, -5.f),
 		glm::vec3(0.f),
 	};
-	REQUIRE_FALSE(node->IsInside(segment));
+	REQUIRE_FALSE(node->HasInside(segment));
 	REQUIRE(node->Insert(segment));
 	REQUIRE(node->ReadSegments().empty());
 
 	//	Po vložení bude vytvořen nový root
 	REQUIRE_FALSE(StreetRootNode == node);
-	REQUIRE(StreetRootNode->IsInside(segment));
+	REQUIRE(StreetRootNode->HasInside(segment));
 	REQUIRE(StreetRootNode->ReadSegments().empty());
 
 	REQUIRE(StreetRootNode->HasChildren());
-	REQUIRE_FALSE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::LT]->IsInside(segment));
+	REQUIRE_FALSE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::LT]->HasInside(segment));
 	REQUIRE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::LT]->ReadSegments().empty());
-	REQUIRE_FALSE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::RT]->IsInside(segment));
+	REQUIRE_FALSE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::RT]->HasInside(segment));
 	REQUIRE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::RT]->ReadSegments().empty());
-	REQUIRE_FALSE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::RB]->IsInside(segment));
+	REQUIRE_FALSE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::RB]->HasInside(segment));
 	REQUIRE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::RB]->ReadSegments().empty());
-	REQUIRE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::LB]->IsInside(segment));
+	REQUIRE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::LB]->HasInside(segment));
 	REQUIRE(StreetRootNode->ReadChildren()[StreetNode::RelativePosition::LB]->ReadSegments() == std::vector<StreetSegment>{segment});
 }
 

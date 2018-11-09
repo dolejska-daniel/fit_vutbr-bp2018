@@ -167,13 +167,25 @@ int main(const int argc, char* argv[])
 		{
 			streetMap.BuildStep();
 		}
-		else if (KeyDown['y'])
+
+		static auto built = false;
+		if (KeyDown['v'])
+		{
+			if (!built)
+			{
+				streetMap.BuildStep();
+				built = true;
+			}
+		}
+		else
+			built = false;
+
+		if (KeyDown['y'])
 		{
 			printf("Number of streets: %lld\n", streetMap.ReadStreets().size());
 		}
 
-		auto streets = streetMap.ReadStreets();
-		for (const auto& street : streets)
+		for (const auto& street : streetMap.ReadStreets())
 		{
 			renderer->Render(street);
 		}

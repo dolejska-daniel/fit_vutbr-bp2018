@@ -118,6 +118,8 @@ bool StreetNode::CreateParent(RelativePosition const& oldRootPosition)
 		position.x += _size;
 		position.y += _size;
 		break;
+	default:
+		throw std::exception("Invalid old root relative position specified.");
 	}
 
 	//	Nový uzel nejvyšší úrovně
@@ -132,7 +134,7 @@ bool StreetNode::CreateParent(RelativePosition const& oldRootPosition)
 
 std::shared_ptr<StreetNode> StreetNode::GetContainingNode(StreetSegment const& segment)
 {
-	if (!IsInside(segment))
+	if (!HasInside(segment))
 		//	Segment neleží v mezích uzlu
 		return nullptr;
 
@@ -155,7 +157,7 @@ std::shared_ptr<StreetNode> StreetNode::GetContainingNode(StreetSegment const& s
 
 bool StreetNode::Insert(StreetSegment const& segment)
 {
-	if (IsInside(segment))
+	if (HasInside(segment))
 	{
 		//	Koncový i počáteční bod je v mezích uzlu
 		if (!HasChildren())
@@ -163,9 +165,8 @@ bool StreetNode::Insert(StreetSegment const& segment)
 			CreateChildren();
 
 		//	Nejdříve se pokusíme nalézt přesnější match, pokud je to možné
-		for (auto &node : _children)
-			if (node.second->Insert(segment))
-				return true;
+		auto node = _children.find(RelativePositionFor(segment));
+		if (node != _children.end()) return node->second->Insert(segment);
 
 		//	Vložení segmentu
 		_segments.push_back(segment);
@@ -188,7 +189,7 @@ bool StreetNode::Insert(StreetSegment const& segment)
 bool StreetNode::Remove(StreetSegment const& segment)
 {
 	//	TODO: Specifikovat přesněji?
-	if (!IsInside(segment))
+	if (!HasInside(segment))
 		//	Segment neleží v mezích uzlu
 		return false;
 
@@ -207,9 +208,8 @@ bool StreetNode::Remove(StreetSegment const& segment)
 	if (HasChildren())
 	{
 		//	Tento uzel má podřízené uzly, které segment nejspíše obsahují
-		for (auto &node : _children)
-			if (node.second->Remove(segment))
-				return true;
+		auto node = _children.find(RelativePositionFor(segment));
+		if (node != _children.end()) return node->second->Remove(segment);
 	}
 
 	return false;
@@ -221,19 +221,19 @@ bool StreetNode::Contains(StreetSegment const& segment) const
 	return r != _segments.end();
 }
 
-bool StreetNode::IsPartiallyInside(StreetSegment const& segment) const
+bool StreetNode::HasPartiallyInside(StreetSegment const& segment) const
 {
-	return IsInside(segment.startPoint)
-		|| IsInside(segment.endPoint);
+	return HasInside(segment.startPoint)
+		|| HasInside(segment.endPoint);
 }
 
-bool StreetNode::IsInside(StreetSegment const& segment) const
+bool StreetNode::HasInside(StreetSegment const& segment) const
 {
-	return IsInside(segment.startPoint)
-		&& IsInside(segment.endPoint);
+	return HasInside(segment.startPoint)
+		&& HasInside(segment.endPoint);
 }
 
-bool StreetNode::IsInside(glm::vec3 const& point) const
+bool StreetNode::HasInside(glm::vec3 const& point) const
 {
 	//printf("=== %p\n", this);
 	//printf("X: %10f <= %10f <= %10f\n", this->_minPosition.x, point.x, this->_maxPosition.x);
@@ -296,4 +296,49 @@ StreetNode::RelativePosition StreetNode::RelativePositionTo(glm::vec3 const& poi
 	}
 
 	return static_cast<RelativePosition>(result);
+}
+
+StreetNode::RelativePosition StreetNode::RelativePositionFor(StreetSegment const& segment) const
+{
+	const auto startPos = RelativePositionFor(segment.startPoint);
+	const auto endPos = RelativePositionFor(segment.endPoint);
+	if (startPos != endPos)
+		//	Body se v rámci tohoto uzlu nenacházejí ve stejných částech
+		return NONE;
+
+	return startPos;
+}
+
+StreetNode::RelativePosition StreetNode::RelativePositionFor(glm::vec3 const& point) const
+{
+	if (point.x < _minPosition.x)
+		//	Bod leží nalevo, mimo uzel
+		return NONE;
+	if (point.z > _maxPosition.y)
+		//	Bod leží nad, mimo uzel
+		return NONE;
+	
+	if (point.x <= _position.x)
+	{
+		//	Bod se nachází na levé polovině uzlu
+		if (point.z >= _position.y)
+			//	Bod se nachází v horní polovině
+			return LT;
+		if (point.z >= _minPosition.y)
+			//	Bod se nachází v dolní polovině
+			return LB;
+	}
+	else if (point.x <= _maxPosition.x)
+	{
+		//	Bod se nachází na pravé polovině uzlu
+		if (point.z >= _position.y)
+			//	Bod se nachází v horní polovině
+			return RT;
+		if (point.z >= _minPosition.y)
+			//	Bod se nachází v dolní polovině
+			return RB;
+	}
+
+	//	Bod neleží v mezích uzlu (napravo mimo/pod mimo)
+	return NONE;
 }

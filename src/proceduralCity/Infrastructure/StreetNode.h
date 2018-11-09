@@ -25,10 +25,11 @@ namespace Infrastructure
 		///
 		enum RelativePosition
 		{
-			LT = 0,	///< Left Top
-			RT = 1,	///< Right Top
-			RB = 2,	///< Right Bottom
-			LB = 3	///< Left Bottom
+			NONE = -1,	///< Unknown
+			LT	= 0,	///< Left Top
+			RT	= 1,	///< Right Top
+			RB	= 2,	///< Right Bottom
+			LB	= 3		///< Left Bottom
 		};
 
 		///
@@ -137,15 +138,15 @@ namespace Infrastructure
 		///
 		/// @brief
 		///
-		bool IsPartiallyInside(StreetSegment const& segment) const;
+		bool HasPartiallyInside(StreetSegment const& segment) const;
 		///
 		/// @brief
 		///
-		bool IsInside(StreetSegment const& segment) const;
+		bool HasInside(StreetSegment const& segment) const;
 		///
 		/// @brief
 		///
-		bool IsInside(glm::vec3 const& point) const;
+		bool HasInside(glm::vec3 const& point) const;
 
 		///
 		/// @brief
@@ -155,6 +156,15 @@ namespace Infrastructure
 		/// @brief
 		///
 		RelativePosition RelativePositionTo(glm::vec3 const& point) const;
+
+		///
+		/// @brief
+		///
+		RelativePosition RelativePositionFor(StreetSegment const& segment) const;
+		///
+		/// @brief
+		///
+		RelativePosition RelativePositionFor(glm::vec3 const& point) const;
 
 	protected:
 		///

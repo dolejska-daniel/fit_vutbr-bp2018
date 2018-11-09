@@ -6,6 +6,7 @@
 ///
 #include <glm/glm.hpp>
 #include <Infrastructure/Street.h>
+#include <Infrastructure/StreetNode.h>
 
 
 using namespace ge::gl;
@@ -29,6 +30,7 @@ Street::Street(glm::vec3 const& startPoint, glm::vec3 const& direction, const fl
 		length,
 		0
 	};
+	StreetRootNode->Insert(newSegment);
 	_segments.push_back(newSegment);
 	_vertices.push_back({
 		newSegment.startPoint,
@@ -98,6 +100,8 @@ void Street::BuildStep(const float length)
 void Street::BuildStep(glm::vec3 const& direction, const float length)
 {
 	assert(GetVB() != nullptr);
+	assert(!_segments.empty());
+	assert(!_vertices.empty());
 
 	const StreetSegment newSegment {
 		GetSegment().endPoint,
@@ -106,18 +110,25 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		length,
 		0
 	};
-	if (newSegment.direction == GetSegment().direction && !_vertices.empty() && !_segments.empty())
+	if (newSegment.direction == GetSegment().direction)
 	{
+		//	TODO: Odstranit, aktualizovat referencí?
+		StreetRootNode->Remove(GetSegment());
+
 		//	Směrnice jsou stejné, pouze prodloužíme původní úsečku
 		_segments.back().endPoint = newSegment.endPoint;
 		_segments.back().length+= length;
 		_vertices.back().position = newSegment.endPoint;
+
+		//	TODO: Odstranit, aktualizovat referencí?
+		StreetRootNode->Insert(GetSegment());
 	}
 	else
 	{
 		//	Směrnice nejsou stejné, přidáváme nový segment a vertexy
 
 		//	Uložení nového segmentu
+		StreetRootNode->Insert(newSegment);
 		_segments.push_back(newSegment);
 		//	Uložení nových vertexů
 		_vertices.push_back({
@@ -136,5 +147,5 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	}
 
 	//	Aktualizace dat v bufferu
-	GetVB()->setData(&_vertices[0], _vertices.size() * sizeof(StreetVertex));
+	GetVB()->setData(_vertices.data(), _vertices.size() * sizeof(StreetVertex));
 }

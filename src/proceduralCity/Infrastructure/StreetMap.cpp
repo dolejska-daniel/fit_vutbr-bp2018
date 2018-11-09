@@ -67,7 +67,7 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, 
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1, StreetSegment const& segment2)
 {
 	if (segment1.direction == segment2.direction
-		|| segment1.direction == -segment2.direction)
+		/*|| segment1.direction == -segment2.direction*/)
 	{
 		//	Segmenty jsou rovnoběžné, kolize není možná
 		return  {
@@ -75,11 +75,6 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 			glm::vec2(0),
 		};
 	}
-
-	StreetSegmentIntersection intersection = {
-		false,
-		glm::vec2(0),
-	};
 
 	//--------------------------------------------------------------------
 	//	Tomáš Milet
@@ -92,14 +87,15 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 	const auto x = c[2] * h[0] - c[0] * h[2];
 	const auto s = c[2] * p[0] - c[0] * p[2];
 
-	auto t = intersection.positionRelative = { -r / s, -x / s };
+	glm::vec2 t{ -r / s, -x / s };
 	//intersection.exists = t[0] >= 0 && t[0] <= 1 && t[1] >= 0 && t[1] <= 1;
-	intersection.exists = t[0] > 0.f && t[0] < 1.f && t[1] > 0.f && t[1] < 1.f;
+	return {
+		t[0] > 0.f && t[0] < 1.f && t[1] > 0.f && t[1] < 1.f,
+		t,
+	};
 	//--------------------------------------------------------------------
 
 	//printf("ex? %d, vec2(%10f, %10f)\n", intersection.exists, intersection.positionRelative);
-
-	return intersection;
 }
 
 std::shared_ptr<std::vector<StreetSegmentIntersection>> StreetMap::Intersections(StreetSegment const& segment) const
@@ -121,23 +117,19 @@ void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Stre
 		}
 	}
 
-	auto enteredChild = false;
-	for (auto const& childNode : node->GetChildren())
+	const auto position = node->RelativePositionFor(segment);
+	if (position == StreetNode::RelativePosition::NONE)
 	{
-		if (!childNode.second->IsInside(segment))
-			continue;
-
-		enteredChild = true;
-		Intersections(segment, childNode.second, intersections);
-	}
-
-	if (!enteredChild)
-	{
+		//	Nepatří jednoznačně do žádného z poduzlů
 		for (auto const& childNode : node->GetChildren())
-		{
 			Intersections(segment, childNode.second, intersections);
-		}
+
+		return;
 	}
+
+	const auto childNode = node->GetChildren().find(position);
+	if (childNode != node->GetChildren().end())
+		return Intersections(segment, childNode->second, intersections);
 }
 
 void StreetMap::BuildStep()
@@ -147,10 +139,8 @@ void StreetMap::BuildStep()
 		if (street->Ended())
 			continue;
 
-		StreetRootNode->Remove(street->GetSegment());
 		float length = glm::pow(stepLevelOffset, street->GetLevel()) * stepSize;
 		street->BuildStep(length);
-		StreetRootNode->Insert(street->GetSegment());
 
 		auto segment = street->GetSegment();
 		auto intersections = Intersections(segment);
