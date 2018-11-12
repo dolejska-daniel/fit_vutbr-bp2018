@@ -147,13 +147,13 @@ void StreetMap::BuildStep()
 		if (!intersections->empty())
 		{
 			//	Průsečíky byly nalezeny
-			auto intersectionPoint = street->GetSegmentPoint(intersections->begin()[0].positionRelative[0]);
-			auto intersectionDistance = distance(intersectionPoint, segment.startPoint);
+			auto intersectionPoint = street->GetSegmentPoint(glm::max(intersections->begin()[0].positionRelative[0], intersections->begin()[0].positionRelative[1]));
+			auto intersectionDistance = distance(intersectionPoint, segment.endPoint);
 
 			for (auto intersection : *intersections)
 			{
-				const auto intersectionPoint_ = street->GetSegmentPoint(intersection.positionRelative[0]);
-				const auto intersectionDistance_ = distance(intersectionPoint_, segment.startPoint);
+				const auto intersectionPoint_ = street->GetSegmentPoint(glm::max(intersection.positionRelative[0], intersection.positionRelative[1]));
+				const auto intersectionDistance_ = distance(intersectionPoint_, segment.endPoint);
 
 				if (intersectionDistance_ < intersectionDistance)
 				{
@@ -163,10 +163,13 @@ void StreetMap::BuildStep()
 			}
 
 			//	TODO: tento segment není uložen v quadtree
-			StreetRootNode->Remove(street->GetSegment());
-			street->SetSegmentEndPoint(intersectionPoint);
-			StreetRootNode->Insert(street->GetSegment());
-			street->End();
+			if (intersectionDistance <= stepSize)
+			{
+				StreetRootNode->Remove(street->GetSegment());
+				street->SetSegmentEndPoint(intersectionPoint);
+				StreetRootNode->Insert(street->GetSegment());
+				street->End();
+			}
 			continue;
 		}
 
