@@ -28,7 +28,8 @@ Street::Street(glm::vec3 const& startPoint, glm::vec3 const& direction, const fl
 		startPoint + length * direction,
 		direction,
 		length,
-		0
+		0,
+		0.f,
 	};
 	StreetRootNode->Insert(newSegment);
 	_segments.push_back(newSegment);
@@ -48,13 +49,26 @@ Street::~Street()
 = default;
 
 
-StreetSegment Street::GetSegment() const
+StreetSegment const& Street::ReadSegment() const
 {
 	assert(!_segments.empty());
 	return _segments[_segments.size() - 1];
 }
 
-StreetSegment Street::GetSegment(const size_t segment) const
+StreetSegment const& Street::ReadSegment(const size_t segment) const
+{
+	assert(segment >= 0);
+	assert(segment < _segments.size());
+	return _segments[segment];
+}
+
+StreetSegment const& Street::GetSegment()
+{
+	assert(!_segments.empty());
+	return _segments[_segments.size() - 1];
+}
+
+StreetSegment const& Street::GetSegment(const size_t segment)
 {
 	assert(segment >= 0);
 	assert(segment < _segments.size());
@@ -64,13 +78,13 @@ StreetSegment Street::GetSegment(const size_t segment) const
 
 glm::vec3 Street::GetSegmentPoint(const float t) const
 {
-	const auto seg = GetSegment(_segments.size() - 1);
+	const auto seg = ReadSegment(_segments.size() - 1);
 	return (1.f - t) * seg.startPoint + t * seg.endPoint;
 }
 
 glm::vec3 Street::GetSegmentPoint(const size_t segment, const float t) const
 {
-	const auto seg = GetSegment(segment);
+	const auto seg = ReadSegment(segment);
 	return (1.f - t) * seg.startPoint + t * seg.endPoint;
 }
 
@@ -82,19 +96,24 @@ void Street::SetSegmentEndPoint(glm::vec3 const& endPoint)
 	GetVB()->setData(&_vertices[0]);
 }
 
+void Street::ResetSegmentSplit()
+{
+	_segments.back().lengthSplit = 0.f;
+}
+
 void Street::BuildStep()
 {
-	BuildStep(GetSegment().direction, GetSegment().length);
+	BuildStep(ReadSegment().direction, ReadSegment().length);
 }
 
 void Street::BuildStep(glm::vec3 const& direction)
 {
-	BuildStep(direction, GetSegment().length);
+	BuildStep(direction, ReadSegment().length);
 }
 
 void Street::BuildStep(const float length)
 {
-	BuildStep(GetSegment().direction, length);
+	BuildStep(ReadSegment().direction, length);
 }
 
 void Street::BuildStep(glm::vec3 const& direction, const float length)
@@ -104,24 +123,26 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	assert(!_vertices.empty());
 
 	const StreetSegment newSegment {
-		GetSegment().endPoint,
-		GetSegment().endPoint + length * direction,
+		ReadSegment().endPoint,
+		ReadSegment().endPoint + length * direction,
 		direction,
 		length,
-		0
+		0,
+		0.f
 	};
-	if (newSegment.direction == GetSegment().direction)
+	if (newSegment.direction == ReadSegment().direction)
 	{
 		//	TODO: Odstranit, aktualizovat referencí?
-		StreetRootNode->Remove(GetSegment());
+		StreetRootNode->Remove(ReadSegment());
 
 		//	Směrnice jsou stejné, pouze prodloužíme původní úsečku
 		_segments.back().endPoint = newSegment.endPoint;
-		_segments.back().length+= length;
+		_segments.back().length += length;
+		_segments.back().lengthSplit += length;
 		_vertices.back().position = newSegment.endPoint;
 
 		//	TODO: Odstranit, aktualizovat referencí?
-		StreetRootNode->Insert(GetSegment());
+		StreetRootNode->Insert(ReadSegment());
 	}
 	else
 	{

@@ -29,6 +29,7 @@ namespace Infrastructure
 		glm::vec3	direction;
 		float		length;
 		int			lastSplit;
+		float		lengthSplit;
 
 		bool operator==(StreetSegment const& other) const
 		{
@@ -56,11 +57,20 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		StreetSegment GetSegment() const;
+		StreetSegment const& ReadSegment() const;
 		///
 		/// @brief 
 		///
-		StreetSegment GetSegment(const size_t segment) const;
+		StreetSegment const& ReadSegment(size_t segment) const;
+
+		///
+		/// @brief 
+		///
+		StreetSegment const& GetSegment();
+		///
+		/// @brief 
+		///
+		StreetSegment const& GetSegment(size_t segment);
 
 		///
 		/// @brief 
@@ -79,6 +89,10 @@ namespace Infrastructure
 		/// @brief 
 		///
 		void SetSegmentEndPoint(glm::vec3 const& endPoint);
+		///
+		/// @brief 
+		///
+		void ResetSegmentSplit();
 
 		///
 		/// @brief 

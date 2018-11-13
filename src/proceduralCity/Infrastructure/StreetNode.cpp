@@ -35,7 +35,7 @@ StreetNode::StreetNode(glm::vec2 const& position, const float size, std::map<int
 	_minPosition = position - size;
 	_maxPosition = position + size;
 
-	for (auto &node : children)
+	for (auto const& node : children)
 	{
 		_children[node.first] = node.second;
 		if (node.second)

@@ -12,8 +12,10 @@
 
 using namespace Infrastructure;
 
-float stepSize = 4.f;
-float stepLevelOffset = .5f;
+const float stepSize = 4.f;
+const float stepLevelOffset = .8f;
+const float splitLimit = 24.f;
+const float error = 0.0025f;
 
 
 StreetMap::StreetMap()
@@ -22,24 +24,24 @@ StreetMap::StreetMap()
 		throw std::runtime_error("StreetRootNode is nullptr.");
 
 	auto street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), stepSize / 2);
-	StreetRootNode->Insert(street->GetSegment());
+	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, -.5), stepSize / 2);
-	StreetRootNode->Insert(street->GetSegment());
+	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, .5), stepSize / 2);
-	StreetRootNode->Insert(street->GetSegment());
+	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	/*
 	auto street = std::make_shared<Street>(glm::vec3(-5, 4, 0), glm::vec3(2.5f, 0, 7.5f), stepSize / 2);
-	StreetRootNode->Insert(street->GetSegment());
+	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(glm::vec3(10, 4, 0), glm::vec3(-.25f, 0, .75f), stepSize / 2);
-	StreetRootNode->Insert(street->GetSegment());
+	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 	*/
 }
@@ -90,7 +92,8 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 	glm::vec2 t{ -r / s, -x / s };
 	//intersection.exists = t[0] >= 0 && t[0] <= 1 && t[1] >= 0 && t[1] <= 1;
 	return {
-		t[0] > 0.f && t[0] < 1.f && t[1] > 0.f && t[1] < 1.f,
+		   t[0] >= 0.f + error && t[0] <= 1.f - error
+		&& t[1] >= 0.f + error && t[1] <= 1.f - error,
 		t,
 	};
 	//--------------------------------------------------------------------
@@ -140,6 +143,7 @@ void StreetMap::BuildStep()
 			continue;
 
 		float length = glm::pow(stepLevelOffset, street->GetLevel()) * stepSize;
+		auto lastEndPoint = street->GetSegment().endPoint;
 		street->BuildStep(length);
 
 		auto segment = street->GetSegment();
@@ -147,13 +151,13 @@ void StreetMap::BuildStep()
 		if (!intersections->empty())
 		{
 			//	Průsečíky byly nalezeny
-			auto intersectionPoint = street->GetSegmentPoint(glm::max(intersections->begin()[0].positionRelative[0], intersections->begin()[0].positionRelative[1]));
-			auto intersectionDistance = distance(intersectionPoint, segment.endPoint);
+			auto intersectionPoint = street->GetSegmentPoint(intersections->begin()[0].positionRelative[0]);
+			auto intersectionDistance = distance(intersectionPoint, lastEndPoint);
 
-			for (auto intersection : *intersections)
+			for (auto const& intersection : *intersections)
 			{
-				const auto intersectionPoint_ = street->GetSegmentPoint(glm::max(intersection.positionRelative[0], intersection.positionRelative[1]));
-				const auto intersectionDistance_ = distance(intersectionPoint_, segment.endPoint);
+				const auto intersectionPoint_ = street->GetSegmentPoint(intersection.positionRelative[0]);
+				const auto intersectionDistance_ = distance(intersectionPoint_, lastEndPoint);
 
 				if (intersectionDistance_ < intersectionDistance)
 				{
@@ -165,20 +169,21 @@ void StreetMap::BuildStep()
 			//	TODO: tento segment není uložen v quadtree
 			if (intersectionDistance <= stepSize)
 			{
-				StreetRootNode->Remove(street->GetSegment());
-				street->SetSegmentEndPoint(intersectionPoint);
-				StreetRootNode->Insert(street->GetSegment());
-				street->End();
 			}
+				StreetRootNode->Remove(street->ReadSegment());
+				street->SetSegmentEndPoint(intersectionPoint);
+				StreetRootNode->Insert(street->ReadSegment());
+				street->End();
+
+			segment = street->GetSegment();
 			continue;
 		}
 
-		const int split = glm::floor(segment.length / length);
-		if (split > segment.lastSplit && street->GetLevel() < 3 && std::rand() % 100 <= 3) // 4 dobrá, 3 velmi dobrá
+		if (segment.lengthSplit >= splitLimit && street->GetLevel() < 3)
 		{
-			segment.lastSplit = split; 
+			street->ResetSegmentSplit();
 
-			glm::vec3 position = street->GetSegmentPoint(1.f);
+			glm::vec3 position = street->GetSegmentPoint(1.f - ((std::rand() % 12) / 100.f));
 			glm::vec3 direction;
 
 			if (std::rand() % 10 <= 5)
