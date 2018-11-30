@@ -120,7 +120,7 @@ int main(const int argc, char* argv[])
 
 	const auto map = Generator::GenerateMap(vars);
 
-	auto streetMap = Infrastructure::StreetMap();
+	auto streetMap = Infrastructure::StreetMap(vars);
 
 
 	// ==========================================================dd=

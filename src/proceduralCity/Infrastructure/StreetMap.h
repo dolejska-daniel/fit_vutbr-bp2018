@@ -6,12 +6,19 @@
 ///
 #pragma once
 #include <Application/IRenderableCollection.h>
+#include <glm/vec2.hpp>
 
+
+namespace vars
+{
+	class Vars;
+}
 
 namespace Infrastructure
 {
 	class Street;
 	class StreetNode;
+	class StreetZone;
 
 	///
 	/// @brief 
@@ -38,7 +45,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		StreetMap();
+		StreetMap(vars::Vars& vars);
 		///
 		/// @brief 
 		///
@@ -78,5 +85,7 @@ namespace Infrastructure
 
 	private:
 		std::vector<std::shared_ptr<Street>> _streets;
+
+		std::shared_ptr<StreetZone> _zone;
 	};
 }

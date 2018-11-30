@@ -41,6 +41,7 @@ set(SOURCES
 	src/proceduralCity/Infrastructure/Street.cpp
 	src/proceduralCity/Infrastructure/StreetMap.cpp
 	src/proceduralCity/Infrastructure/StreetNode.cpp
+	src/proceduralCity/Infrastructure/StreetZone.cpp
 	src/proceduralCity/Terrain/Builder.cpp
 	src/proceduralCity/Terrain/Generator.cpp
 	src/proceduralCity/Terrain/HeightMap.cpp
@@ -60,6 +61,7 @@ set(INCLUDES
 	src/proceduralCity/Infrastructure/Street.h
 	src/proceduralCity/Infrastructure/StreetMap.h
 	src/proceduralCity/Infrastructure/StreetNode.h
+	src/proceduralCity/Infrastructure/StreetZone.h
 	src/proceduralCity/Terrain/Fwd.h
 	src/proceduralCity/Terrain/Builder.h
 	src/proceduralCity/Terrain/Generator.h

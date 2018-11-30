@@ -5,33 +5,33 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <glm/mat2x2.hpp>
+#include <Vars/Vars.h>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
 #include <Infrastructure/StreetNode.h>
+#include <Infrastructure/StreetZone.h>
 
 
 using namespace Infrastructure;
-
-const float stepSize = 4.f;
-const float stepLevelOffset = .8f;
-const float splitLimit = 24.f;
 const float error = 0.0025f;
 
 
-StreetMap::StreetMap()
+StreetMap::StreetMap(vars::Vars& vars)
 {
 	if (StreetRootNode == nullptr)
 		throw std::runtime_error("StreetRootNode is nullptr.");
 
-	auto street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), stepSize / 2);
+	_zone = std::make_shared<StreetZone>(vars, glm::vec2(0.f, 0.f), INFINITY);
+
+	auto street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, -.5), stepSize / 2);
+	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, -.5), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, .5), stepSize / 2);
+	street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(-.5, 0, .5), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
@@ -142,9 +142,9 @@ void StreetMap::BuildStep()
 		if (street->Ended())
 			continue;
 
-		float length = glm::pow(stepLevelOffset, street->GetLevel()) * stepSize;
 		auto lastEndPoint = street->GetSegment().endPoint;
-		street->BuildStep(length);
+		//	TODO: BuildStep
+		_zone->BuildStep(street);
 
 		auto segment = street->GetSegment();
 		auto intersections = Intersections(segment);
@@ -166,41 +166,17 @@ void StreetMap::BuildStep()
 				}
 			}
 
-			//	TODO: tento segment není uložen v quadtree
-			if (intersectionDistance <= stepSize)
-			{
-			}
-				StreetRootNode->Remove(street->ReadSegment());
-				street->SetSegmentEndPoint(intersectionPoint);
-				StreetRootNode->Insert(street->ReadSegment());
-				street->End();
+			StreetRootNode->Remove(street->ReadSegment());
+			street->SetSegmentEndPoint(intersectionPoint);
+			StreetRootNode->Insert(street->ReadSegment());
+			street->End();
 
 			segment = street->GetSegment();
 			continue;
 		}
 
-		if (segment.lengthSplit >= splitLimit && street->GetLevel() < 3)
-		{
-			street->ResetSegmentSplit();
+		//	TODO: SplitStep
+		_zone->SplitStep(this, street);
 
-			glm::vec3 position = street->GetSegmentPoint(1.f - ((std::rand() % 12) / 100.f));
-			glm::vec3 direction;
-
-			if (std::rand() % 10 <= 5)
-			{
-				direction.x = -segment.direction.z;
-				direction.y = segment.direction.y;
-				direction.z = segment.direction.x;
-			}
-			else
-			{
-				direction.x = segment.direction.z;
-				direction.y = segment.direction.y;
-				direction.z = -segment.direction.x;
-			}
-
-			auto newStreet = std::make_shared<Street>(position, direction, length, street->GetLevel() + 1);
-			GetStreets().push_back(newStreet);
-		}
 	}
 }
