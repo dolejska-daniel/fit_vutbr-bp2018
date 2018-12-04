@@ -8,6 +8,7 @@
 #include <memory>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <functional>
 
 
 namespace vars
@@ -33,16 +34,14 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
+		StreetZone(vars::Vars& vars, glm::vec2 const& center, float radius,
+		           std::function<void(std::shared_ptr<Street> const& street)> buildStep,
+		           std::function<void(StreetMap* map, std::shared_ptr<Street> const& street)> splitStep);
+		///
+		/// @brief 
+		///
 		~StreetZone();
 
-		///
-		/// @brief 
-		///
-		virtual glm::vec3 const& GetDirection(std::shared_ptr<Street> const& street);
-		///
-		/// @brief 
-		///
-		virtual float GetLength(std::shared_ptr<Street> const& street);
 		///
 		/// @brief 
 		///
@@ -56,7 +55,10 @@ namespace Infrastructure
 		vars::Vars& _vars;
 
 		glm::vec2 _center;
-
 		float _radius;
+
+		std::function<void(std::shared_ptr<Street> const& street)> _buildStep;
+
+		std::function<void(StreetMap* map, std::shared_ptr<Street> const& street)> _splitStep;
 	};
 }
