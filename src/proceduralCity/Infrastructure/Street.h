@@ -28,8 +28,6 @@ namespace Infrastructure
 		glm::vec3	endPoint;
 		glm::vec3	direction;
 		float		length;
-		int			lastSplit;
-		float		lengthSplit;
 
 		bool operator==(StreetSegment const& other) const
 		{
@@ -124,6 +122,8 @@ namespace Infrastructure
 		/// @brief 
 		///
 		void BuildStep(glm::vec3 const& direction, float length);
+
+		float		lengthSplit = 0;
 
 	protected:
 		///

@@ -25,14 +25,20 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 	_buildStep = [=](std::shared_ptr<Street> const& street)
 	{
 		auto dir = street->ReadSegment().direction;
-		
+
+		if (dir.x > 0)
+		{
+			dir.x -= 0.02f;
+			dir.z += 0.02f;
+		}
+
 		street->BuildStep(dir, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize);
 	};
 
 	_splitStep = [=](StreetMap* map, std::shared_ptr<Street> const& street)
 	{
 		const auto segment = street->GetSegment();
-		if (segment.lengthSplit >= splitLimit && street->GetLevel() < 3)
+		if (street->lengthSplit >= splitLimit && street->GetLevel() < 3)
 		{
 			street->ResetSegmentSplit();
 

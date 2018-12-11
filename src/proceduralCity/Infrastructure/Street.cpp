@@ -27,11 +27,13 @@ Street::Street(glm::vec3 const& startPoint, glm::vec3 const& direction, const fl
 		startPoint,
 		startPoint + length * direction,
 		direction,
-		length,
-		0,
-		0.f,
+		length
 	};
 	StreetRootNode->Insert(newSegment);
+
+	_segments.reserve(16 * sizeof(StreetVertex));
+	_vertices.reserve(16 * 2 * sizeof(StreetVertex));
+
 	_segments.push_back(newSegment);
 	_vertices.push_back({
 		newSegment.startPoint,
@@ -98,7 +100,7 @@ void Street::SetSegmentEndPoint(glm::vec3 const& endPoint)
 
 void Street::ResetSegmentSplit()
 {
-	_segments.back().lengthSplit = 0.f;
+	lengthSplit = 0.f;
 }
 
 void Street::BuildStep()
@@ -122,24 +124,16 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	assert(!_segments.empty());
 	assert(!_vertices.empty());
 
-	const StreetSegment newSegment {
-		ReadSegment().endPoint,
-		ReadSegment().endPoint + length * direction,
-		direction,
-		length,
-		0,
-		0.f
-	};
-	if (newSegment.direction == ReadSegment().direction)
+	lengthSplit += length;
+	if (direction == ReadSegment().direction)
 	{
 		//	TODO: Odstranit, aktualizovat referencí?
 		StreetRootNode->Remove(ReadSegment());
 
 		//	Směrnice jsou stejné, pouze prodloužíme původní úsečku
-		_segments.back().endPoint = newSegment.endPoint;
+		_segments.back().endPoint = _segments.back().endPoint + length * direction;
 		_segments.back().length += length;
-		_segments.back().lengthSplit += length;
-		_vertices.back().position = newSegment.endPoint;
+		_vertices.back().position = _segments.back().endPoint;
 
 		//	TODO: Odstranit, aktualizovat referencí?
 		StreetRootNode->Insert(ReadSegment());
@@ -147,10 +141,17 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	else
 	{
 		//	Směrnice nejsou stejné, přidáváme nový segment a vertexy
+		const StreetSegment newSegment{
+			ReadSegment().endPoint,
+			ReadSegment().endPoint + length * direction,
+			direction,
+			length
+		};
 
 		//	Uložení nového segmentu
 		StreetRootNode->Insert(newSegment);
 		_segments.push_back(newSegment);
+
 		//	Uložení nových vertexů
 		_vertices.push_back({
 			newSegment.startPoint,
@@ -168,5 +169,5 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	}
 
 	//	Aktualizace dat v bufferu
-	GetVB()->setData(_vertices.data(), _vertices.size() * sizeof(StreetVertex));
+	GetVB()->setData(_vertices.data());
 }

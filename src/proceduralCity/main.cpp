@@ -173,6 +173,7 @@ int main(const int argc, char* argv[])
 		{
 			if (!built)
 			{
+				std::cerr << std::endl << "Building..." << std::endl;
 				streetMap.BuildStep();
 				built = true;
 			}
