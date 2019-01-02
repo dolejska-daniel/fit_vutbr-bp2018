@@ -13,8 +13,9 @@
 
 
 using namespace Infrastructure;
-const float error = 0.0025f;
 
+
+const float error = 0.0025f;
 
 StreetMap::StreetMap(vars::Vars& vars)
 {
@@ -22,6 +23,14 @@ StreetMap::StreetMap(vars::Vars& vars)
 		throw std::runtime_error("StreetRootNode is nullptr.");
 
 	_zone = std::make_shared<StreetZone>(vars, glm::vec2(0.f, 0.f), INFINITY);
+	for (auto i = 0; i < 10; i++)
+		_zone->Add(std::make_shared<StreetZone>(vars, glm::vec2(400 - (rand() % 800), 400 - (rand() % 800)), 30.f, [&](std::shared_ptr<Street> const& street)
+		{
+			auto dir = street->ReadSegment().direction;
+			dir += glm::vec3(0, 0, 0.2f);
+			dir = glm::normalize(dir);
+			street->BuildStep(dir, glm::pow(.75f, street->GetLevel()) * 6.f);
+		}));
 
 	auto street = std::make_shared<Street>(glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
@@ -36,11 +45,11 @@ StreetMap::StreetMap(vars::Vars& vars)
 	GetStreets().push_back(street);
 
 	/*
-	auto street = std::make_shared<Street>(glm::vec3(-5, 4, 0), glm::vec3(2.5f, 0, 7.5f), stepSize / 2);
+	auto street = std::make_shared<Street>(glm::vec3(-5, 4, 0), glm::vec3(2.5f, 0, 7.5f), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Street>(glm::vec3(10, 4, 0), glm::vec3(-.25f, 0, .75f), stepSize / 2);
+	street = std::make_shared<Street>(glm::vec3(10, 4, 0), glm::vec3(-.25f, 0, .75f), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 	*/

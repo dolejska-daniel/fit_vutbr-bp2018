@@ -114,7 +114,7 @@ int main(const int argc, char* argv[])
 	auto color = vec3(0, 1, 0);
 
 	//	Setup main camera
-	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, std::numeric_limits<float>::infinity());
+	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, INFINITY);
 	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
 	freeLook->setPosition(vec3(1, 1, 4));
 

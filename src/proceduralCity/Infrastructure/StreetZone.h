@@ -30,13 +30,9 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		StreetZone(vars::Vars& vars, glm::vec2 const& center, float radius);
-		///
-		/// @brief 
-		///
 		StreetZone(vars::Vars& vars, glm::vec2 const& center, float radius,
-		           std::function<void(std::shared_ptr<Street> const& street)> buildStep,
-		           std::function<void(StreetMap* map, std::shared_ptr<Street> const& street)> splitStep);
+		           std::function<void(std::shared_ptr<Street> const& street)> buildStep = nullptr,
+		           std::function<void(StreetMap* map, std::shared_ptr<Street> const& street)> splitStep = nullptr);
 		///
 		/// @brief 
 		///
@@ -45,20 +41,34 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		virtual void BuildStep(std::shared_ptr<Street> const& street);
+		glm::vec2 GetCenter() { return _center; }
 		///
 		/// @brief 
 		///
-		virtual void SplitStep(StreetMap* map, std::shared_ptr<Street> const& street);
+		float GetRadius() { return _radius; }
+
+		///
+		/// @brief 
+		///
+		bool Add(std::shared_ptr<StreetZone> const& zone);
+
+		///
+		/// @brief 
+		///
+		virtual bool BuildStep(std::shared_ptr<Street> const& street);
+		///
+		/// @brief 
+		///
+		virtual bool SplitStep(StreetMap* map, std::shared_ptr<Street> const& street);
 
 	protected:
 		vars::Vars& _vars;
+		std::vector<std::shared_ptr<StreetZone>> _zones;
 
 		glm::vec2 _center;
 		float _radius;
 
 		std::function<void(std::shared_ptr<Street> const& street)> _buildStep;
-
 		std::function<void(StreetMap* map, std::shared_ptr<Street> const& street)> _splitStep;
 	};
 }
