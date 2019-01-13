@@ -33,8 +33,8 @@ void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 
 	//	Lokální lambda pro výpočet normály
 	static auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
-		const auto globalX = float(float(x / detail) + chunk->GetGlobalOffsetX());
-		const auto globalY = float(float(y / detail) + chunk->GetGlobalOffsetY());
+		const auto globalX = float(float(chunk->GetScale() * x / detail) + chunk->GetGlobalOffsetX());
+		const auto globalY = float(float(chunk->GetScale() * y / detail) + chunk->GetGlobalOffsetY());
 
 		target.x = globalX; // Šířka
 		target.y = 0; // 3D Výška
@@ -113,7 +113,7 @@ void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 	{
 		for (unsigned int x = 0; x < width; x++)
 		{
-			GetVertex(x, y).position *= chunk->GetScale();
+			//GetVertex(x, y).position *= chunk->GetScale();
 		}
 	}
 

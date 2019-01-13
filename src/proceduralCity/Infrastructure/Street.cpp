@@ -7,13 +7,15 @@
 #include <glm/glm.hpp>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetNode.h>
+#include <Terrain/HeightMap.h>
 
 
 using namespace ge::gl;
 using namespace Infrastructure;
 
-Street::Street(glm::vec3 const& startPoint, glm::vec3 const& direction, const float length, const short level)
-	: _level(level)
+Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::vec3 const& direction,
+               const float length, const short level)
+	: _heightMap(heightMap), _level(level)
 {
 	SetDrawMode(GL_LINES);
 
@@ -125,7 +127,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	assert(!_vertices.empty());
 
 	lengthSplit += length;
-	if (direction == ReadSegment().direction)
+	if (false && direction == ReadSegment().direction)
 	{
 		//	TODO: Odstranit, aktualizovat referencí?
 		StreetRootNode->Remove(ReadSegment());
@@ -141,24 +143,40 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	else
 	{
 		//	Směrnice nejsou stejné, přidáváme nový segment a vertexy
-		const StreetSegment newSegment{
+		StreetSegment newSegment{
 			ReadSegment().endPoint,
 			ReadSegment().endPoint + length * direction,
 			direction,
 			length
 		};
 
+		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint);
+
 		//	Uložení nového segmentu
+		const auto segmentsSize = _segments.max_size();
 		StreetRootNode->Insert(newSegment);
-		_segments.push_back(newSegment);
+		_segments.push_back(newSegment);/*
+		if (segmentsSize < _segments.max_size())
+		{
+			std::cerr << "Segment vector resized!" << std::endl;
+			StreetSegment segment0{ glm::vec3(0), glm::vec3(0), glm::vec3(0), 0 };
+			std::fill(_segments.begin() + _segments.size(), _segments.end(), segment0);
+		}*/
 
 		//	Uložení nových vertexů
+		const auto verticesSize = _segments.max_size();
 		_vertices.push_back({
 			newSegment.startPoint,
 		});
 		_vertices.push_back({
 			newSegment.endPoint,
-		});
+		});/*
+		if (verticesSize < _vertices.max_size())
+		{
+			std::cerr << "Vertex vector resized!" << std::endl;
+			StreetVertex vertex0{ glm::vec3(0) };
+			std::fill(_vertices.begin() + _vertices.size(), _vertices.end(), vertex0);
+		}*/
 
 		//	Kontrola velikosti bufferu
 		if (_vertices.size() * sizeof(StreetVertex) > GetVB()->getSize())

@@ -35,12 +35,15 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		float GetData(glm::vec2 const& v, const unsigned int detail);
-
+		float GetData(glm::vec2 const& v, unsigned int detail);
 		///
 		/// @brief
 		///
-		float GetData(glm::vec3 const& v, const unsigned int detail);
+		float GetData(glm::vec3 const& v, unsigned int detail);
+		///
+		/// @brief
+		///
+		float GetData(glm::vec3 const& v);
 
 	private:
 		vars::Vars& _vars;	///< 

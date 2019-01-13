@@ -9,6 +9,11 @@
 #include <Application/IRenderableArray.h>
 
 
+namespace Terrain
+{
+	class HeightMap;
+}
+
 namespace Infrastructure
 {
 	///
@@ -46,7 +51,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		Street(glm::vec3 const& startPoint, glm::vec3 const& direction, float length, short level = 0);
+		Street(Terrain::HeightMap *heightMap, glm::vec3 const& startPoint, glm::vec3 const& direction, float length, short level = 0);
 		///
 		/// @brief 
 		///
@@ -126,6 +131,10 @@ namespace Infrastructure
 		float		lengthSplit = 0;
 
 	protected:
+		///
+		/// @brief 
+		///
+		Terrain::HeightMap *_heightMap;
 		///
 		/// @brief 
 		///

@@ -33,7 +33,7 @@ float HeightMap::GetData(const float globalX, const float globalY, unsigned int 
 	//
 	// https://github.com/SebLague/Procedural-Landmass-Generation
 	//
-	const auto scale = _vars.getFloat("terrain.scale");
+	const auto scale = _vars.getFloat("terrain.scale")/* * _vars.getFloat("terrain.chunk.scale")*/;
 	auto amplitude = _vars.getFloat("terrain.amplitude");
 	auto frequency = _vars.getFloat("terrain.frequency");
 
@@ -77,4 +77,9 @@ float HeightMap::GetData(glm::vec2 const& v, const unsigned detail)
 float HeightMap::GetData(glm::vec3 const& v, const unsigned detail)
 {
 	return GetData(v.x, v.z, detail);
+}
+
+float HeightMap::GetData(glm::vec3 const& v)
+{
+	return GetData(v, _vars.getUint32("terrain.detail"));
 }

@@ -14,6 +14,11 @@ namespace vars
 	class Vars;
 }
 
+namespace Terrain
+{
+	class Map;
+}
+
 namespace Infrastructure
 {
 	class Street;
@@ -42,10 +47,12 @@ namespace Infrastructure
 	class StreetMap
 	{
 	public:
+		Terrain::Map *terrainMap;
+
 		///
 		/// @brief 
 		///
-		StreetMap(vars::Vars& vars);
+		StreetMap(Terrain::Map *map);
 		///
 		/// @brief 
 		///

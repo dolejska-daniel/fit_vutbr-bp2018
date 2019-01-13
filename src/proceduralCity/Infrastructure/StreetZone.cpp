@@ -11,6 +11,7 @@
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
 #include <Infrastructure/StreetZone.h>
+#include <Terrain/Map.h>
 
 
 using namespace Infrastructure;
@@ -58,7 +59,7 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 					direction.z = -segment.direction.x;
 				}
 
-				map->GetStreets().push_back(std::make_shared<Street>(position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1));
+				map->GetStreets().push_back(std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1));
 			}
 		};
 	}
@@ -68,7 +69,7 @@ StreetZone::~StreetZone()
 = default;
 
 
-bool Infrastructure::StreetZone::Add(std::shared_ptr<StreetZone> const& zone)
+bool StreetZone::Add(std::shared_ptr<StreetZone> const& zone)
 {
 	if (glm::distance(_center, zone->GetCenter()) + zone->GetRadius() < _radius)
 	{
@@ -76,7 +77,7 @@ bool Infrastructure::StreetZone::Add(std::shared_ptr<StreetZone> const& zone)
 		return true;
 	}
 
-	for (auto z = _zones.rbegin(); z != _zones.rend(); z++)
+	for (auto z = _zones.rbegin(); z != _zones.rend(); ++z)
 		if ((*z)->Add(zone))
 			return true;
 
@@ -89,7 +90,7 @@ bool StreetZone::BuildStep(std::shared_ptr<Street> const& street)
 	if (glm::distance(street->ReadSegment().endPoint, glm::vec3(_center.x, street->ReadSegment().endPoint.y, _center.y)) > _radius)
 		return false;
 
-	for (auto z = _zones.rbegin(); z != _zones.rend(); z++)
+	for (auto z = _zones.rbegin(); z != _zones.rend(); ++z)
 		if ((*z)->BuildStep(street))
 			return true;
 
@@ -102,7 +103,7 @@ bool StreetZone::SplitStep(StreetMap* map, std::shared_ptr<Street> const& street
 	if (glm::distance(street->ReadSegment().endPoint, glm::vec3(_center.x, street->ReadSegment().endPoint.y, _center.y)) > _radius)
 		return false;
 
-	for (auto z = _zones.rbegin(); z != _zones.rend(); z++)
+	for (auto z = _zones.rbegin(); z != _zones.rend(); ++z)
 		if ((*z)->BuildStep(street))
 			return true;
 
