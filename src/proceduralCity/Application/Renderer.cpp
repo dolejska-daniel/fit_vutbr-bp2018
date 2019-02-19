@@ -26,7 +26,7 @@ Renderer::~Renderer()
 void Renderer::Render(std::shared_ptr<IRenderableArray> const& object)
 {
 	object->BindVA();
-	glDrawArrays(object->GetDrawMode(), 0, static_cast<GLsizei>(object->GetVB()->getSize()));
+	glDrawArrays(object->GetDrawMode(), 0, static_cast<GLsizei>(object->GetRenderableCount()));
 }
 
 void Renderer::Render(std::shared_ptr<IRenderableElementArray> const& object)

@@ -68,6 +68,15 @@ namespace Application
 		///
 		void Bind() const { BindVA(); BindVB(); BindIB(); }
 
+		///
+		/// @brief 
+		///
+		int GetRenderableCount() const { return _renderableCount; }
+		///
+		/// @brief 
+		///
+		void SetRenderableCount(const int count) { _renderableCount = count; }
+
 	private:
 		///
 		/// @brief 
@@ -81,6 +90,10 @@ namespace Application
 		/// @brief 
 		///
 		std::shared_ptr<ge::gl::Buffer> _ib;
+		///
+		/// @brief 
+		///
+		int _renderableCount = 0;
 
 		///
 		/// @brief 

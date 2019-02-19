@@ -7,6 +7,7 @@
 #include <glm/exponential.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/geometric.hpp>
+#include <glm/gtc/random.hpp>
 #include <utility>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
@@ -40,20 +41,22 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 		_splitStep = [&](StreetMap* map, std::shared_ptr<Street> const& street)
 		{
 			const auto segment = street->GetSegment();
-			if (street->lengthSplit >= splitLimit && street->GetLevel() < 3)
+			if (street->lengthSplit >= splitLimit && street->GetLevel() < 4)
 			{
 				street->ResetSegmentSplit();
 
-				glm::vec3 position = street->GetSegmentPoint(1.f - ((std::rand() % 12) / 100.f));
+				glm::vec3 position = street->GetSegmentPoint(1.f - ((std::rand() % 50) / 100.f));
 				glm::vec3 direction;
-				if (std::rand() % 10 <= 5)
+				if (rand() % 10 < 5)
 				{
+					//std::cerr << "Splitting A" << std::endl;
 					direction.x = -segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = segment.direction.x;
 				}
 				else
 				{
+					//std::cerr << "Splitting B" << std::endl;
 					direction.x = segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = -segment.direction.x;

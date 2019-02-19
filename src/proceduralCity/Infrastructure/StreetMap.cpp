@@ -11,6 +11,7 @@
 #include <Infrastructure/StreetNode.h>
 #include <Infrastructure/StreetZone.h>
 #include <Terrain/Map.h>
+#include <Terrain/HeightMap.h>
 
 
 using namespace Infrastructure;
@@ -35,15 +36,18 @@ StreetMap::StreetMap(Terrain::Map *map)
 			street->BuildStep(dir, glm::pow(.75f, street->GetLevel()) * 6.f);
 		}));
 
-	auto street = std::make_shared<Street>(map->GetHeightMap(), glm::vec3(0, 4, 0), glm::vec3(1, 0, 0), 2.f);
+	auto startPoint = glm::vec3(0, 0, 32 * 8);
+	startPoint.y = map->GetHeightMap()->GetData(startPoint);
+	
+	auto street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(1, 0, 0), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Street>(map->GetHeightMap(), glm::vec3(0, 4, 0), glm::vec3(-.5, 0, -.5), 2.f);
+	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, -.5), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
-	street = std::make_shared<Street>(map->GetHeightMap(), glm::vec3(0, 4, 0), glm::vec3(-.5, 0, .5), 2.f);
+	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, .5), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
@@ -157,6 +161,7 @@ void StreetMap::BuildStep()
 		auto lastEndPoint = street->GetSegment().endPoint;
 		//	TODO: BuildStep
 		_zone->BuildStep(street);
+		terrainMap->ValidateStreet(street);
 
 		auto segment = street->GetSegment();
 		auto intersections = Intersections(segment);

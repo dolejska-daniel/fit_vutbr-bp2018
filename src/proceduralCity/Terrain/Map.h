@@ -11,6 +11,10 @@
 #include <Terrain/Fwd.h>
 
 
+namespace Infrastructure {
+	class Street;
+}
+
 namespace Terrain
 {
 	///
@@ -27,6 +31,17 @@ namespace Terrain
 		/// @brief
 		///
 		~Map();
+
+
+		int GetChunkOffsetX(const int x) const {
+			const auto globalX = -(static_cast<int>(_chunkWidth) / 2);
+			return globalX + x * _chunkWidth * 8;
+		};
+
+		int GetChunkOffsetY(const int y) const {
+			const auto globalY = -(static_cast<int>(_chunkHeight) / 2);
+			return globalY + y * _chunkHeight * 8;
+		};
 
 		///
 		/// @brief
@@ -63,11 +78,12 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		std::shared_ptr<Chunk> &GetChunk(unsigned int x, unsigned int y);
+		std::shared_ptr<Chunk> &GetChunk(unsigned int index);
+
 		///
 		/// @brief
 		///
-		std::shared_ptr<Chunk> ReadChunk(unsigned int x, unsigned int y) const;
+		void ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street);
 
 	private:
 		vars::Vars& _vars;	///<

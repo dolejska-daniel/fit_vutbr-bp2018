@@ -12,7 +12,7 @@
 
 using namespace Terrain;
 
-void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
+void Builder::BuildVertices(std::shared_ptr<Chunk> chunk, HeightMap* heightMap)
 {
 	assert(chunk != nullptr);
 
@@ -20,6 +20,9 @@ void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 	auto width = chunk->GetVerticesWidth();
 	auto height = chunk->GetVerticesHeight();
 	auto detail = static_cast<float>(chunk->GetDetail());
+	auto scale = chunk->GetScale();
+	auto globalOffsetX = chunk->GetGlobalOffsetX();
+	auto globalOffsetY = chunk->GetGlobalOffsetY();
 
 	//	Kontrola inicializace pole s vertexy
 	if (chunk->GetVertices() != nullptr)
@@ -27,20 +30,20 @@ void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 	auto vertices = new ChunkVertex[width * height];
 
 	//	Lokální lambda pro jednoduché načtení vertexu  
-	static auto GetVertex = [&](const int x, const int y) -> ChunkVertex& {
+	auto GetVertex = [&](const int x, const int y) -> ChunkVertex& {
 		return vertices[y * width + x];
 	};
 
 	//	Lokální lambda pro výpočet normály
-	static auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
-		const auto globalX = float(float(chunk->GetScale() * x / detail) + chunk->GetGlobalOffsetX());
-		const auto globalY = float(float(chunk->GetScale() * y / detail) + chunk->GetGlobalOffsetY());
+	auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
+		const auto globalX = float(float(scale * x / detail) + globalOffsetX);
+		const auto globalY = float(float(scale * y / detail) + globalOffsetY);
 
 		target.x = globalX; // Šířka
 		target.y = 0; // 3D Výška
 		target.z = globalY; // 2D Výška (Hloubka)
 
-		target.y = heightMap->GetData(target, chunk->GetDetail()); // Souřadnice Y je výška
+		target.y = heightMap->GetData(target, detail); // Souřadnice Y je výška
 	};
 
 	//	Hlavní cyklus pro vytvoření vertexů
@@ -63,7 +66,7 @@ void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 	}
 
 	//	Lokální lambda pro výpočet normály
-	static auto GetOrCalculatePosition = [&](const unsigned int x, const unsigned int y) -> glm::vec3 {
+	auto GetOrCalculatePosition = [&](const unsigned int x, const unsigned int y) -> glm::vec3 {
 		if (x >= 0 && x < width && y >= 0 && y < height)
 			return GetVertex(x, y).position;
 
@@ -76,7 +79,7 @@ void Builder::BuildVertices(std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 	};
 
 	//	Lokální lambda pro výpočet normály
-	static auto CalculateNormal = [&](const unsigned int x, const unsigned int y, glm::vec3 const& p1, glm::vec3 const& p2) {
+	auto CalculateNormal = [&](const unsigned int x, const unsigned int y, glm::vec3 const& p1, glm::vec3 const& p2) {
 		assert(x >= 0);
 		assert(x < width);
 		assert(y >= 0);
@@ -136,7 +139,7 @@ void Builder::BuildIndices(std::shared_ptr<Chunk> const& chunk)
 	auto indices = new ChunkIndex[width * height];
 
 	//	Lokální lambda pro jednoduché načtení vertexu
-	static auto GetIndex = [&](const int x, const int y) -> ChunkIndex& {
+	auto GetIndex = [&](const int x, const int y) -> ChunkIndex& {
 		return indices[y * width + x];
 	};
 

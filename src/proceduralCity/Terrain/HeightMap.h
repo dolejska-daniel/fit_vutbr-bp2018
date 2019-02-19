@@ -28,6 +28,8 @@ namespace Terrain
 		///
 		~HeightMap();
 
+		float GenerateNoise(float globalX, float globalY) const;
+
 		///
 		/// @brief
 		///
@@ -35,17 +37,29 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		float GetData(glm::vec2 const& v, unsigned int detail);
+		float GetData(glm::vec2 const& v, unsigned int detail) const;
 		///
 		/// @brief
 		///
-		float GetData(glm::vec3 const& v, unsigned int detail);
+		float GetData(glm::vec3 const& v, unsigned int detail) const;
 		///
 		/// @brief
 		///
-		float GetData(glm::vec3 const& v);
+		float GetData(glm::vec3 const& v) const;
+
+		///
+		/// @brief
+		///
+		void PreprocessData(float &sample) const;
+
+		float ilerp(float min, float max, float x) const;
 
 	private:
 		vars::Vars& _vars;	///< 
+
+		float minNoise;	///< 
+		float maxNoise; ///<
+
+		glm::vec2* _offsets;	///< 
 	};
 }

@@ -53,11 +53,11 @@ int main(const int argc, char* argv[])
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ TERÉNU
 	// =============================================================
 	vars.addUint32("terrain.seed",			args.getu32("--terrain-seed",			12345,	"Default seed for terrain generation"));
-	vars.addFloat( "terrain.scale",			args.getf32("--terrain-scale",			64.f,	"Perlin noise scale (higher the number smoother the changes)"));
-	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		4.f,	"Noise function amplitudes"));
-	vars.addFloat( "terrain.frequency",		args.getf32("--terrain-frequency",		1.25f,	""));
-	vars.addFloat( "terrain.persistence",	args.getf32("--terrain-persistence",	0.5f,	""));
-	vars.addFloat( "terrain.lacunarity",	args.getf32("--terrain-lacunarity",		1.25f,	""));
+	vars.addFloat( "terrain.scale",			args.getf32("--terrain-scale",			80.f,	"Perlin noise scale (higher the number smoother the changes)"));
+	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		2.5f,	"Noise function amplitudes"));
+	vars.addFloat( "terrain.frequency",		args.getf32("--terrain-frequency",		0.2f,	""));
+	vars.addFloat( "terrain.persistence",	args.getf32("--terrain-persistence",	0.7f,	""));
+	vars.addFloat( "terrain.lacunarity",	args.getf32("--terrain-lacunarity",		1.3f,	""));
 	vars.addUint32("terrain.octaves",		args.getu32("--terrain-octaves",		3,		"Number of noises from which is the terrain going to be generated"));
 	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail",			1,		"Default level of object detail"));
 
@@ -96,6 +96,8 @@ int main(const int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
+
+	srand(vars.getUint32("terrain.seed"));
 
 	std::cerr << "Using " << glGetString(GL_VERSION) << std::endl;
 
@@ -151,14 +153,33 @@ int main(const int argc, char* argv[])
 		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
 
+		/*
 		for (unsigned int y = 0; y < map->GetHeight(); y++)
 		{
 			for (unsigned int x = 0; x < map->GetWidth(); x++)
 			{
-				const auto chunk = map->ReadChunk(x, y);
+				const auto chunk = map->GetChunk(x, y);
 				renderer->Render(chunk);
 			}
-		}
+		}*/
+		auto chunk = map->GetChunk(0);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(1);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(2);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(3);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(4);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(5);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(6);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(7);
+		renderer->Render(chunk);
+		chunk = map->GetChunk(8);
+		renderer->Render(chunk);
 
 		color = vec3(1, 1, 1);
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);

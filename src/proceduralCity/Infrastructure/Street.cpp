@@ -150,7 +150,13 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 			length
 		};
 
-		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint);
+		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint) + 0.1f;
+		//std::cerr << glm::abs(newSegment.startPoint.y / newSegment.endPoint.y - 1) << std::endl;
+		if (glm::abs(newSegment.startPoint.y / newSegment.endPoint.y - 1) > .15f)
+		{
+			this->End();
+			return;
+		}
 
 		//	Uložení nového segmentu
 		const auto segmentsSize = _segments.max_size();
@@ -170,7 +176,9 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		});
 		_vertices.push_back({
 			newSegment.endPoint,
-		});/*
+		});
+		SetRenderableCount(_vertices.size());
+		/*
 		if (verticesSize < _vertices.max_size())
 		{
 			std::cerr << "Vertex vector resized!" << std::endl;
