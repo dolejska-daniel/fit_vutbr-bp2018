@@ -8,7 +8,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <Vars/Vars.h>
-#include <Terrain/Fwd.h>
+#include <Utils/Curve.h>
 
 
 namespace Terrain
@@ -61,5 +61,7 @@ namespace Terrain
 		float maxNoise; ///<
 
 		glm::vec2* _offsets;	///< 
+
+		std::shared_ptr<Utils::Curve> _curve;	///< 
 	};
 }

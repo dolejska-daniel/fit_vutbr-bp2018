@@ -5,18 +5,23 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #include <glm/gtc/noise.hpp> // perlin
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/compatibility.hpp> // lerp
 #include <Terrain/Chunk.h>
 #include <Terrain/HeightMap.h>
+#include <Utils/Curve.h>
 
 
 using namespace Terrain;
 
 HeightMap::HeightMap(vars::Vars& vars)
-	: _vars(vars)
+	: _vars(vars), minNoise(0), maxNoise(0)
 {
+	auto amplitude = _vars.getFloat("terrain.amplitude");
+	auto frequency = _vars.getFloat("terrain.frequency");
+
 	const auto octaveCount = _vars.getUint32("terrain.octaves");
+	const auto persistence = _vars.getFloat("terrain.persistence");
+	const auto lacunarity = _vars.getFloat("terrain.lacunarity");
+
 	_offsets = new glm::vec2[octaveCount];
 	for (unsigned int i = 0; i < octaveCount; i++)
 	{
@@ -24,17 +29,58 @@ HeightMap::HeightMap(vars::Vars& vars)
 		_offsets[i].y = float(rand() % 200000 - 100000);
 	}
 
-	minNoise = maxNoise = GenerateNoise(0.f, 0.f);
-	for (auto x = 0; x < 512; x++)
+	for (unsigned int i = 0; i < octaveCount; i++)
 	{
-		const auto noise = GenerateNoise(x, 0.f);
-		maxNoise = glm::max(noise, maxNoise);
-		minNoise = glm::min(noise, minNoise);
+		maxNoise +=  0.5f * amplitude;
+		minNoise += -0.5f * amplitude;
+
+		amplitude *= persistence;
+		frequency *= lacunarity;
 	}
+
+	auto heightCurvePoints = std::make_shared<std::vector<glm::vec2>>();
+	heightCurvePoints->push_back({ 0.f, -1.0f });
+	heightCurvePoints->push_back({ 0.f, -2.0f });
+	heightCurvePoints->push_back({ 0.f, -1.0f });
+	heightCurvePoints->push_back({ 0.f, -2.0f });
+	heightCurvePoints->push_back({ 0.f,  0.0f });
+	heightCurvePoints->push_back({ 0.f,  0.0f });
+	heightCurvePoints->push_back({ 0.f,  0.02f });
+	heightCurvePoints->push_back({ 0.f,  0.04f });
+	heightCurvePoints->push_back({ 0.f,  0.06f });
+	heightCurvePoints->push_back({ 0.f,  0.08f });
+	heightCurvePoints->push_back({ 0.f,  0.1f });
+	heightCurvePoints->push_back({ 0.f,  0.1f });
+	heightCurvePoints->push_back({ 0.f,  0.1f });
+	heightCurvePoints->push_back({ 0.f,  0.1f });
+	heightCurvePoints->push_back({ 0.f,  0.12f });
+	heightCurvePoints->push_back({ 0.f,  0.14f });
+	heightCurvePoints->push_back({ 0.f,  0.16f });
+	heightCurvePoints->push_back({ 0.f,  0.18f });
+	heightCurvePoints->push_back({ 0.f,  0.2f });
+	heightCurvePoints->push_back({ 0.f,  0.2f });
+	heightCurvePoints->push_back({ 0.f,  0.2f });
+	heightCurvePoints->push_back({ 0.f,  0.2f });
+	heightCurvePoints->push_back({ 0.f,  2.f });
+	heightCurvePoints->push_back({ 0.f,  4.f });
+	heightCurvePoints->push_back({ 0.f,  8.f });
+	_curve = std::make_shared<Utils::Curve>(heightCurvePoints);
 
 	std::cerr << "ALL SET!" << std::endl;
 	std::cerr << minNoise << std::endl;
 	std::cerr << maxNoise << std::endl;
+	std::cerr << "Height mults: " << std::endl;
+	std::cerr << _curve->GetPoint(0.f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.1f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.2f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.3f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.4f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.5f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.6f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.7f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.7f).y << std::endl;
+	std::cerr << _curve->GetPoint(0.9f).y << std::endl;
+	std::cerr << _curve->GetPoint(1.f).y << std::endl;
 	std::cerr << std::endl << std::endl << std::endl;
 }
 
@@ -64,8 +110,7 @@ float HeightMap::GenerateNoise(float globalX, float globalY) const
 		sample.y = globalY / scale * frequency + _offsets[i].x;
 		sample.x = globalX / scale * frequency + _offsets[i].y;
 
-		//	Posunutí intervalu do <-1, 1>
-		float h = glm::perlin(sample) * 2 - 1;
+		float h = glm::perlin(sample);
 		result += h * amplitude;
 
 		amplitude *= persistence;
@@ -104,22 +149,8 @@ float HeightMap::GetData(glm::vec3 const& v) const
 
 void HeightMap::PreprocessData(float& sample) const
 {
-	const float s = ilerp(minNoise, maxNoise, sample);
-
-	if (s < .1f)
-		sample = -40 + -20 * ilerp(.1f, -0.2f, s);
-	else if (s < .15f)
-		sample = -40 * ilerp(.15f, .1f, s);
-	else if (s < 0.9f)
-		sample = 5.f * ilerp(.2f, .9f, s);
-	else if (s < 0.95f)
-		sample = 5 + 10 * ilerp(.9f, .95f, s);
-	else if (s < 0.98f)
-		sample = 5 + 10 + 20 * ilerp(.95f, .98f, s);
-	else if (s < 1.f)
-		sample = 5 + 10 + 20 + 30 * ilerp(.98f, 1.f, s);
-	else
-		sample = 5 + 10 + 20 + 30 + 80 * ilerp(1.f, 1.1f, s);
+	const float s = glm::clamp(ilerp(minNoise, maxNoise, sample), 0.f, 1.f);
+	sample = 40 * _curve->GetPoint(s).y;
 }
 
 float HeightMap::ilerp(float min, float max, float x) const

@@ -47,6 +47,7 @@ set(SOURCES
 	src/proceduralCity/Terrain/HeightMap.cpp
 	src/proceduralCity/Terrain/Chunk.cpp
 	src/proceduralCity/Terrain/Map.cpp
+	src/proceduralCity/Utils/Curve.cpp
 	)
 
 set(INCLUDES
@@ -68,6 +69,7 @@ set(INCLUDES
 	src/proceduralCity/Terrain/HeightMap.h
 	src/proceduralCity/Terrain/Chunk.h
 	src/proceduralCity/Terrain/Map.h
+	src/proceduralCity/Utils/Curve.h
 	)
 
 file(GLOB_RECURSE SHADERS LIST_DIRECTORIES false RELATIVE ${ROOT_DIR} *.shader)
