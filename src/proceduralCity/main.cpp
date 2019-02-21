@@ -62,7 +62,7 @@ int main(const int argc, char* argv[])
 	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail",			1,		"Default level of object detail"));
 
 	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width",	2, "Terrain map width (count of chunks)"));
-	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 2, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
+	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 1, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
 
 	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width",	64,		"Chunk width"));
 	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64 ,		"Terrain chunk height in 2D (depth/length in 3D)"));
@@ -162,24 +162,12 @@ int main(const int argc, char* argv[])
 				renderer->Render(chunk);
 			}
 		}*/
-		auto chunk = map->GetChunk(0);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(1);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(2);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(3);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(4);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(5);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(6);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(7);
-		renderer->Render(chunk);
-		chunk = map->GetChunk(8);
-		renderer->Render(chunk);
+		for (auto i = 0; i < 50; i++)
+		{
+			auto chunk = map->GetChunk(i);
+			if (chunk)
+				renderer->Render(chunk);
+		}
 
 		color = vec3(1, 1, 1);
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);

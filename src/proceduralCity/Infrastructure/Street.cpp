@@ -151,8 +151,8 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		};
 
 		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint) + 0.1f;
-		//std::cerr << glm::abs(newSegment.startPoint.y / newSegment.endPoint.y - 1) << std::endl;
-		if (glm::abs(newSegment.startPoint.y / newSegment.endPoint.y - 1) > .15f)
+		//std::cerr << glm::abs(newSegment.startPoint.y - newSegment.endPoint.y) << std::endl;
+		if (glm::abs(newSegment.startPoint.y - newSegment.endPoint.y) >= .75f)
 		{
 			this->End();
 			return;

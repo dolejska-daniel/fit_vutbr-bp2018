@@ -12,9 +12,10 @@
 
 using namespace Terrain;
 
-void Builder::BuildVertices(std::shared_ptr<Chunk> chunk, HeightMap* heightMap)
+void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heightMap)
 {
 	assert(chunk != nullptr);
+	assert(heightMap != nullptr);
 
 	//	Načtení potřebných proměnných
 	auto width = chunk->GetVerticesWidth();
@@ -35,7 +36,7 @@ void Builder::BuildVertices(std::shared_ptr<Chunk> chunk, HeightMap* heightMap)
 	};
 
 	//	Lokální lambda pro výpočet normály
-	auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
+	const auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
 		const auto globalX = float(float(scale * x / detail) + globalOffsetX);
 		const auto globalY = float(float(scale * y / detail) + globalOffsetY);
 
@@ -70,32 +71,56 @@ void Builder::BuildVertices(std::shared_ptr<Chunk> chunk, HeightMap* heightMap)
 		if (x >= 0 && x < width && y >= 0 && y < height)
 			return GetVertex(x, y).position;
 
-		const auto globalX = float(float(static_cast<int>(x) / detail) + chunk->GetGlobalOffsetX());
-		const auto globalY = float(float(static_cast<int>(y) / detail) + chunk->GetGlobalOffsetY());
-
-		glm::vec3 result(globalX / detail, 0, globalY / detail);
-		result.y = heightMap->GetData(result, chunk->GetDetail()); // Souřadnice Y je výška
+		glm::vec3 result;
+		CalculatePosition(x, y, result);
+		//std::cerr << "Pos.Calc.Out: x = " << result.x << ", y = " << result.y << ", z = " << result.z << std::endl;
 		return result;
 	};
 
 	//	Lokální lambda pro výpočet normály
-	auto CalculateNormal = [&](const unsigned int x, const unsigned int y, glm::vec3 const& p1, glm::vec3 const& p2) {
+	const auto CalculateNormal = [&](const unsigned int x, const unsigned int y) {
 		assert(x >= 0);
 		assert(x < width);
 		assert(y >= 0);
 		assert(y < height);
 
-		const auto p0 = GetVertex(x, y).position;
+		const auto p = GetVertex(x, y).position;
+
+		const auto p00 = GetOrCalculatePosition(x    , y + 1);
+		const auto p01 = GetOrCalculatePosition(x + 1, y    );
+
+		const auto p10 = GetOrCalculatePosition(x + 1, y    );
+		const auto p11 = GetOrCalculatePosition(x    , y - 1);
+
+		const auto p20 = GetOrCalculatePosition(x    , y - 1);
+		const auto p21 = GetOrCalculatePosition(x - 1, y    );
+
+		const auto p30 = GetOrCalculatePosition(x - 1, y    );
+		const auto p31 = GetOrCalculatePosition(x    , y + 1);
 
 		//	Vytvoření směrových vektorů v dané rovině
-		const auto v0 = p0 - p1;
-		const auto v1 = p0 - p2;
+		const auto v00 = p - p00;
+		const auto v01 = p - p01;
+
+		const auto v10 = p - p10;
+		const auto v11 = p - p11;
+
+		const auto v20 = p - p20;
+		const auto v21 = p - p21;
+
+		const auto v30 = p - p30;
+		const auto v31 = p - p31;
 
 		//	Výpočet normály z cross-product-u směrových vektorů
-		const auto n = glm::cross(v1, v0);
+		//const auto n = glm::cross(v00, v01);
+		const auto n0 = glm::cross(v00, v01);
+		const auto n1 = glm::cross(v10, v11);
+		const auto n2 = glm::cross(v20, v21);
+		const auto n3 = glm::cross(v30, v31);
 
+		auto n = glm::normalize(n0 + n1 + n2 + n3);
 		//printf("normal[%2d, %2d] = (%f, %f, %f);\n", x, y, n.x, n.y, n.z);
-		GetVertex(x, y).normal = glm::normalize(n);
+		GetVertex(x, y).normal = n;
 	};
 
 	//	Cyklus pro výpočet normál 
@@ -104,19 +129,7 @@ void Builder::BuildVertices(std::shared_ptr<Chunk> chunk, HeightMap* heightMap)
 		for (unsigned int x = 0; x < width; x++)
 		{
 			//	Načtení relevantních vrcholů
-			CalculateNormal(x, y,
-				GetOrCalculatePosition(x - 1, y),
-				GetOrCalculatePosition(x, y - 1)
-			);
-		}
-	}
-
-	//	Cyklus pro scale vertexů
-	for (unsigned int y = 0; y < height; y++)
-	{
-		for (unsigned int x = 0; x < width; x++)
-		{
-			//GetVertex(x, y).position *= chunk->GetScale();
+			CalculateNormal(x, y);
 		}
 	}
 
