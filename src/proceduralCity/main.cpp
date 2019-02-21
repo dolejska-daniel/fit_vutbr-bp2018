@@ -117,12 +117,14 @@ int main(const int argc, char* argv[])
 
 	//	Setup main camera
 	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, INFINITY);
+	//vars.add<std::shared_ptr<basicCamera::PerspectiveCamera>>("asdf", cameraProjection);
 	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
 	freeLook->setPosition(vec3(1, 1, 4));
 
 	const auto map = Generator::GenerateMap(vars);
 
 	auto streetMap = Infrastructure::StreetMap(map);
+
 
 
 	// ==========================================================dd=
@@ -144,11 +146,24 @@ int main(const int argc, char* argv[])
 	    auto viewMatrix = freeLook->getView();
 		mat4 modelMatrix(1);
 
-		color = vec3(0, 1, 0);
-		shaders->GetActiveProgram()->set3fv("color", &color[0]);
+		static short render = 0;
+		if (render == 0)
+		{
+			shaders->Use("Phong");
 
-		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-		shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+			color = vec3(0, 1, 0);
+			shaders->GetActiveProgram()->set3fv("color", &color[0]);
+
+			shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+			shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+		}
+		else if (render == 1)
+		{
+			shaders->Use("Normal");
+		}
+		else
+			render = 0;
+
 		shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
@@ -169,8 +184,11 @@ int main(const int argc, char* argv[])
 				renderer->Render(chunk);
 		}
 
+		shaders->Use("Phong");
 		color = vec3(1, 1, 1);
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
+		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+		shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 
 		if (KeyDown['x'])
 		{
@@ -189,6 +207,18 @@ int main(const int argc, char* argv[])
 		}
 		else
 			built = false;
+
+		static auto changedRenderer = false;
+		if (KeyDown['b'])
+		{
+			if (!changedRenderer)
+			{
+				render++;
+				changedRenderer = true;
+			}
+		}
+		else
+			changedRenderer = false;
 
 		if (KeyDown['y'])
 		{

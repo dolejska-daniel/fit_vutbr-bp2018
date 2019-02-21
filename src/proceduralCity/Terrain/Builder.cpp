@@ -112,13 +112,13 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 		const auto v31 = p - p31;
 
 		//	Výpočet normály z cross-product-u směrových vektorů
-		//const auto n = glm::cross(v00, v01);
 		const auto n0 = glm::cross(v00, v01);
 		const auto n1 = glm::cross(v10, v11);
 		const auto n2 = glm::cross(v20, v21);
 		const auto n3 = glm::cross(v30, v31);
 
 		auto n = glm::normalize(n0 + n1 + n2 + n3);
+		//const auto n = n1;
 		//printf("normal[%2d, %2d] = (%f, %f, %f);\n", x, y, n.x, n.y, n.z);
 		GetVertex(x, y).normal = n;
 	};
