@@ -45,24 +45,24 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 			{
 				street->ResetSegmentSplit();
 
-				glm::vec3 position = street->GetSegmentPoint(1.f - ((std::rand() % 50) / 100.f));
+				glm::vec3 position = street->GetSegmentPoint(1.f - ((25 + std::rand() % 50) / 100.f));
 				glm::vec3 direction;
-				if (rand() % 10 < 5)
+				if (std::rand() % 10 >= 5)
 				{
-					//std::cerr << "Splitting A" << std::endl;
 					direction.x = -segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = segment.direction.x;
 				}
 				else
 				{
-					//std::cerr << "Splitting B" << std::endl;
 					direction.x = segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = -segment.direction.x;
 				}
 
-				map->GetStreets().push_back(std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1));
+				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1);
+				street->AddSubstreet(substreet);
+				map->AddStreet(substreet);
 			}
 		};
 	}

@@ -12,6 +12,9 @@
 #include <Infrastructure/StreetZone.h>
 #include <Terrain/Map.h>
 #include <Terrain/HeightMap.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <algorithm>
 
 
 using namespace Infrastructure;
@@ -66,19 +69,30 @@ StreetMap::~StreetMap()
 = default;
 
 
+void StreetMap::AddStreet(const std::shared_ptr<Street>& street)
+{
+	_streets.push_back(street);
+}
+
+void StreetMap::RemoveStreet(const std::shared_ptr<Street>& street)
+{
+	_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
+}
+
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street)
 {
-	auto streetSegments = street->GetSegments();
-	for (auto streetSegment : streetSegments)
+	auto street_segments = street->GetSegments();
+	for (auto street_segment : street_segments)
 	{
-		auto intersection = Intersection(segment, streetSegment);
+		auto intersection = Intersection(segment, street_segment);
+		//std::cerr << glm::to_string(intersection.positionRelative) << std::endl;
 		if (intersection.exists)
 			return intersection;
 	}
 
 	return {
 		false,
-		glm::vec3(0),
+		glm::vec3(-1),
 	};
 }
 
@@ -90,7 +104,7 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 		//	Segmenty jsou rovnoběžné, kolize není možná
 		return  {
 			false,
-			glm::vec2(0),
+			glm::vec2(-1),
 		};
 	}
 

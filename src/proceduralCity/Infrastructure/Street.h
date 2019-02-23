@@ -45,7 +45,7 @@ namespace Infrastructure
 	///
 	/// @brief 
 	///
-	class Street : public Application::IRenderableArray
+	class Street : public Application::IRenderableArray, public std::enable_shared_from_this<Street>
 	{
 	public:
 		///
@@ -128,13 +128,23 @@ namespace Infrastructure
 		///
 		void BuildStep(glm::vec3 const& direction, float length);
 
+		void AddSubstreet(std::shared_ptr<Street> const& substreet);
+		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
+
+		void SetParentStreet(std::shared_ptr<Street> const& parent_street);
+
 		float		lengthSplit = 0;
+		std::shared_ptr<Street> parentStreet;
 
 	protected:
 		///
 		/// @brief 
 		///
 		Terrain::HeightMap *_heightMap;
+		///
+		/// @brief 
+		///
+		std::vector<std::shared_ptr<Street>> _substreets;
 		///
 		/// @brief 
 		///

@@ -66,6 +66,12 @@ namespace Infrastructure
 		/// @brief 
 		///
 		std::vector<std::shared_ptr<Street>> ReadStreets() const { return _streets; }
+		///
+		/// @brief 
+		///
+		void AddStreet(const std::shared_ptr<Street>& street);
+		void RemoveStreet(const std::shared_ptr<Street>& street);
+
 
 		///
 		/// @brief 

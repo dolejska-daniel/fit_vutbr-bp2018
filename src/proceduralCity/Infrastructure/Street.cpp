@@ -8,6 +8,7 @@
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetNode.h>
 #include <Terrain/HeightMap.h>
+#include <algorithm>
 
 
 using namespace ge::gl;
@@ -50,7 +51,15 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 }
 
 Street::~Street()
-= default;
+{
+	for (const auto& segment : GetSegments())
+		StreetRootNode->Remove(segment);
+
+	if (parentStreet)
+		parentStreet->RemoveSubstreet(this->shared_from_this());
+
+	// TODO: Napojit segmenty
+}
 
 
 StreetSegment const& Street::ReadSegment() const
@@ -150,7 +159,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 			length
 		};
 
-		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint) + 0.1f;
+		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint) + 0.2f;
 		//std::cerr << glm::abs(newSegment.startPoint.y - newSegment.endPoint.y) << std::endl;
 		if (glm::abs(newSegment.startPoint.y - newSegment.endPoint.y) >= .75f)
 		{
@@ -196,4 +205,20 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 
 	//	Aktualizace dat v bufferu
 	GetVB()->setData(_vertices.data());
+}
+
+void Street::AddSubstreet(std::shared_ptr<Street> const& substreet)
+{
+	_substreets.push_back(substreet);
+	substreet->SetParentStreet(this->shared_from_this());
+}
+
+void Street::RemoveSubstreet(const std::shared_ptr<Street>& substreet)
+{
+	_substreets.erase(std::remove(_substreets.begin(), _substreets.end(), substreet), _substreets.end());
+}
+
+void Street::SetParentStreet(std::shared_ptr<Street> const& parent_street)
+{
+	parentStreet = parent_street;
 }

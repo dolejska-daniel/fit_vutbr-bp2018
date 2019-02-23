@@ -4,11 +4,13 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
+#define GLM_ENABLE_EXPERIMENTAL
 #include <cstdio>
 #include <SDL2/SDL.h>
 #include <SDL2CPP/Window.h>
 #include <SDL2CPP/MainLoop.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <geGL/geGL.h>
 #include <geGL/StaticCalls.h>
 #include <BasicCamera/PerspectiveCamera.h>
@@ -24,6 +26,7 @@
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
 #include <Infrastructure/StreetNode.h>
+#include <algorithm>
 
 
 using namespace glm;
@@ -177,7 +180,7 @@ int main(const int argc, char* argv[])
 				renderer->Render(chunk);
 			}
 		}*/
-		for (auto i = 0; i < 50; i++)
+		for (auto i = 0; i < map->GetChunks().size(); i++)
 		{
 			auto chunk = map->GetChunk(i);
 			if (chunk)
@@ -185,8 +188,6 @@ int main(const int argc, char* argv[])
 		}
 
 		shaders->Use("Phong");
-		color = vec3(1, 1, 1);
-		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
 		shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 
@@ -208,6 +209,7 @@ int main(const int argc, char* argv[])
 		else
 			built = false;
 
+
 		static auto changedRenderer = false;
 		if (KeyDown['b'])
 		{
@@ -220,11 +222,116 @@ int main(const int argc, char* argv[])
 		else
 			changedRenderer = false;
 
+		static auto postprocessed = false;
+		if (KeyDown['p'])
+		{
+			std::vector<std::shared_ptr<Infrastructure::Street>> nearby_streets;
+			for (const auto& street1 : streetMap.GetStreets())
+			{
+				if (!street1->Ended())
+					continue;
+				if (std::find(nearby_streets.begin(), nearby_streets.end(), street1) != nearby_streets.end())
+					// Již  přidáno
+					continue;
+
+				auto s1_segment_first = street1->GetSegment(0);
+				auto s1_segment_last = street1->GetSegment();
+				for (const auto& street2 : streetMap.GetStreets())
+				{
+					if (street1 == street2)
+						// Tatáž ulice
+						continue;
+					if (!street2->Ended())
+						// Pouze ukončené ulice
+						continue;
+					if (std::find(nearby_streets.begin(), nearby_streets.end(), street2) != nearby_streets.end())
+						// Již  přidáno
+						continue;
+
+					auto s2_segment_first = street2->GetSegment(0);
+					auto s2_segment_last = street2->GetSegment();
+
+					if (s1_segment_first.direction == -s2_segment_last.direction
+						&& s1_segment_last.direction == -s2_segment_first.direction)
+					{
+						// Rovnoběžné, opačný směr
+					}
+					else if (s1_segment_first.direction == s2_segment_last.direction
+						&& s1_segment_last.direction == s2_segment_first.direction)
+					{
+						// Rovnoběžné, stejný směr
+					}
+					else
+						continue;
+
+					//--------------------------------------------------------------------
+					// https://math.stackexchange.com/a/210865
+					//
+					auto x  = glm::vec2{ s1_segment_first.direction.x, s1_segment_first.direction.z };
+					auto x1 = glm::vec2{ s1_segment_first.startPoint.x, s1_segment_first.startPoint.z };
+					auto y1 = glm::vec2{ s2_segment_first.startPoint.x, s2_segment_first.startPoint.z };
+					auto d  = x1 - y1;
+					auto xparallel = glm::dot(d, x) / glm::pow(glm::length(x), 2) * x;
+					auto xperpendicular = d - xparallel;
+					//--------------------------------------------------------------------
+
+					if (glm::length(xperpendicular) < 4.f)
+					{
+						glm::vec3 direction_left{ -s2_segment_first.direction.z, s2_segment_first.direction.y, s2_segment_first.direction.x };
+						glm::vec3 direction_right{ s2_segment_first.direction.z, s2_segment_first.direction.y, -s2_segment_first.direction.x };
+						Infrastructure::StreetSegment first_segment =
+						{
+							s2_segment_first.startPoint + s2_segment_first.direction + direction_left * 8.f,
+							s2_segment_first.startPoint + s2_segment_first.direction + direction_right * 8.f,
+							glm::vec3(0),
+							8.f,
+						};
+						auto intersection = Infrastructure::StreetMap::Intersection(first_segment, street1);
+						if (!intersection.exists)
+						{
+							Infrastructure::StreetSegment last_segment =
+							{
+								s2_segment_last.endPoint - s2_segment_last.direction + direction_left * 8.f,
+								s2_segment_last.endPoint - s2_segment_last.direction + direction_right * 8.f,
+								glm::vec3(0),
+								8.f,
+							};
+							intersection = Infrastructure::StreetMap::Intersection(last_segment, street1);
+							if (!intersection.exists)
+								continue;
+						}
+
+						nearby_streets.push_back(street2);
+					}
+				}
+			}
+
+			std::cerr << "Nearby streets found: " << nearby_streets.size() << std::endl;
+
+			color = { 1, 0, 0 };
+			shaders->GetActiveProgram()->set3fv("color", &color[0]);
+			for (const auto& street : nearby_streets)
+			{
+				if (KeyDown['o'])
+				{
+					streetMap.RemoveStreet(street);
+				}
+				else
+					renderer->Render(street);
+			}
+
+			postprocessed = true;
+		}
+		else
+			postprocessed = false;
+
 		if (KeyDown['y'])
 		{
 			printf("Number of streets: %lld\n", streetMap.ReadStreets().size());
 		}
 
+		color = { 1, 1, 1 };
+		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& street : streetMap.ReadStreets())
 		{
 			renderer->Render(street);
