@@ -62,6 +62,7 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 
 				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1);
 				street->AddSubstreet(substreet);
+				street->AddIntersection(position, substreet);
 				map->AddStreet(substreet);
 			}
 		};

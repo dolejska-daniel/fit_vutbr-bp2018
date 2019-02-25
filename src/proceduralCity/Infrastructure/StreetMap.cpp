@@ -82,17 +82,21 @@ void StreetMap::RemoveStreet(const std::shared_ptr<Street>& street)
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street)
 {
 	auto street_segments = street->GetSegments();
-	for (auto street_segment : street_segments)
+	for (const auto& street_segment : street_segments)
 	{
 		auto intersection = Intersection(segment, street_segment);
 		//std::cerr << glm::to_string(intersection.positionRelative) << std::endl;
 		if (intersection.exists)
+		{
+			intersection.street = street;
 			return intersection;
+		}
 	}
 
 	return {
 		false,
 		glm::vec3(-1),
+		street,
 	};
 }
 
@@ -105,6 +109,7 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 		return  {
 			false,
 			glm::vec2(-1),
+			nullptr,
 		};
 	}
 
@@ -125,6 +130,7 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 		   t[0] >= 0.f + error && t[0] <= 1.f - error
 		&& t[1] >= 0.f + error && t[1] <= 1.f - error,
 		t,
+		nullptr,
 	};
 	//--------------------------------------------------------------------
 
@@ -146,6 +152,7 @@ void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Stre
 		if (intersection.exists)
 		{
 			//	Průsečík existuje
+			intersection.street = streetSegment.street;
 			intersections->push_back(intersection);
 		}
 	}
@@ -153,16 +160,17 @@ void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Stre
 	const auto position = node->RelativePositionFor(segment);
 	if (position == StreetNode::RelativePosition::NONE)
 	{
-		//	Nepatří jednoznačně do žádného z poduzlů
+		// Nepatří jednoznačně do žádného z poduzlů
 		for (auto const& childNode : node->GetChildren())
 			Intersections(segment, childNode.second, intersections);
-
-		return;
 	}
-
-	const auto childNode = node->GetChildren().find(position);
-	if (childNode != node->GetChildren().end())
-		return Intersections(segment, childNode->second, intersections);
+	else
+	{
+		// Patří do některého z poduzlů
+		const auto childNode = node->GetChildren().find(position);
+		if (childNode != node->GetChildren().end())
+			return Intersections(segment, childNode->second, intersections);
+	}
 }
 
 void StreetMap::BuildStep()
@@ -182,18 +190,20 @@ void StreetMap::BuildStep()
 		if (!intersections->empty())
 		{
 			//	Průsečíky byly nalezeny
-			auto intersectionPoint = street->GetSegmentPoint(intersections->begin()[0].positionRelative[0]);
+			auto intersection = intersections->front();
+			auto intersectionPoint = street->GetSegmentPoint(intersections->front().positionRelative[0]);
 			auto intersectionDistance = distance(intersectionPoint, lastEndPoint);
 
-			for (auto const& intersection : *intersections)
+			for (auto const& intersection_ : *intersections)
 			{
-				const auto intersectionPoint_ = street->GetSegmentPoint(intersection.positionRelative[0]);
+				const auto intersectionPoint_ = street->GetSegmentPoint(intersection_.positionRelative[0]);
 				const auto intersectionDistance_ = distance(intersectionPoint_, lastEndPoint);
 
 				if (intersectionDistance_ < intersectionDistance)
 				{
 					intersectionDistance = intersectionDistance_;
 					intersectionPoint    = intersectionPoint_;
+					intersection		 = intersection_;
 				}
 			}
 
@@ -201,6 +211,7 @@ void StreetMap::BuildStep()
 			street->SetSegmentEndPoint(intersectionPoint);
 			StreetRootNode->Insert(street->ReadSegment());
 			street->End();
+			intersection.street->AddIntersection(intersectionPoint, street);
 
 			segment = street->GetSegment();
 			continue;

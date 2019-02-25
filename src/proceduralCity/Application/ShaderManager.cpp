@@ -24,7 +24,7 @@ ShaderManager::~ShaderManager()
 = default;
 
 
-void Application::ShaderManager::Use(std::string const& programName)
+void ShaderManager::Use(std::string const& programName)
 {
 	const auto existingProgram = _programs.find(programName);
 	if (existingProgram != _programs.end())
@@ -66,7 +66,7 @@ void Application::ShaderManager::Use(std::string const& programName)
 	BindProgram(program);
 }
 
-void Application::ShaderManager::BindProgram(std::shared_ptr<Program> const& program)
+void ShaderManager::BindProgram(std::shared_ptr<Program> const& program)
 {
 	_activeProgram = program;
 	program->use();

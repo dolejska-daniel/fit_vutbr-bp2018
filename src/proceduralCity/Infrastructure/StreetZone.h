@@ -41,11 +41,11 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		glm::vec2 GetCenter() { return _center; }
+		glm::vec2 GetCenter() const { return _center; }
 		///
 		/// @brief 
 		///
-		float GetRadius() { return _radius; }
+		float GetRadius() const { return _radius; }
 
 		///
 		/// @brief 

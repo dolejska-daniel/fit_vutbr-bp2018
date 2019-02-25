@@ -68,7 +68,7 @@ HeightMap::HeightMap(vars::Vars& vars)
 
 	std::cerr << "ALL SET!" << std::endl;
 	std::cerr << minNoise << std::endl;
-	std::cerr << maxNoise << std::endl;
+	std::cerr << maxNoise << std::endl << std::endl;
 	std::cerr << "Height mults: " << std::endl;
 	std::cerr << _curve->GetPoint(0.f).y << std::endl;
 	std::cerr << _curve->GetPoint(0.1f).y << std::endl;
@@ -80,8 +80,7 @@ HeightMap::HeightMap(vars::Vars& vars)
 	std::cerr << _curve->GetPoint(0.7f).y << std::endl;
 	std::cerr << _curve->GetPoint(0.7f).y << std::endl;
 	std::cerr << _curve->GetPoint(0.9f).y << std::endl;
-	std::cerr << _curve->GetPoint(1.f).y << std::endl;
-	std::cerr << std::endl << std::endl << std::endl;
+	std::cerr << _curve->GetPoint(1.f).y << std::endl << std::endl;
 }
 
 HeightMap::~HeightMap()
@@ -121,12 +120,10 @@ float HeightMap::GenerateNoise(float globalX, float globalY) const
 }
 
 
-float HeightMap::GetData(const float globalX, const float globalY, unsigned int detail) const
+float HeightMap::GetData(const float x, const float y, unsigned int detail) const
 {
-	auto noise = GenerateNoise(globalX, globalY);
+	auto noise = GenerateNoise(x, y);
 
-	//std::cerr << result << std::endl;
-	//std::cerr << "Aft: " << result << std::endl;
 	PreprocessData(noise);
 	//printf("perlin[%2d, %2d] = (%f, %f, %f)\n", globalX, globalY, sample.globalX, sample.globalY, h);
 	return noise;

@@ -255,49 +255,38 @@ StreetNode::RelativePosition StreetNode::RelativePositionTo(StreetSegment const&
 
 StreetNode::RelativePosition StreetNode::RelativePositionTo(glm::vec3 const& point) const
 {
-	auto result = int(LT);
 	if (point.z <= _minPosition.y)
 	{
 		//	Bod leží dole, relativní pozice uzlu je nahoře
-		result += 0;
-
 		if (point.x <= _minPosition.x)
 			//	Bod leží nalevo, relativní pozice uzlu je vpravo
-			//	0 + 1 = RT
-			result += 1;
+			return RT;
 		if (point.x >= _maxPosition.x)
 			//	Bod leží napravo, relativní pozice uzlu je vlevo
-			//	0 + 0 = LT
-			result += 0;
+			return LT;
 	}
 	else if (point.z >= _maxPosition.y)
 	{
 		//	Bod leží nahoře, relativní pozice uzlu je dole
-		result += 2;
-
 		if (point.x <= _minPosition.x)
 			//	Bod leží nalevo, relativní pozice uzlu je vpravo
-			//	2 + 0 = RB
-			result += 0;
+			return RB;
 		if (point.x >= _maxPosition.x)
 			//	Bod leží napravo, relativní pozice uzlu je vlevo
-			//	2 + 0 = LB
-			result += 1;
+			return LB;
 	}
 	else
 	{
 		//	Bod leží v Y mezích tohoto uzlu
 		if (point.x <= _minPosition.x)
 			//	Bod leží nalevo, relativní pozice uzlu je vpravo
-			//	0 + 1 = RT
-			result += 1;
+			return RT;
 		if (point.x >= _maxPosition.x)
 			//	Bod leží napravo, relativní pozice uzlu je vlevo
-			//	0 + 0 = LT
-			result += 0;
+			return LT;
 	}
 
-	return static_cast<RelativePosition>(result);
+	return LT;
 }
 
 StreetNode::RelativePosition StreetNode::RelativePositionFor(StreetSegment const& segment) const

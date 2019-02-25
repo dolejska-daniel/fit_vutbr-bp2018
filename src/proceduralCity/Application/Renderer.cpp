@@ -23,13 +23,13 @@ Renderer::~Renderer()
 = default;
 
 
-void Renderer::Render(std::shared_ptr<IRenderableArray> const& object)
+void Renderer::Render(std::shared_ptr<IRenderableArray> const& object) const
 {
 	object->BindVA();
 	glDrawArrays(object->GetDrawMode(), 0, static_cast<GLsizei>(object->GetRenderableCount()));
 }
 
-void Renderer::Render(std::shared_ptr<IRenderableElementArray> const& object)
+void Renderer::Render(std::shared_ptr<IRenderableElementArray> const& object) const
 {
 	object->BindVA();
 	//object->BindVB();

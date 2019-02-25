@@ -33,11 +33,11 @@ namespace Application
 		///
 		/// @brief
 		///
-		void Render(std::shared_ptr<IRenderableArray> const& object);
+		void Render(std::shared_ptr<IRenderableArray> const& object) const;
 		///
 		/// @brief
 		///
-		void Render(std::shared_ptr<IRenderableElementArray> const& object);
+		void Render(std::shared_ptr<IRenderableElementArray> const& object) const;
 		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 
 		void Attach(std::shared_ptr<IRenderableBase> const& object);

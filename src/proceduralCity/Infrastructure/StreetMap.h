@@ -30,8 +30,9 @@ namespace Infrastructure
 	///
 	struct StreetSegmentIntersection
 	{
-		bool		exists;
-		glm::vec2	positionRelative;
+		bool					exists;
+		glm::vec2				positionRelative;
+		std::shared_ptr<Street>	street;
 
 		bool operator==(StreetSegmentIntersection const& other) const
 		{

@@ -16,6 +16,8 @@ namespace Terrain
 
 namespace Infrastructure
 {
+	class Street;
+
 	///
 	/// @brief 
 	///
@@ -33,6 +35,7 @@ namespace Infrastructure
 		glm::vec3	endPoint;
 		glm::vec3	direction;
 		float		length;
+		std::shared_ptr<Street>	street;
 
 		bool operator==(StreetSegment const& other) const
 		{
@@ -131,7 +134,9 @@ namespace Infrastructure
 		void AddSubstreet(std::shared_ptr<Street> const& substreet);
 		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
 
-		void SetParentStreet(std::shared_ptr<Street> const& parent_street);
+		std::vector<std::pair<glm::vec3, std::shared_ptr<Street>>> const& GetIntersections() const;
+		void AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street);
+		void RemoveIntersection(std::shared_ptr<Street> const& street);
 
 		float		lengthSplit = 0;
 		std::shared_ptr<Street> parentStreet;
@@ -145,6 +150,10 @@ namespace Infrastructure
 		/// @brief 
 		///
 		std::vector<std::shared_ptr<Street>> _substreets;
+		///
+		/// @brief 
+		///
+		std::vector<std::pair<glm::vec3, std::shared_ptr<Street>>> _intersections;
 		///
 		/// @brief 
 		///
