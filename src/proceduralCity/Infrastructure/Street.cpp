@@ -7,11 +7,12 @@
 #include <glm/glm.hpp>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetNode.h>
+#include <Infrastructure/Structs/StreetIntersection.h>
+#include <Infrastructure/Structs/StreetSegment.h>
+#include <Infrastructure/Structs/StreetVertex.h>
 #include <Terrain/HeightMap.h>
 #include <algorithm>
 #include <vector>
-#include <glm/detail/_noise.hpp>
-#include <glm/detail/_noise.hpp>
 
 
 using namespace ge::gl;
@@ -230,11 +231,11 @@ std::vector<StreetIntersection> const& Street::GetIntersections() const
 	return _intersections;
 }
 
-void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment)
+StreetIntersectionSide Street::GetPointIntersectionSide(glm::vec3 const& point, StreetSegment const& segment) const
 {
 	const auto a = segment.startPoint;
 	const auto b = segment.endPoint;
-	const auto p = intersecting_segment.startPoint;
+	const auto p = point;
 
 	//--------------------------------------------------------------------
 	// https://math.stackexchange.com/a/274728
@@ -242,12 +243,15 @@ void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment 
 	const auto d = (p.x - a.x) * (b.z - a.z) - (p.z - a.z) * (b.x - a.x);
 	//--------------------------------------------------------------------
 
-	StreetIntersectionSide side;
 	if (d < 0)
-		side = RIGHT;
-	else
-		side = LEFT;
+		return RIGHT;
+	
+	return LEFT;
+}
 
+void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment)
+{
+	const auto side = GetPointIntersectionSide(intersecting_segment.startPoint, segment);
 	AddIntersection(intersection_point, segment.street, side);
 }
 

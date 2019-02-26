@@ -5,8 +5,9 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
-#include <Application/IRenderableCollection.h>
 #include <glm/vec2.hpp>
+#include <Application/IRenderableCollection.h>
+#include <Infrastructure/Structs/StreetSegmentIntersection.h>
 
 
 namespace vars
@@ -24,22 +25,6 @@ namespace Infrastructure
 	class Street;
 	class StreetNode;
 	class StreetZone;
-
-	///
-	/// @brief 
-	///
-	struct StreetSegmentIntersection
-	{
-		bool			exists;
-		glm::vec2		positionRelative;
-		StreetSegment	segment;
-
-		bool operator==(StreetSegmentIntersection const& other) const
-		{
-			return this->exists == other.exists
-				&& this->positionRelative == other.positionRelative;
-		}
-	};
 
 
 	///

@@ -7,6 +7,9 @@
 #pragma once
 #include <glm/vec3.hpp>
 #include <Application/IRenderableArray.h>
+#include <Infrastructure/Structs/StreetVertex.h>
+#include <Infrastructure/Structs/StreetSegment.h>
+#include <Infrastructure/Structs/StreetIntersection.h>
 
 
 namespace Terrain
@@ -17,48 +20,6 @@ namespace Terrain
 namespace Infrastructure
 {
 	class Street;
-
-	///
-	/// @brief 
-	///
-	struct StreetVertex
-	{
-		glm::vec3 position;
-	};
-
-	///
-	/// @brief 
-	///
-	struct StreetSegment
-	{
-		glm::vec3	startPoint;
-		glm::vec3	endPoint;
-		glm::vec3	direction;
-		float		length;
-		std::shared_ptr<Street>	street;
-
-		bool operator==(StreetSegment const& other) const
-		{
-			return this->startPoint == other.startPoint
-				&& this->direction == other.direction;
-		}
-	};
-
-	///
-	/// @brief 
-	///
-	enum StreetIntersectionSide { LEFT, RIGHT, };
-
-	///
-	/// @brief 
-	///
-	struct StreetIntersection
-	{
-		glm::vec3				point;
-		bool					isSubstreet;
-		StreetIntersectionSide	side;
-		std::shared_ptr<Street>	street;
-	};
 
 
 	///
@@ -151,6 +112,7 @@ namespace Infrastructure
 		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
 
 		std::vector<StreetIntersection> const& GetIntersections() const;
+		StreetIntersectionSide GetPointIntersectionSide(glm::vec3 const& point, StreetSegment const& segment) const;
 		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment);
 		void AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street, StreetIntersectionSide side);
 		void RemoveIntersection(std::shared_ptr<Street> const& street);

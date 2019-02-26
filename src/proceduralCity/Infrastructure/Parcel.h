@@ -8,27 +8,12 @@
 #include <glm/vec3.hpp>
 #include <Application/IRenderableElementArray.h>
 #include <Infrastructure/Street.h>
+#include <Infrastructure/Structs/ParcelIndex.h>
+#include <Infrastructure/Structs/ParcelVertex.h>
 
 
 namespace Infrastructure
 {
-	///
-	/// @brief 
-	///
-	struct ParcelVertex
-	{
-		glm::vec3 position;
-	};
-
-	///
-	/// @brief
-	///
-	struct ParcelIndex
-	{
-		glm::uvec3 triangle;	///< Tři vrcholy trojúhelníka
-	};
-	
-	
 	///
 	/// @brief 
 	///

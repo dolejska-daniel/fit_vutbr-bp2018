@@ -8,30 +8,13 @@
 #include <glm/vec3.hpp>
 #include <Vars/Vars.h>
 #include <Terrain/Fwd.h>
+#include <Terrain/Structs/ChunkVertex.h>
+#include <Terrain/Structs/ChunkIndex.h>
 #include <Application/IRenderableElementArray.h>
 
 
 namespace Terrain
 {
-	///
-	/// @brief
-	///
-	struct ChunkVertex
-	{
-		glm::vec3 position;	///< Poziční vektor
-		glm::vec3 normal;	///< Normálový vektor
-	};
-
-	///
-	/// @brief
-	///
-	struct ChunkIndex
-	{
-		glm::uvec3 triangle1;	///< Tři vrcholy prvního trojúhelníka segmentu
-		glm::uvec3 triangle2;	///< Tři vrcholy druhého trojúhelníka segmentu
-	};
-
-
 	///
 	/// @brief
 	///
