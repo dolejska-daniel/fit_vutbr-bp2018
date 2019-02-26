@@ -73,6 +73,8 @@ set(INCLUDES
 	src/proceduralCity/Infrastructure/StreetMap.h
 	src/proceduralCity/Infrastructure/StreetNode.h
 	src/proceduralCity/Infrastructure/StreetZone.h
+	src/proceduralCity/Terrain/Structs/ChunkVertex.h
+	src/proceduralCity/Terrain/Structs/ChunkIndex.h
 	src/proceduralCity/Terrain/Fwd.h
 	src/proceduralCity/Terrain/Builder.h
 	src/proceduralCity/Terrain/Generator.h
