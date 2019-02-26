@@ -36,7 +36,7 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 	};
 
 	//	Lokální lambda pro výpočet normály
-	const auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
+	const auto CalculatePosition = [&](const int x, const int y, glm::vec3& target)  {
 		const auto globalX = float(scale * x / detail + globalOffsetX);
 		const auto globalY = float(scale * y / detail + globalOffsetY);
 
@@ -67,7 +67,7 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 	}
 
 	//	Lokální lambda pro výpočet normály
-	auto GetOrCalculatePosition = [&](const unsigned int x, const unsigned int y) -> glm::vec3 {
+	auto GetOrCalculatePosition = [&](const int x, const int y) -> glm::vec3 {
 		if (x >= 0 && x < width && y >= 0 && y < height)
 			return GetVertex(x, y).position;
 
@@ -78,7 +78,7 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 	};
 
 	//	Lokální lambda pro výpočet normály
-	const auto CalculateNormal = [&](const unsigned int x, const unsigned int y) {
+	const auto CalculateNormal = [&](const int x, const int y) {
 		assert(x >= 0);
 		assert(x < width);
 		assert(y >= 0);
