@@ -71,11 +71,11 @@ namespace Application
 		///
 		/// @brief 
 		///
-		int GetRenderableCount() const { return _renderableCount; }
+		size_t GetRenderableCount() const { return _renderableCount; }
 		///
 		/// @brief 
 		///
-		void SetRenderableCount(const int count) { _renderableCount = count; }
+		void SetRenderableCount(const size_t count) { _renderableCount = count; }
 
 	private:
 		///
@@ -93,7 +93,7 @@ namespace Application
 		///
 		/// @brief 
 		///
-		int _renderableCount = 0;
+		size_t _renderableCount = 0;
 
 		///
 		/// @brief 

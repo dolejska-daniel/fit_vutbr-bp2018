@@ -10,6 +10,8 @@
 #include <Terrain/HeightMap.h>
 #include <algorithm>
 #include <vector>
+#include <glm/detail/_noise.hpp>
+#include <glm/detail/_noise.hpp>
 
 
 using namespace ge::gl;
@@ -223,27 +225,56 @@ void Street::RemoveSubstreet(const std::shared_ptr<Street>& substreet)
 	_substreets.erase(std::remove(_substreets.begin(), _substreets.end(), substreet), _substreets.end());
 }
 
-std::vector<std::pair<glm::vec3, std::shared_ptr<Street>>> const& Street::GetIntersections() const
+std::vector<StreetIntersection> const& Street::GetIntersections() const
 {
 	return _intersections;
 }
 
-void Street::AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street)
+void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment)
 {
-	_intersections.emplace_back(intersection_point, street);
+	const auto a = segment.startPoint;
+	const auto b = segment.endPoint;
+	const auto p = intersecting_segment.startPoint;
+
+	//--------------------------------------------------------------------
+	// https://math.stackexchange.com/a/274728
+	//
+	const auto d = (p.x - a.x) * (b.z - a.z) - (p.z - a.z) * (b.x - a.x);
+	//--------------------------------------------------------------------
+
+	StreetIntersectionSide side;
+	if (d < 0)
+		side = RIGHT;
+	else
+		side = LEFT;
+
+	AddIntersection(intersection_point, segment.street, side);
+}
+
+void Street::AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street,
+                             const StreetIntersectionSide side)
+{
+	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), street) != _substreets.end();
+	_intersections.push_back({
+		intersection_point,
+		is_substreet,
+		side,
+		street,
+	});
+
 	std::sort(_intersections.begin(), _intersections.end(),
-		[&](std::pair<glm::vec3, std::shared_ptr<Street>> const& intersection1, std::pair<glm::vec3, std::shared_ptr<Street>> const& intersection2)
+		[&](StreetIntersection const& intersection1, StreetIntersection const& intersection2)
 	{
 		const auto start_point = GetSegment(0).startPoint;
-		return glm::distance(start_point, intersection1.first) < glm::distance(start_point, intersection2.first);
+		return glm::distance(start_point, intersection1.point) < glm::distance(start_point, intersection2.point);
 	});
 }
 
 void Street::RemoveIntersection(std::shared_ptr<Street> const& street)
 {
 	_intersections.erase(std::remove_if(_intersections.begin(), _intersections.end(),
-		[&](std::pair<glm::vec3, std::shared_ptr<Street>> const& intersection)
+		[&](StreetIntersection const& intersection)
 	{
-		return intersection.second == street;
+		return intersection.street == street;
 	}), _intersections.end());
 }

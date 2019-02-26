@@ -36,7 +36,7 @@ StreetMap::StreetMap(Terrain::Map *map)
 			if (street->GetLevel() < 2)
 				dir += glm::vec3(0, 0, 0.05f);
 			dir = glm::normalize(dir);
-			street->BuildStep(dir, glm::pow(.75f, street->GetLevel()) * 6.f);
+			street->BuildStep(dir, float(glm::pow(.75f, street->GetLevel()) * 6.f));
 		}));
 
 	auto startPoint = glm::vec3(0, 0, 32 * 8);
@@ -88,15 +88,14 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, 
 		//std::cerr << glm::to_string(intersection.positionRelative) << std::endl;
 		if (intersection.exists)
 		{
-			intersection.street = street;
+			intersection.segment = street_segment;
 			return intersection;
 		}
 	}
 
 	return {
 		false,
-		glm::vec3(-1),
-		street,
+		glm::vec3(0),
 	};
 }
 
@@ -109,7 +108,6 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 		return  {
 			false,
 			glm::vec2(-1),
-			nullptr,
 		};
 	}
 
@@ -130,7 +128,6 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 		   t[0] >= 0.f + error && t[0] <= 1.f - error
 		&& t[1] >= 0.f + error && t[1] <= 1.f - error,
 		t,
-		nullptr,
 	};
 	//--------------------------------------------------------------------
 
@@ -152,7 +149,7 @@ void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Stre
 		if (intersection.exists)
 		{
 			//	Průsečík existuje
-			intersection.street = streetSegment.street;
+			intersection.segment = streetSegment;
 			intersections->push_back(intersection);
 		}
 	}
@@ -185,8 +182,8 @@ void StreetMap::BuildStep()
 		_zone->BuildStep(street);
 		terrainMap->ValidateStreet(street);
 
-		auto segment = street->GetSegment();
-		auto intersections = Intersections(segment);
+		auto intersecting_segment = street->GetSegment();
+		auto intersections = Intersections(intersecting_segment);
 		if (!intersections->empty())
 		{
 			//	Průsečíky byly nalezeny
@@ -211,9 +208,9 @@ void StreetMap::BuildStep()
 			street->SetSegmentEndPoint(intersectionPoint);
 			StreetRootNode->Insert(street->ReadSegment());
 			street->End();
-			intersection.street->AddIntersection(intersectionPoint, street);
+			intersection.segment.street->AddIntersection(intersectionPoint, intersecting_segment, intersection.segment);
 
-			segment = street->GetSegment();
+			intersecting_segment = street->GetSegment();
 			continue;
 		}
 

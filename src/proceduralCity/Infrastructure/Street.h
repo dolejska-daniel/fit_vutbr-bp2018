@@ -44,6 +44,22 @@ namespace Infrastructure
 		}
 	};
 
+	///
+	/// @brief 
+	///
+	enum StreetIntersectionSide { LEFT, RIGHT, };
+
+	///
+	/// @brief 
+	///
+	struct StreetIntersection
+	{
+		glm::vec3				point;
+		bool					isSubstreet;
+		StreetIntersectionSide	side;
+		std::shared_ptr<Street>	street;
+	};
+
 
 	///
 	/// @brief 
@@ -134,8 +150,9 @@ namespace Infrastructure
 		void AddSubstreet(std::shared_ptr<Street> const& substreet);
 		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
 
-		std::vector<std::pair<glm::vec3, std::shared_ptr<Street>>> const& GetIntersections() const;
-		void AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street);
+		std::vector<StreetIntersection> const& GetIntersections() const;
+		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment);
+		void AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street, StreetIntersectionSide side);
 		void RemoveIntersection(std::shared_ptr<Street> const& street);
 
 		float		lengthSplit = 0;
@@ -153,7 +170,7 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
-		std::vector<std::pair<glm::vec3, std::shared_ptr<Street>>> _intersections;
+		std::vector<StreetIntersection> _intersections;
 		///
 		/// @brief 
 		///

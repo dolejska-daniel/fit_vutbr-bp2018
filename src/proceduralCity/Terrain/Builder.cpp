@@ -20,7 +20,7 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 	//	Načtení potřebných proměnných
 	auto width = chunk->GetVerticesWidth();
 	auto height = chunk->GetVerticesHeight();
-	auto detail = static_cast<float>(chunk->GetDetail());
+	auto detail = chunk->GetDetail();
 	auto scale = chunk->GetScale();
 	auto globalOffsetX = chunk->GetGlobalOffsetX();
 	auto globalOffsetY = chunk->GetGlobalOffsetY();
@@ -37,8 +37,8 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 
 	//	Lokální lambda pro výpočet normály
 	const auto CalculatePosition = [&](const unsigned int x, const unsigned int y, glm::vec3& target)  {
-		const auto globalX = float(float(scale * x / detail) + globalOffsetX);
-		const auto globalY = float(float(scale * y / detail) + globalOffsetY);
+		const auto globalX = float(scale * x / detail + globalOffsetX);
+		const auto globalY = float(scale * y / detail + globalOffsetY);
 
 		target.x = globalX; // Šířka
 		target.y = 0; // 3D Výška

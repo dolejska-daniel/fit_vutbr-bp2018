@@ -23,6 +23,7 @@
 #include <Application/Application.h>
 #include <Application/ShaderManager.h>
 #include <Application/Renderer.h>
+#include <Infrastructure/Parcel.h>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
 #include <Infrastructure/StreetNode.h>
@@ -127,6 +128,8 @@ int main(const int argc, char* argv[])
 	const auto map = Generator::GenerateMap(vars);
 
 	auto streetMap = Infrastructure::StreetMap(map);
+	//auto parcel = new Infrastructure::Parcel();
+	std::vector<std::shared_ptr<Infrastructure::Parcel>> parcels;
 
 
 
@@ -171,15 +174,6 @@ int main(const int argc, char* argv[])
 		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
 
-		/*
-		for (unsigned int y = 0; y < map->GetHeight(); y++)
-		{
-			for (unsigned int x = 0; x < map->GetWidth(); x++)
-			{
-				const auto chunk = map->GetChunk(x, y);
-				renderer->Render(chunk);
-			}
-		}*/
 		for (auto i = 0; i < map->GetChunks().size(); i++)
 		{
 			auto chunk = map->GetChunk(i);
@@ -325,9 +319,67 @@ int main(const int argc, char* argv[])
 		else
 			postprocessed = false;
 
+		static auto parcelGenerated = false;
+		if (KeyDown['l'] && !parcelGenerated)
+		{
+			auto street = streetMap.GetStreets()[1];
+			std::vector<std::shared_ptr<Infrastructure::Street>> visited;
+
+			auto intersections = street->GetIntersections();
+			if (!intersections.empty())
+			{
+				// Označení silnice za navštívenou
+				visited.push_back(street);
+
+				// Vytvoření nové parcely
+				auto parcel = std::make_shared<Infrastructure::Parcel>();
+				parcels.push_back(parcel);
+
+				// Prvotní bod parcely
+				parcel->AddBorderPoint(street->GetSegment(0).startPoint);
+
+				// První křižovatka
+				auto intersection = intersections.front();
+				parcel->AddBorderPoint(intersection.point);
+
+				// Dokud existují navazující silnice
+				while (std::find(visited.begin(), visited.end(), intersection.street) == visited.end())
+				{
+					// Označení poslední ulice za navštívenou
+					visited.push_back(intersection.street);
+
+					// Následující křižovatky
+					intersections = intersection.street->GetIntersections();
+					if (!intersections.empty())
+					{
+						// Výběr křižovatky
+						intersection = intersections.front();
+						// Další bod parcely
+						parcel->AddBorderPoint(intersection.point);
+					}
+					else
+					{
+						// Žádné další křiožvatky nejsou
+						// Volba posledního bodu parcely
+						auto point = intersection.street->GetSegment(0).startPoint;
+						if (intersection.isSubstreet)
+							point = intersection.street->GetSegment().endPoint;
+
+						parcel->AddBorderPoint(point);
+						break;
+					}
+				}
+				// Uzavření parcely
+				parcel->Finish();
+			}
+		}
+		for (const auto& parcel : parcels)
+			if (parcel->finished)
+				renderer->Render(parcel);
+
 		if (KeyDown['y'])
 		{
-			printf("Number of streets: %lld\n", streetMap.ReadStreets().size());
+			printf("Number of streets: %llu\n", streetMap.ReadStreets().size());
 		}
 
 		color = { 1, 1, 1 };

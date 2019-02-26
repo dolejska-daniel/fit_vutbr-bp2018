@@ -31,8 +31,8 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 	{
 		_buildStep = [&](std::shared_ptr<Street> const& street)
 		{
-			auto dir = street->ReadSegment().direction;
-			street->BuildStep(dir, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize);
+			const auto dir = street->ReadSegment().direction;
+			street->BuildStep(dir, float(glm::pow(stepLevelOffset, street->GetLevel()) * stepSize));
 		};
 	}
 
@@ -47,14 +47,17 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 
 				glm::vec3 position = street->GetSegmentPoint(1.f - ((25 + std::rand() % 50) / 100.f));
 				glm::vec3 direction;
+				StreetIntersectionSide side;
 				if (std::rand() % 10 >= 5)
 				{
+					side = RIGHT;
 					direction.x = -segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = segment.direction.x;
 				}
 				else
 				{
+					side = LEFT;
 					direction.x = segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = -segment.direction.x;
@@ -62,7 +65,7 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 
 				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1);
 				street->AddSubstreet(substreet);
-				street->AddIntersection(position, substreet);
+				street->AddIntersection(position, substreet, side);
 				map->AddStreet(substreet);
 			}
 		};
