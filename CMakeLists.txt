@@ -64,6 +64,7 @@ set(INCLUDES
 	src/proceduralCity/Infrastructure/Structs/ParcelIndex.h
 	src/proceduralCity/Infrastructure/Structs/ParcelVertex.h
 	src/proceduralCity/Infrastructure/Structs/StreetIntersection.h
+	src/proceduralCity/Infrastructure/Structs/StreetNarrowPair.h
 	src/proceduralCity/Infrastructure/Structs/StreetSegment.h
 	src/proceduralCity/Infrastructure/Structs/StreetSegmentIntersection.h
 	src/proceduralCity/Infrastructure/Structs/StreetVertex.h

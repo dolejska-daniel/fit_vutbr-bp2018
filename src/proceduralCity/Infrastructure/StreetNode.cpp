@@ -141,12 +141,12 @@ std::shared_ptr<StreetNode> StreetNode::GetContainingNode(StreetSegment const& s
 		return nullptr;
 
 	if (Contains(segment))
-		//	Uzel obsahuje daný segment
+		//	Uzel obsahuje daný intersectingSegment
 		return shared_from_this();
 
 	if (HasChildren())
 	{
-		//	Uzel daný segment neobsahuje ale má podřízené uzly, které nejspíše ano
+		//	Uzel daný intersectingSegment neobsahuje ale má podřízené uzly, které nejspíše ano
 		for (auto &node : _children)
 		{
 			auto result = node.second->GetContainingNode(segment);
@@ -177,7 +177,7 @@ bool StreetNode::Insert(StreetSegment const& segment)
 	
 	if (IsRoot())
 	{
-		//	Tento uzel je nejvyšší existující, přesto segment nespadá do jeho mezí
+		//	Tento uzel je nejvyšší existující, přesto intersectingSegment nespadá do jeho mezí
 		//	Proběhne vytvoření nadřazeného uzlu a pokus o vložení do něj
 		if (CreateParent(RelativePositionTo(segment)))
 			//	Pokus o vložení do nadřazeného uzlu
@@ -209,7 +209,7 @@ bool StreetNode::Remove(StreetSegment const& segment)
 
 	if (HasChildren())
 	{
-		//	Tento uzel má podřízené uzly, které segment nejspíše obsahují
+		//	Tento uzel má podřízené uzly, které intersectingSegment nejspíše obsahují
 		auto node = _children.find(RelativePositionFor(segment));
 		if (node != _children.end()) return node->second->Remove(segment);
 	}

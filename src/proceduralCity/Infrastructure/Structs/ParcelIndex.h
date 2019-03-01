@@ -13,6 +13,6 @@ namespace Infrastructure
 	///
 	struct ParcelIndex
 	{
-		glm::uvec3 triangle;	///< Tři vrcholy trojúhelníka
+		glm::uvec2 line;	///< Dva body úsečky
 	};
 }

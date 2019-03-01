@@ -14,14 +14,14 @@ SCENARIO("Intersection, StreetSegment-StreetSegment [LT|Simple, Non-existent]", 
 		glm::vec3(-1.f, 0.f, 1.f),
 		glm::vec3(-1.f, 0.f, 0.f),
 		1,
-		0
+		nullptr
 	};
 	const StreetSegment segment2 = {
 		glm::vec3(-2.f, 0.f, 0.f),
 		glm::vec3(-2.f, 0.f, 2.f),
 		glm::vec3(0.f, 0.f, 1.f),
 		1,
-		0
+		nullptr
 	};
 
 	auto intersection = StreetMap::Intersection(segment1, segment2);
@@ -33,20 +33,20 @@ SCENARIO("Intersection, StreetSegment-StreetSegment [LT|Simple, Non-existent]", 
 
 SCENARIO("Intersection, StreetSegment-StreetSegment [RT|Simple, Non-existent]", "[Infrastructure/StreetMap]")
 {
-	//	RT segment
+	//	RT intersectingSegment
 	const StreetSegment segment1 = {
 		glm::vec3(0.f, 0.f, 1.f),
 		glm::vec3(1.f, 0.f, 1.f),
 		glm::vec3(1.f, 0.f, 0.f),
 		1,
-		0
+		nullptr
 	};
 	const StreetSegment segment2 = {
 		glm::vec3(2.f, 0.f, 0.f),
 		glm::vec3(2.f, 0.f, 2.f),
 		glm::vec3(0.f, 0.f, 1.f),
 		1,
-		0
+		nullptr
 	};
 
 	auto intersection = StreetMap::Intersection(segment1, segment2);
@@ -62,14 +62,14 @@ SCENARIO("Intersection, StreetSegment-StreetSegment [RB|Simple, Non-existent]", 
 		glm::vec3(1.f, 0.f, -1.f),
 		glm::vec3(1.f, 0.f, 0.f),
 		1,
-		0
+		nullptr
 	};
 	const StreetSegment segment2 = {
 		glm::vec3(2.f, 0.f, 0.f),
 		glm::vec3(2.f, 0.f, -2.f),
 		glm::vec3(0.f, 0.f, -1.f),
 		1,
-		0
+		nullptr
 	};
 
 	auto intersection = StreetMap::Intersection(segment1, segment2);
@@ -85,14 +85,14 @@ SCENARIO("Intersection, StreetSegment-StreetSegment [LB|Simple, Non-existent]", 
 		glm::vec3(-1.f, 0.f, -1.f),
 		glm::vec3(-1.f, 0.f, 0.f),
 		1,
-		0
+		nullptr
 	};
 	const StreetSegment segment2 = {
 		glm::vec3(-2.f, 0.f, 0.f),
 		glm::vec3(-2.f, 0.f, -2.f),
 		glm::vec3(0.f, 0.f, -1.f),
 		1,
-		0
+		nullptr
 	};
 
 	auto intersection = StreetMap::Intersection(segment1, segment2);
@@ -108,14 +108,14 @@ SCENARIO("Intersection, StreetSegment-StreetSegment [LT|Extended, Non-existent]"
 		glm::vec3(-1.f, 0.f, 1.f),
 		glm::vec3(-1.f, 0.f, 0.f),
 		1,
-		0
+		nullptr
 	};
 	StreetSegment segment2 = {
 		glm::vec3(-1.f, 0.f, 0.f),
 		glm::vec3(-3.f, 0.f, 2.f),
 		glm::vec3(-.5f, 0.f, .5f),
 		1,
-		0
+		nullptr
 	};
 
 	auto intersection = StreetMap::Intersection(segment1, segment2);
@@ -128,14 +128,14 @@ SCENARIO("Intersection, StreetSegment-StreetSegment [LT|Extended, Non-existent]"
 		glm::vec3(-2.f, 0.f, 2.f),
 		glm::vec3(-.5f, 0.f, .5f),
 		1,
-		0
+		nullptr
 	};
 	segment2 = {
 		glm::vec3(-5.f, 0.f, 1.f),
 		glm::vec3(-4.f, 0.f, 2.f),
 		glm::vec3(.5f, 0.f, .5f),
 		1,
-		0
+		nullptr
 	};
 
 	intersection = StreetMap::Intersection(segment1, segment2);

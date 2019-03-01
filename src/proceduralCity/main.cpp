@@ -139,7 +139,7 @@ int main(const int argc, char* argv[])
 
 	std::cerr << "Callback" << std::endl;
 	//	Drawing
-    mainLoop->setIdleCallback([&](){
+	mainLoop->setIdleCallback([&]() {
 
 		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -147,9 +147,9 @@ int main(const int argc, char* argv[])
 		for (auto a = 0; a < 3; a++)
 			freeLook->move(a, float(KeyDown["d s"[a]] - KeyDown["acw"[a]]) * float(.25f + KeyDown[SDLK_LSHIFT] * 2.f));
 
-	    auto cameraPosition = freeLook->getPosition();
-	    auto projectionMatrix = cameraProjection->getProjection();
-	    auto viewMatrix = freeLook->getView();
+		auto cameraPosition = freeLook->getPosition();
+		auto projectionMatrix = cameraProjection->getProjection();
+		auto viewMatrix = freeLook->getView();
 		mat4 modelMatrix(1);
 
 		static short render = 0;
@@ -261,10 +261,10 @@ int main(const int argc, char* argv[])
 					//--------------------------------------------------------------------
 					// https://math.stackexchange.com/a/210865
 					//
-					auto x  = glm::vec2{ s1_segment_first.direction.x, s1_segment_first.direction.z };
+					auto x = glm::vec2{ s1_segment_first.direction.x, s1_segment_first.direction.z };
 					auto x1 = glm::vec2{ s1_segment_first.startPoint.x, s1_segment_first.startPoint.z };
 					auto y1 = glm::vec2{ s2_segment_first.startPoint.x, s2_segment_first.startPoint.z };
-					auto d  = x1 - y1;
+					auto d = x1 - y1;
 					auto xparallel = glm::dot(d, x) / glm::pow(glm::length(x), 2) * x;
 					auto xperpendicular = d - xparallel;
 					//--------------------------------------------------------------------
@@ -319,7 +319,95 @@ int main(const int argc, char* argv[])
 		else
 			postprocessed = false;
 
+
+		static size_t id = 0;
+		if (KeyDown['j'])
+		{
+			id = 0;
+			parcels.clear();
+		}
+
 		static auto parcelGenerated = false;
+		if (KeyDown['k'])
+		{
+			if (!parcelGenerated)
+			{
+				std::cerr << std::endl << "Generating parcel..." << std::endl;
+
+				for (const auto& street : streetMap.GetStreets())
+					street->GenerateIntersectionPointLists();
+
+				const auto street = streetMap.GetStreets()[1];
+				const auto rightPairs = street->GetRightIntersectionPointPairs();
+				std::cerr << "Right intersections: " << rightPairs.size() << "    (initial)" << std::endl;
+				std::cerr << "Left intersections : " << street->GetLeftIntersectionPointPairs().size() << "    (initial)" << std::endl;
+
+				if (id < rightPairs.size())
+				{
+					auto parcel = std::make_shared<Infrastructure::Parcel>();
+					parcels.push_back(parcel);
+
+					if (!rightPairs.empty())
+					{
+						auto currentPair = rightPairs[id];
+						auto currentStreet = currentPair.intersecting_segment2.street;
+						auto wasInverted = false;
+						auto isInverted = currentPair.invertedNext;
+						parcel->AddBorderPoint(currentPair.point1);
+
+						std::vector<std::shared_ptr<Infrastructure::Street>> visited{street};
+						do
+						{
+							visited.push_back(currentStreet);
+							if (wasInverted)
+							{
+								std::cerr << "Using point1 - wasInverted." << std::endl;
+								std::cerr << "Border PT from: " << glm::to_string(currentPair.point2) << std::endl;
+								std::cerr << "Border PT to  : " << glm::to_string(currentPair.point1) << std::endl;
+								parcel->AddBorderPoint(currentPair.point1);
+							}
+							else
+							{
+								std::cerr << "Using point2." << std::endl;
+								std::cerr << "Border PT from: " << glm::to_string(currentPair.point1) << std::endl;
+								std::cerr << "Border PT to  : " << glm::to_string(currentPair.point2) << std::endl;
+								parcel->AddBorderPoint(currentPair.point2);
+							}
+
+							std::cerr << "Right intersections: " << currentStreet->GetRightIntersectionPointPairs().size() << std::endl;
+							std::cerr << "Left intersections : " << currentStreet->GetLeftIntersectionPointPairs().size() << std::endl;
+
+							auto newPair = currentStreet->GetNextIntersectionPointPair(currentPair, wasInverted);
+							if (currentPair == newPair)
+							{
+								std::cerr << "No new pair exists, finishing parcel." << std::endl;
+								parcel->AddBorderPoint(currentStreet->GetSegment().endPoint);
+								break;
+							}
+
+							currentPair = newPair;
+							currentStreet = currentPair.intersecting_segment2.street;
+							if (isInverted)
+							{
+								std::cerr << "Using intersecting_segment1 - isInverted." << std::endl;
+								currentStreet = currentPair.intersecting_segment1.street;
+							}
+							wasInverted = isInverted;
+							isInverted = currentPair.invertedNext;
+						}
+						while (std::find(visited.begin(), visited.end(), currentStreet) == visited.end());
+					}
+
+					parcel->Finish();
+					id++;
+				}
+			}
+
+			parcelGenerated = true;
+		}
+		else
+			parcelGenerated = false;
+
 		if (KeyDown['l'] && !parcelGenerated)
 		{
 			auto street = streetMap.GetStreets()[1];
@@ -343,13 +431,13 @@ int main(const int argc, char* argv[])
 				parcel->AddBorderPoint(intersection.point);
 
 				// Dokud existují navazující silnice
-				while (std::find(visited.begin(), visited.end(), intersection.street) == visited.end())
+				while (std::find(visited.begin(), visited.end(), intersection.intersecting_segment.street) == visited.end())
 				{
 					// Označení poslední ulice za navštívenou
-					visited.push_back(intersection.street);
+					visited.push_back(intersection.intersecting_segment.street);
 
 					// Následující křižovatky
-					intersections = intersection.street->GetIntersections();
+					intersections = intersection.intersecting_segment.street->GetIntersections();
 					if (!intersections.empty())
 					{
 						// Výběr křižovatky
@@ -361,9 +449,9 @@ int main(const int argc, char* argv[])
 					{
 						// Žádné další křiožvatky nejsou
 						// Volba posledního bodu parcely
-						auto point = intersection.street->GetSegment(0).startPoint;
-						if (intersection.isSubstreet)
-							point = intersection.street->GetSegment().endPoint;
+						auto point = intersection.intersecting_segment.street->GetSegment(0).startPoint;
+						if (intersection.is_substreet)
+							point = intersection.intersecting_segment.street->GetSegment().endPoint;
 
 						parcel->AddBorderPoint(point);
 						break;
@@ -373,6 +461,8 @@ int main(const int argc, char* argv[])
 				parcel->Finish();
 			}
 		}
+		color = { 0, 0, 1 };
+		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& parcel : parcels)
 			if (parcel->finished)
 				renderer->Render(parcel);

@@ -18,7 +18,8 @@ namespace Infrastructure
 	{
 		bool			exists;
 		glm::vec2		positionRelative;
-		StreetSegment	segment;
+		StreetSegment	intersectingSegment;
+		StreetSegment	ownSegment;
 
 		bool operator==(StreetSegmentIntersection const& other) const
 		{

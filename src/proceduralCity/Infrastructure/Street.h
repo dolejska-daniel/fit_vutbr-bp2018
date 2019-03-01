@@ -10,6 +10,8 @@
 #include <Infrastructure/Structs/StreetVertex.h>
 #include <Infrastructure/Structs/StreetSegment.h>
 #include <Infrastructure/Structs/StreetIntersection.h>
+#include <Infrastructure/Structs/StreetNarrowPair.h>
+#include "Structs/StreetSegmentIntersection.h"
 
 
 namespace Terrain
@@ -36,6 +38,8 @@ namespace Infrastructure
 		/// @brief 
 		///
 		~Street();
+
+		void Destroy();
 
 		///
 		/// @brief 
@@ -108,17 +112,24 @@ namespace Infrastructure
 		///
 		void BuildStep(glm::vec3 const& direction, float length);
 
-		void AddSubstreet(std::shared_ptr<Street> const& substreet);
+		void AddSubstreet(StreetSegment const& source_segment, std::shared_ptr<Street> const& substreet);
 		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
 
 		std::vector<StreetIntersection> const& GetIntersections() const;
-		StreetIntersectionSide GetPointIntersectionSide(glm::vec3 const& point, StreetSegment const& segment) const;
-		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment);
-		void AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street, StreetIntersectionSide side);
+		StreetIntersectionSide GetPointSide(glm::vec3 const& point, StreetSegment const& segment) const;
+		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& own_segment);
+		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, const StreetIntersectionSide
+		                     intersection_side, StreetSegment const& own_segment);
 		void RemoveIntersection(std::shared_ptr<Street> const& street);
 
+		void GenerateIntersectionPointLists();
+		std::vector<StreetNarrowPair> const& GetLeftIntersectionPointPairs() const;
+		std::vector<StreetNarrowPair> const& GetRightIntersectionPointPairs() const;
+		StreetNarrowPair const& GetNextIntersectionPointPair(StreetNarrowPair const& currentPair, bool wasInverted);
+
+
 		float		lengthSplit = 0;
-		std::shared_ptr<Street> parentStreet;
+		StreetSegment parentSegment;
 
 	protected:
 		///
@@ -133,6 +144,14 @@ namespace Infrastructure
 		/// @brief 
 		///
 		std::vector<StreetIntersection> _intersections;
+		///
+		/// @brief 
+		///
+		std::vector<StreetNarrowPair> _intersectionPointsLeft;
+		///
+		/// @brief 
+		///
+		std::vector<StreetNarrowPair> _intersectionPointsRight;
 		///
 		/// @brief 
 		///

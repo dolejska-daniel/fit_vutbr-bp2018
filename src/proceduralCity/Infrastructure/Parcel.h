@@ -23,7 +23,7 @@ namespace Infrastructure
 		Parcel();
 		~Parcel();
 
-		void AddBorderPoint(glm::vec3 const& point);
+		void AddBorderPoint(glm::vec3 point);
 
 		void Finish();
 

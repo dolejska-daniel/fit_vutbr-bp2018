@@ -20,7 +20,8 @@
 using namespace Infrastructure;
 
 
-const float error = 0.0025f;
+//const float error = 0.0025f;
+const float error = 0.0f;
 
 StreetMap::StreetMap(Terrain::Map *map)
 	: terrainMap(map)
@@ -33,9 +34,11 @@ StreetMap::StreetMap(Terrain::Map *map)
 		_zone->Add(std::make_shared<StreetZone>(map->GetVars(), glm::vec2(400 - (rand() % 800), 400 - (rand() % 800)), 50.f, [&](std::shared_ptr<Street> const& street)
 		{
 			auto dir = street->ReadSegment().direction;
+			/*
 			if (street->GetLevel() < 2)
 				dir += glm::vec3(0, 0, 0.05f);
 			dir = glm::normalize(dir);
+			*/
 			street->BuildStep(dir, float(glm::pow(.75f, street->GetLevel()) * 6.f));
 		}));
 
@@ -76,6 +79,7 @@ void StreetMap::AddStreet(const std::shared_ptr<Street>& street)
 
 void StreetMap::RemoveStreet(const std::shared_ptr<Street>& street)
 {
+	street->Destroy();
 	_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
 }
 
@@ -88,7 +92,8 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, 
 		//std::cerr << glm::to_string(intersection.positionRelative) << std::endl;
 		if (intersection.exists)
 		{
-			intersection.segment = street_segment;
+			intersection.intersectingSegment = segment;
+			intersection.ownSegment = street_segment;
 			return intersection;
 		}
 	}
@@ -143,13 +148,14 @@ std::shared_ptr<std::vector<StreetSegmentIntersection>> StreetMap::Intersections
 
 void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const
 {
-	for (auto const& streetSegment : node->GetSegments())
+	for (auto const& street_segment : node->GetSegments())
 	{
-		auto intersection = Intersection(segment, streetSegment);
+		auto intersection = Intersection(segment, street_segment);
 		if (intersection.exists)
 		{
 			//	Průsečík existuje
-			intersection.segment = streetSegment;
+			intersection.intersectingSegment = segment;
+			intersection.ownSegment = street_segment;
 			intersections->push_back(intersection);
 		}
 	}
@@ -208,7 +214,8 @@ void StreetMap::BuildStep()
 			street->SetSegmentEndPoint(intersectionPoint);
 			StreetRootNode->Insert(street->ReadSegment());
 			street->End();
-			intersection.segment.street->AddIntersection(intersectionPoint, intersecting_segment, intersection.segment);
+			street->AddIntersection(intersectionPoint, intersection.ownSegment, intersection.intersectingSegment);
+			intersection.ownSegment.street->AddIntersection(intersectionPoint, intersection.intersectingSegment, intersection.ownSegment);
 
 			intersecting_segment = street->GetSegment();
 			continue;

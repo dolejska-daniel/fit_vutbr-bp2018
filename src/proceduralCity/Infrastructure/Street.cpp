@@ -4,15 +4,17 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
+#include <vector>
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetNode.h>
 #include <Infrastructure/Structs/StreetIntersection.h>
+#include <Infrastructure/Structs/StreetSegmentIntersection.h>
 #include <Infrastructure/Structs/StreetSegment.h>
 #include <Infrastructure/Structs/StreetVertex.h>
 #include <Terrain/HeightMap.h>
-#include <algorithm>
-#include <vector>
+#include <glm/detail/_noise.hpp>
 
 
 using namespace ge::gl;
@@ -20,9 +22,9 @@ using namespace Infrastructure;
 
 Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::vec3 const& direction,
                const float length, const short level)
-	: _heightMap(heightMap), _level(level)
+	: parentSegment({ glm::vec3(0), glm::vec3(0), glm::vec3(0), 0.f, nullptr }), _heightMap(heightMap), _level(level)
 {
-	auto ptr = std::shared_ptr<Street>(this, [](Street*) {});
+	const auto ptr = std::shared_ptr<Street>(this, [](Street*) {});
 
 	SetDrawMode(GL_LINES);
 
@@ -59,13 +61,26 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 
 Street::~Street()
 {
+	Destroy();
+}
+
+void Street::Destroy()
+{
+	const auto thisStreet = this->shared_from_this();
+
+	// TODO: Napojit segmenty
 	for (const auto& segment : GetSegments())
 		StreetRootNode->Remove(segment);
 
-	if (parentStreet)
-		parentStreet->RemoveSubstreet(this->shared_from_this());
+	if (parentSegment.street)
+	{
+		parentSegment.street->RemoveSubstreet(thisStreet);
+		parentSegment.street->RemoveIntersection(thisStreet);
+		parentSegment.street = nullptr;
+	}
 
-	// TODO: Napojit segmenty
+	for (const auto& intersection : GetIntersections())
+		intersection.intersecting_segment.street->RemoveIntersection(thisStreet);
 }
 
 
@@ -158,7 +173,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	}
 	else
 	{
-		//	Směrnice nejsou stejné, přidáváme nový segment a vertexy
+		//	Směrnice nejsou stejné, přidáváme nový intersectingSegment a vertexy
 		StreetSegment newSegment{
 			ReadSegment().endPoint,
 			ReadSegment().endPoint + length * direction,
@@ -215,10 +230,10 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	GetVB()->setData(_vertices.data());
 }
 
-void Street::AddSubstreet(std::shared_ptr<Street> const& substreet)
+void Street::AddSubstreet(StreetSegment const& source_segment, std::shared_ptr<Street> const& substreet)
 {
 	_substreets.push_back(substreet);
-	substreet->parentStreet = this->shared_from_this();
+	substreet->parentSegment = source_segment;
 }
 
 void Street::RemoveSubstreet(const std::shared_ptr<Street>& substreet)
@@ -231,7 +246,7 @@ std::vector<StreetIntersection> const& Street::GetIntersections() const
 	return _intersections;
 }
 
-StreetIntersectionSide Street::GetPointIntersectionSide(glm::vec3 const& point, StreetSegment const& segment) const
+StreetIntersectionSide Street::GetPointSide(glm::vec3 const& point, StreetSegment const& segment) const
 {
 	const auto a = segment.startPoint;
 	const auto b = segment.endPoint;
@@ -249,36 +264,157 @@ StreetIntersectionSide Street::GetPointIntersectionSide(glm::vec3 const& point, 
 	return LEFT;
 }
 
-void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& segment)
+void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& own_segment)
 {
-	const auto side = GetPointIntersectionSide(intersecting_segment.startPoint, segment);
-	AddIntersection(intersection_point, segment.street, side);
+	const auto intersection_side = GetPointSide(intersecting_segment.startPoint, own_segment);
+	AddIntersection(intersection_point, intersecting_segment, intersection_side, own_segment);
 }
 
-void Street::AddIntersection(glm::vec3 const& intersection_point, std::shared_ptr<Street> const& street,
-                             const StreetIntersectionSide side)
+void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, const StreetIntersectionSide intersection_side, StreetSegment const& own_segment)
 {
-	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), street) != _substreets.end();
+	const auto intersecting_street = intersecting_segment.street;
+	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_street) != _substreets.end();
 	_intersections.push_back({
 		intersection_point,
+		intersection_side,
 		is_substreet,
-		side,
-		street,
+		intersecting_segment,
+		own_segment,
 	});
 
+	const auto start_point = GetSegment(0).startPoint;
 	std::sort(_intersections.begin(), _intersections.end(),
 		[&](StreetIntersection const& intersection1, StreetIntersection const& intersection2)
 	{
-		const auto start_point = GetSegment(0).startPoint;
 		return glm::distance(start_point, intersection1.point) < glm::distance(start_point, intersection2.point);
 	});
 }
 
 void Street::RemoveIntersection(std::shared_ptr<Street> const& street)
 {
-	_intersections.erase(std::remove_if(_intersections.begin(), _intersections.end(),
-		[&](StreetIntersection const& intersection)
+	if (!_intersections.empty())
 	{
-		return intersection.street == street;
-	}), _intersections.end());
+		_intersections.erase(std::remove_if(_intersections.begin(), _intersections.end(),
+			[&](StreetIntersection const& intersection)
+		{
+			return intersection.intersecting_segment.street == street;
+		}), _intersections.end());
+	}
+}
+
+void Street::GenerateIntersectionPointLists()
+{
+	_intersectionPointsLeft.clear();
+	_intersectionPointsRight.clear();
+
+	auto sourcePointLeft = GetSegment(0).startPoint;
+	auto sourcePointRight = sourcePointLeft;
+
+	auto lastSegmentLeft = parentSegment;
+	auto lastSegmentRight = parentSegment;
+
+	for (const auto& intersection : GetIntersections())
+	{
+		if (intersection.side == LEFT)
+		{
+			_intersectionPointsLeft.push_back({
+				sourcePointLeft,
+				intersection.point,
+				lastSegmentLeft,
+				intersection.intersecting_segment,
+				!intersection.is_substreet,
+			});
+			sourcePointLeft = intersection.point;
+			lastSegmentLeft = intersection.intersecting_segment;
+		}
+		else if (intersection.side == RIGHT)
+		{
+			_intersectionPointsRight.push_back({
+				sourcePointRight,
+				intersection.point,
+				lastSegmentRight,
+				intersection.intersecting_segment,
+				!intersection.is_substreet,
+			});
+			sourcePointRight = intersection.point;
+			lastSegmentRight = intersection.intersecting_segment;
+		}
+	}
+}
+
+std::vector<StreetNarrowPair> const& Street::GetLeftIntersectionPointPairs() const
+{
+	return _intersectionPointsLeft;
+}
+
+std::vector<StreetNarrowPair> const& Street::GetRightIntersectionPointPairs() const
+{
+	return _intersectionPointsRight;
+}
+
+StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair const& currentPair, bool wasInverted)
+{
+	StreetIntersectionSide side;
+	/*
+	if (wasInverted)
+		side = GetPointSide(currentPair.point2, currentPair.intersecting_segment1);
+	else*/
+		side = GetPointSide(currentPair.point1, currentPair.intersecting_segment2);
+	if (side == LEFT)
+	{
+		auto nextPair = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(),
+			[&](StreetNarrowPair const& pair)
+		{/*
+			if (wasInverted)
+				return currentPair.point1 == pair.point2;*/
+
+			return currentPair.point2 == pair.point2;
+		});
+		if (nextPair != _intersectionPointsLeft.end())
+			return *nextPair;
+
+		/*
+		nextPair = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(),
+			[&](StreetNarrowPair const& pair)
+		{
+			return currentPair.point2 == pair.point1;
+		});
+		if (nextPair != _intersectionPointsLeft.end())
+		{
+			std::swap(nextPair->point1, nextPair->point2);
+			std::swap(nextPair->intersecting_segment1, nextPair->intersecting_segment2);
+			return *nextPair;
+		}
+		 
+		*/
+	}
+	else if (side == RIGHT)
+	{
+		auto nextPair =  std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
+			[&](StreetNarrowPair const& pair)
+		{/*
+			if (wasInverted)
+				return currentPair.point1 == pair.point1;*/
+			return currentPair.point2 == pair.point1;
+		});
+		if (nextPair != _intersectionPointsRight.end())
+			return *nextPair;
+
+		/*
+		nextPair = std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
+			[&](StreetNarrowPair const& pair)
+		{
+			return currentPair.point2 == pair.point2;
+		});
+		if (nextPair != _intersectionPointsRight.end())
+		{
+			std::swap(nextPair->point1, nextPair->point2);
+			std::swap(nextPair->intersecting_segment1, nextPair->intersecting_segment2);
+			return *nextPair;
+		}
+		 
+		 */
+	}
+
+	return currentPair;
 }

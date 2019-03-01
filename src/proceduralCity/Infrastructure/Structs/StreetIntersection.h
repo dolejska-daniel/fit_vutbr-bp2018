@@ -22,8 +22,9 @@ namespace Infrastructure
 	struct StreetIntersection
 	{
 		glm::vec3				point;
-		bool					isSubstreet;
 		StreetIntersectionSide	side;
-		std::shared_ptr<Street>	street;
+		bool					is_substreet;
+		StreetSegment			intersecting_segment;
+		StreetSegment			own_segment;
 	};
 }
