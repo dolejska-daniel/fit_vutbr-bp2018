@@ -39,6 +39,7 @@ set(SOURCES
 	src/proceduralCity/Application/ShaderManager.cpp
 	src/proceduralCity/Application/ShaderLoader.cpp
 	src/proceduralCity/Infrastructure/Building.cpp
+	src/proceduralCity/Infrastructure/BuildingPart.cpp
 	src/proceduralCity/Infrastructure/Parcel.cpp
 	src/proceduralCity/Infrastructure/Street.cpp
 	src/proceduralCity/Infrastructure/StreetMap.cpp
@@ -61,6 +62,8 @@ set(INCLUDES
 	src/proceduralCity/Application/Renderer.h
 	src/proceduralCity/Application/ShaderLoader.h
 	src/proceduralCity/Application/ShaderManager.h
+	src/proceduralCity/Infrastructure/Structs/BuildingPartIndex.h
+	src/proceduralCity/Infrastructure/Structs/BuildingPartVertex.h
 	src/proceduralCity/Infrastructure/Structs/ParcelIndex.h
 	src/proceduralCity/Infrastructure/Structs/ParcelVertex.h
 	src/proceduralCity/Infrastructure/Structs/StreetIntersection.h
@@ -69,6 +72,7 @@ set(INCLUDES
 	src/proceduralCity/Infrastructure/Structs/StreetSegmentIntersection.h
 	src/proceduralCity/Infrastructure/Structs/StreetVertex.h
 	src/proceduralCity/Infrastructure/Building.h
+	src/proceduralCity/Infrastructure/BuildingPart.h
 	src/proceduralCity/Infrastructure/Parcel.h
 	src/proceduralCity/Infrastructure/Street.h
 	src/proceduralCity/Infrastructure/StreetMap.h
