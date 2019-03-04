@@ -11,7 +11,7 @@ namespace Infrastructure
 	class Street;
 
 	struct StreetSegment;
-	struct StreetSegmentIntersection;
+	struct StreetIntersection;
 
 
 	///
@@ -19,19 +19,17 @@ namespace Infrastructure
 	///
 	struct StreetNarrowPair
 	{
-		glm::vec3		point1;
-		glm::vec3		point2;
-		StreetSegment	intersecting_segment1;
-		StreetSegment	intersecting_segment2;
-		bool			invertedNext;
+		glm::vec3			point1;
+		glm::vec3			point2;
+		StreetIntersection	intersection1;
+		StreetIntersection	intersection2;
 
 		bool operator==(StreetNarrowPair const& other) const
 		{
 			return this->point1 == other.point1
 				&& this->point2 == other.point2
-				&& this->intersecting_segment1.street == other.intersecting_segment1.street
-				&& this->intersecting_segment2.street == other.intersecting_segment2.street
-				&& this->invertedNext == other.invertedNext;
+				&& this->intersection1.side == other.intersection1.side
+				&& this->intersection2.side == other.intersection2.side;
 		}
 	};
 }

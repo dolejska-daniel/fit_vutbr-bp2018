@@ -112,24 +112,28 @@ namespace Infrastructure
 		///
 		void BuildStep(glm::vec3 const& direction, float length);
 
-		void AddSubstreet(StreetSegment const& source_segment, std::shared_ptr<Street> const& substreet);
+		void AddSubstreet(StreetIntersection const& source_intersection, std::shared_ptr<Street> const& substreet);
 		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
 
 		std::vector<StreetIntersection> const& GetIntersections() const;
 		StreetIntersectionSide GetPointSide(glm::vec3 const& point, StreetSegment const& segment) const;
 		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& own_segment);
 		void AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, const StreetIntersectionSide
-		                     intersection_side, StreetSegment const& own_segment);
+		                     intersection_side, StreetSegment const& own_segment, const bool is_substreet);
 		void RemoveIntersection(std::shared_ptr<Street> const& street);
 
 		void GenerateIntersectionPointLists();
 		std::vector<StreetNarrowPair> const& GetLeftIntersectionPointPairs() const;
 		std::vector<StreetNarrowPair> const& GetRightIntersectionPointPairs() const;
-		StreetNarrowPair const& GetNextIntersectionPointPair(StreetNarrowPair const& currentPair, bool wasInverted);
 
+		StreetNarrowPair const& GetNextIntersectionPointPair(StreetNarrowPair const& currentPair, bool wasInverted);
+		bool GetNextIntersectionPointPair(StreetNarrowPair const& current_pair, StreetIntersectionSide side_to,
+		                                  StreetNarrowPair* result);
+		bool GetNextIntersectionPointPair(const glm::vec3& point_from, StreetIntersectionSide side_from,
+		                                  StreetIntersectionSide side_to, StreetNarrowPair* result);
 
 		float		lengthSplit = 0;
-		StreetSegment parentSegment;
+		StreetIntersection parentIntersection;
 
 	protected:
 		///

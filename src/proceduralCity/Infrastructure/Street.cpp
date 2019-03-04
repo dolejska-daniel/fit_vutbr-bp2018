@@ -15,6 +15,10 @@
 #include <Infrastructure/Structs/StreetVertex.h>
 #include <Terrain/HeightMap.h>
 #include <glm/detail/_noise.hpp>
+#include <glm/detail/_noise.hpp>
+#include <glm/detail/_noise.hpp>
+#include <glm/detail/_noise.hpp>
+#include <glm/detail/_noise.hpp>
 
 
 using namespace ge::gl;
@@ -22,7 +26,7 @@ using namespace Infrastructure;
 
 Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::vec3 const& direction,
                const float length, const short level)
-	: parentSegment({ glm::vec3(0), glm::vec3(0), glm::vec3(0), 0.f, nullptr }), _heightMap(heightMap), _level(level)
+	: parentIntersection({}), _heightMap(heightMap), _level(level)
 {
 	const auto ptr = std::shared_ptr<Street>(this, [](Street*) {});
 
@@ -72,12 +76,15 @@ void Street::Destroy()
 	for (const auto& segment : GetSegments())
 		StreetRootNode->Remove(segment);
 
-	if (parentSegment.street)
+	// TODO: Správně odstranit substreet a intersection
+	/*
+	if (parentIntersection.street)
 	{
-		parentSegment.street->RemoveSubstreet(thisStreet);
-		parentSegment.street->RemoveIntersection(thisStreet);
-		parentSegment.street = nullptr;
+		parentIntersection.street->RemoveSubstreet(thisStreet);
+		parentIntersection.street->RemoveIntersection(thisStreet);
+		parentIntersection.street = nullptr;
 	}
+	*/
 
 	for (const auto& intersection : GetIntersections())
 		intersection.intersecting_segment.street->RemoveIntersection(thisStreet);
@@ -230,10 +237,10 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	GetVB()->setData(_vertices.data());
 }
 
-void Street::AddSubstreet(StreetSegment const& source_segment, std::shared_ptr<Street> const& substreet)
+void Street::AddSubstreet(StreetIntersection const& source_intersection, std::shared_ptr<Street> const& substreet)
 {
 	_substreets.push_back(substreet);
-	substreet->parentSegment = source_segment;
+	substreet->parentIntersection = source_intersection;
 }
 
 void Street::RemoveSubstreet(const std::shared_ptr<Street>& substreet)
@@ -264,16 +271,18 @@ StreetIntersectionSide Street::GetPointSide(glm::vec3 const& point, StreetSegmen
 	return LEFT;
 }
 
-void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& own_segment)
+void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment,
+                             StreetSegment const& own_segment)
 {
 	const auto intersection_side = GetPointSide(intersecting_segment.startPoint, own_segment);
-	AddIntersection(intersection_point, intersecting_segment, intersection_side, own_segment);
+	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_segment.street) != _substreets.end();
+	AddIntersection(intersection_point, intersecting_segment, intersection_side, own_segment, is_substreet);
 }
 
-void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, const StreetIntersectionSide intersection_side, StreetSegment const& own_segment)
+void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment,
+                             const StreetIntersectionSide intersection_side, StreetSegment const& own_segment, const bool is_substreet)
 {
 	const auto intersecting_street = intersecting_segment.street;
-	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_street) != _substreets.end();
 	_intersections.push_back({
 		intersection_point,
 		intersection_side,
@@ -307,37 +316,35 @@ void Street::GenerateIntersectionPointLists()
 	_intersectionPointsLeft.clear();
 	_intersectionPointsRight.clear();
 
-	auto sourcePointLeft = GetSegment(0).startPoint;
-	auto sourcePointRight = sourcePointLeft;
+	auto source_point_left = GetSegment(0).startPoint;
+	auto source_point_right = source_point_left;
 
-	auto lastSegmentLeft = parentSegment;
-	auto lastSegmentRight = parentSegment;
+	auto last_intersection_left = parentIntersection;
+	auto last_intersection_right = parentIntersection;
 
 	for (const auto& intersection : GetIntersections())
 	{
 		if (intersection.side == LEFT)
 		{
 			_intersectionPointsLeft.push_back({
-				sourcePointLeft,
+				source_point_left,
 				intersection.point,
-				lastSegmentLeft,
-				intersection.intersecting_segment,
-				!intersection.is_substreet,
+				intersection,
+				intersection,
 			});
-			sourcePointLeft = intersection.point;
-			lastSegmentLeft = intersection.intersecting_segment;
+			source_point_left = intersection.point;
+			last_intersection_left = intersection;
 		}
 		else if (intersection.side == RIGHT)
 		{
 			_intersectionPointsRight.push_back({
-				sourcePointRight,
+				source_point_right,
 				intersection.point,
-				lastSegmentRight,
-				intersection.intersecting_segment,
-				!intersection.is_substreet,
+				intersection,
+				intersection,
 			});
-			sourcePointRight = intersection.point;
-			lastSegmentRight = intersection.intersecting_segment;
+			source_point_right = intersection.point;
+			last_intersection_right = intersection;
 		}
 	}
 }
@@ -359,7 +366,7 @@ StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair co
 	if (wasInverted)
 		side = GetPointSide(currentPair.point2, currentPair.intersecting_segment1);
 	else*/
-		side = GetPointSide(currentPair.point1, currentPair.intersecting_segment2);
+	side = GetPointSide(currentPair.point1, currentPair.intersection2.intersecting_segment);
 	if (side == LEFT)
 	{
 		auto nextPair = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(),
@@ -372,25 +379,10 @@ StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair co
 		});
 		if (nextPair != _intersectionPointsLeft.end())
 			return *nextPair;
-
-		/*
-		nextPair = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(),
-			[&](StreetNarrowPair const& pair)
-		{
-			return currentPair.point2 == pair.point1;
-		});
-		if (nextPair != _intersectionPointsLeft.end())
-		{
-			std::swap(nextPair->point1, nextPair->point2);
-			std::swap(nextPair->intersecting_segment1, nextPair->intersecting_segment2);
-			return *nextPair;
-		}
-		 
-		*/
 	}
 	else if (side == RIGHT)
 	{
-		auto nextPair =  std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
+		auto nextPair = std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
 			[&](StreetNarrowPair const& pair)
 		{/*
 			if (wasInverted)
@@ -399,22 +391,56 @@ StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair co
 		});
 		if (nextPair != _intersectionPointsRight.end())
 			return *nextPair;
-
-		/*
-		nextPair = std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
-			[&](StreetNarrowPair const& pair)
-		{
-			return currentPair.point2 == pair.point2;
-		});
-		if (nextPair != _intersectionPointsRight.end())
-		{
-			std::swap(nextPair->point1, nextPair->point2);
-			std::swap(nextPair->intersecting_segment1, nextPair->intersecting_segment2);
-			return *nextPair;
-		}
-		 
-		 */
 	}
 
 	return currentPair;
+}
+
+bool Street::GetNextIntersectionPointPair(StreetNarrowPair const& current_pair, const StreetIntersectionSide side_to,
+										  StreetNarrowPair* result)
+{
+	// TODO: Possibly invalide reference segment selection for side evaluation
+	const auto side_from = GetPointSide(current_pair.point1, current_pair.intersection2.own_segment);
+	return GetNextIntersectionPointPair(current_pair.point2, side_from, side_to, result);
+}
+
+bool Street::GetNextIntersectionPointPair(const glm::vec3& point_from, const StreetIntersectionSide side_from,
+                                          const StreetIntersectionSide side_to, StreetNarrowPair* result)
+{
+	// pokud křižovatka navazuje zleva a cíl její cesty je doprava
+	// dochází k inverzi směru a je nutné zvolit odlišnou dvojici křižovatek
+	const auto direction_inverted = side_from != side_to;
+	const auto comparer = [&](StreetNarrowPair const& pair)
+	{
+		if (direction_inverted)
+			// směr je opačný, hledáme tedy dvojice "z druhé strany"
+			return  pair.point2 == point_from;
+
+		// směr nebyl změněn
+		return pair.point1 == point_from;
+	};
+
+	if (side_from == LEFT)
+	{
+		const auto result_iter = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(), comparer);
+		if (result_iter == _intersectionPointsLeft.end())
+			return false;
+
+		*result = *result_iter;
+	}
+	else// if (side_to == RIGHT)
+	{
+		const auto result_iter = std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(), comparer);
+		if (result_iter == _intersectionPointsRight.end())
+			return false;
+
+		*result = *result_iter;
+	}
+
+	if (direction_inverted)
+	{
+		std::swap(result->point1, result->point2);
+		std::swap(result->intersection1, result->intersection2);
+	}
+	return true;
 }

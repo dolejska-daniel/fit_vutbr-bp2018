@@ -332,6 +332,7 @@ int main(const int argc, char* argv[])
 		{
 			if (!parcelGenerated)
 			{
+				/*
 				std::cerr << std::endl << "Generating parcel..." << std::endl;
 
 				for (const auto& street : streetMap.GetStreets())
@@ -401,6 +402,7 @@ int main(const int argc, char* argv[])
 					parcel->Finish();
 					id++;
 				}
+				*/
 			}
 
 			parcelGenerated = true;
@@ -408,59 +410,27 @@ int main(const int argc, char* argv[])
 		else
 			parcelGenerated = false;
 
-		if (KeyDown['l'] && !parcelGenerated)
+		if (KeyDown['l'])
 		{
-			auto street = streetMap.GetStreets()[1];
-			std::vector<std::shared_ptr<Infrastructure::Street>> visited;
-
-			auto intersections = street->GetIntersections();
-			if (!intersections.empty())
+			if (!parcelGenerated)
 			{
-				// Označení silnice za navštívenou
-				visited.push_back(street);
-
-				// Vytvoření nové parcely
-				auto parcel = std::make_shared<Infrastructure::Parcel>();
-				parcels.push_back(parcel);
-
-				// Prvotní bod parcely
-				parcel->AddBorderPoint(street->GetSegment(0).startPoint);
-
-				// První křižovatka
-				auto intersection = intersections.front();
-				parcel->AddBorderPoint(intersection.point);
-
-				// Dokud existují navazující silnice
-				while (std::find(visited.begin(), visited.end(), intersection.intersecting_segment.street) == visited.end())
+				auto processStreet = [&](std::shared_ptr<Infrastructure::Street> street, glm::vec3 point_from)
 				{
-					// Označení poslední ulice za navštívenou
-					visited.push_back(intersection.intersecting_segment.street);
+					Infrastructure::StreetNarrowPair pair;
+					street->GetNextIntersectionPointPair(point_from, Infrastructure::RIGHT, Infrastructure::RIGHT, &pair);
+				};
 
-					// Následující křižovatky
-					intersections = intersection.intersecting_segment.street->GetIntersections();
-					if (!intersections.empty())
-					{
-						// Výběr křižovatky
-						intersection = intersections.front();
-						// Další bod parcely
-						parcel->AddBorderPoint(intersection.point);
-					}
-					else
-					{
-						// Žádné další křiožvatky nejsou
-						// Volba posledního bodu parcely
-						auto point = intersection.intersecting_segment.street->GetSegment(0).startPoint;
-						if (intersection.is_substreet)
-							point = intersection.intersecting_segment.street->GetSegment().endPoint;
+				auto street_current = streetMap.GetStreets()[1];
+				auto point_from = street_current->GetSegment(0).startPoint;
 
-						parcel->AddBorderPoint(point);
-						break;
-					}
-				}
-				// Uzavření parcely
-				parcel->Finish();
+				processStreet(street_current, point_from);
 			}
+
+			parcelGenerated = true;
 		}
+		else
+			parcelGenerated = false;
+
 		color = { 0, 0, 1 };
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& parcel : parcels)
