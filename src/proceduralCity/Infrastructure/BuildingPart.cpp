@@ -12,7 +12,9 @@ using namespace Infrastructure;
 
 BuildingPart::BuildingPart(const std::shared_ptr<Parcel>& parcel, BuildingType type)
 {
+	const auto size = parcel->borderPoints.size();
 	const auto height_diff = 10.f + rand() % 30;
+
 	std::vector<BuildingPartVertex> vertices;
 	for (glm::vec3 point : parcel->borderPoints)
 		vertices.push_back({ point });
@@ -22,7 +24,6 @@ BuildingPart::BuildingPart(const std::shared_ptr<Parcel>& parcel, BuildingType t
 		vertices.push_back({ point });
 	}
 
-	const auto size = parcel->borderPoints.size();
 	auto index = [&size](size_t index) -> size_t {
 		return index % size;
 	};

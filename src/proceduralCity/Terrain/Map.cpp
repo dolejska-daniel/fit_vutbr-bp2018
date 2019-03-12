@@ -96,19 +96,15 @@ std::shared_ptr<Chunk>& Map::GetChunk(const unsigned int index)
 
 void Map::ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street)
 {
-	/*
+	auto w = _width - 1;
 	auto v = street->GetSegment().endPoint;
-	const auto x = GetChunkOffsetX(_width);
-	const auto y = GetChunkOffsetY(_width);
-	std::cerr << v.x << ", " << v.y << ", " << v.z << std::endl;
-	std::cerr << x << std::endl;
-	std::cerr << y << std::endl;
-	if (v.x < x
-		|| v.x > x + _chunkWidth
-		|| v.z < y
-		|| v.z > y + _chunkWidth)
+	//auto d = _vars.getUint32("terrain.chunk.width") * _vars.getFloat("terrain.chunk.scale");
+	auto d = 0;
+	const glm::vec2 max{ GetChunkOffsetX(w + 1) + d, GetChunkOffsetY(w + 1) + d };
+	const glm::vec2 min{ GetChunkOffsetX(-w), GetChunkOffsetY(-w) };
+	if (v.x < min.x || v.z < min.y
+		|| v.x > max.x || v.z > max.y)
 	{
-		_width++;
-		std::cerr << "Extending map!" << std::endl;
-	}*/
+		street->End();
+	}
 }

@@ -24,6 +24,7 @@ std::shared_ptr<Chunk> Generator::GenerateChunk(Map* map, const int globalOffset
 	//	Vytvoření instance chunku
 	//	- vygenerování výškové mapy a inicializace objektu proběhne automaticky
 	auto chunk = std::make_shared<Chunk>(map->GetVars(), globalOffsetX, globalOffsetY);
+	std::cerr << "Chunk offset: " << globalOffsetX << ", " << globalOffsetY << std::endl;
 
 	//	Sestavení vertexů a indexů chunku
 	Builder::BuildVertices(chunk, map->GetHeightMap());

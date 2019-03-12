@@ -230,21 +230,23 @@ int main(const int argc, char* argv[])
 		{
 			if (!generateBuilding)
 			{
-				if (parcel_id < parcels.size())
+				if (KeyDown['o'])
+				{
+					buildings.clear();
+				}
+				else if (parcel_id < parcels.size())
 				{
 					auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], Infrastructure::SQUARE);
 					buildings.emplace_back(building);
 					parcel_id++;
 				}
-				else
-					buildings.clear();
 				generateBuilding = true;
 			}
 		}
 		else
 			generateBuilding = false;
 
-		color = { 0, 1, 0 };
+		color = { 1, 0, 0 };
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& building : buildings)
 			for (const auto& part : building->parts)
@@ -256,8 +258,6 @@ int main(const int argc, char* argv[])
 			std::vector<std::shared_ptr<Infrastructure::Street>> nearby_streets;
 			for (const auto& street1 : streetMap.GetStreets())
 			{
-				if (!street1->Ended())
-					continue;
 				if (std::find(nearby_streets.begin(), nearby_streets.end(), street1) != nearby_streets.end())
 					// Již  přidáno
 					continue;
@@ -268,9 +268,6 @@ int main(const int argc, char* argv[])
 				{
 					if (street1 == street2)
 						// Tatáž ulice
-						continue;
-					if (!street2->Ended())
-						// Pouze ukončené ulice
 						continue;
 					if (std::find(nearby_streets.begin(), nearby_streets.end(), street2) != nearby_streets.end())
 						// Již  přidáno
@@ -303,7 +300,7 @@ int main(const int argc, char* argv[])
 					auto xperpendicular = d - xparallel;
 					//--------------------------------------------------------------------
 
-					if (glm::length(xperpendicular) < 4.f)
+					if (glm::length(xperpendicular) < 20.f)
 					{
 						glm::vec3 direction_left{ -s2_segment_first.direction.z, s2_segment_first.direction.y, s2_segment_first.direction.x };
 						glm::vec3 direction_right{ s2_segment_first.direction.z, s2_segment_first.direction.y, -s2_segment_first.direction.x };
@@ -386,7 +383,7 @@ int main(const int argc, char* argv[])
 			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
 			*/
 
-			if (std::find(visited.begin(), visited.end(), street) != visited.end())
+			if (!street || std::find(visited.begin(), visited.end(), street) != visited.end())
 				return;
 
 			Infrastructure::StreetNarrowPair pair;
@@ -467,25 +464,26 @@ int main(const int argc, char* argv[])
 				{
 					for (const auto& pair : street->GetLeftIntersectionPointPairs())
 					{
+						std::cerr << std::endl << "New left parcel..." << std::endl;
 						parcel = std::make_shared<Infrastructure::Parcel>();
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::LEFT);
 						parcel->Finish();
-
-						processStreetToList(pair.intersection2.intersecting_segment.street);
+						visited.clear();
 					}
 
 					for (const auto& pair : street->GetRightIntersectionPointPairs())
 					{
+						std::cerr << std::endl << "New right parcel..." << std::endl;
 						parcel = std::make_shared<Infrastructure::Parcel>();
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::RIGHT);
 						parcel->Finish();
-
-						processStreetToList(pair.intersection2.intersecting_segment.street);
+						visited.clear();
 					}
 				};
-				processStreetToList(streetMap.GetStreets()[1]);
+				for (auto street : streetMap.GetStreets())
+					processStreetToList(street);
 			}
 
 			parcelGenerated = true;
