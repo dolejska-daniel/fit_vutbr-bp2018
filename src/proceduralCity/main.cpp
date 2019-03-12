@@ -28,6 +28,8 @@
 #include <Infrastructure/StreetMap.h>
 #include <Infrastructure/StreetNode.h>
 #include <algorithm>
+#include <Infrastructure/Building.h>
+#include <Infrastructure/BuildingPart.h>
 
 
 using namespace glm;
@@ -130,6 +132,7 @@ int main(const int argc, char* argv[])
 	auto streetMap = Infrastructure::StreetMap(map);
 	//auto parcel = new Infrastructure::Parcel();
 	std::vector<std::shared_ptr<Infrastructure::Parcel>> parcels;
+	std::vector<std::shared_ptr<Infrastructure::Building>> buildings;
 
 
 
@@ -174,12 +177,16 @@ int main(const int argc, char* argv[])
 		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
 
+		for (const auto& chunk : map->GetChunks())
+			if (chunk.second)
+				renderer->Render(chunk.second);
+		/*
 		for (auto i = 0; i < map->GetChunks().size(); i++)
 		{
 			auto chunk = map->GetChunk(i);
 			if (chunk)
 				renderer->Render(chunk);
-		}
+		}*/
 
 		shaders->Use("Phong");
 		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
@@ -205,7 +212,7 @@ int main(const int argc, char* argv[])
 
 
 		static auto changedRenderer = false;
-		if (KeyDown['b'])
+		if (KeyDown['r'])
 		{
 			if (!changedRenderer)
 			{
@@ -215,6 +222,33 @@ int main(const int argc, char* argv[])
 		}
 		else
 			changedRenderer = false;
+
+
+		static size_t parcel_id = 0;
+		static auto generateBuilding = false;
+		if (KeyDown['b'])
+		{
+			if (!generateBuilding)
+			{
+				if (parcel_id < parcels.size())
+				{
+					auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], Infrastructure::SQUARE);
+					buildings.emplace_back(building);
+					parcel_id++;
+				}
+				else
+					buildings.clear();
+				generateBuilding = true;
+			}
+		}
+		else
+			generateBuilding = false;
+
+		color = { 0, 1, 0 };
+		shaders->GetActiveProgram()->set3fv("color", &color[0]);
+		for (const auto& building : buildings)
+			for (const auto& part : building->parts)
+				renderer->Render(part);
 
 		static auto postprocessed = false;
 		if (KeyDown['p'])
@@ -321,109 +355,178 @@ int main(const int argc, char* argv[])
 
 
 		static size_t id = 0;
-		if (KeyDown['j'])
+		if (KeyDown['h'])
 		{
 			id = 0;
 			parcels.clear();
 		}
+
+		if (KeyDown['j'])
+		{
+			std::vector<std::shared_ptr<Infrastructure::Parcel>> parcelsInvalid;
+
+			for (const auto& parcel : parcels)
+				if (parcel->GetBorderPoints().size() != 4)
+					parcelsInvalid.push_back(parcel);
+
+			for (const auto& parcel : parcelsInvalid)
+				parcels.erase(std::remove(parcels.begin(), parcels.end(), parcel), parcels.end());
+		}
+
+
+		std::vector<std::shared_ptr<Infrastructure::Street>> visited;
+		std::shared_ptr<Infrastructure::Parcel> parcel;
+		std::function<void(std::shared_ptr<Infrastructure::Street>, Infrastructure::StreetSegment, glm::vec3, Infrastructure::StreetNarrowPair, Infrastructure::StreetIntersectionSide)> processStreet2 =
+			[&](const std::shared_ptr<Infrastructure::Street>& street, const Infrastructure::StreetSegment& segment, const glm::vec3& point_from, Infrastructure::StreetNarrowPair const& previous_pair, const Infrastructure::StreetIntersectionSide side)
+		{
+			/*
+			std::cerr << "processStreet2" << std::endl;
+			std::cerr << "Street: " << street.get() << std::endl;
+			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
+			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
+			*/
+
+			if (std::find(visited.begin(), visited.end(), street) != visited.end())
+				return;
+
+			Infrastructure::StreetNarrowPair pair;
+			if (street->GetNextIntersectionPointPair(previous_pair, segment, side, &pair))
+			{
+				// byla nalezena navazující dvojice křižovatek
+				parcel->AddBorderPoint(pair.point1);
+				if (!parcel->AddBorderPoint(pair.point2))
+					return;
+
+				visited.push_back(street);
+				auto streetNext = pair.intersection2.intersecting_segment.street;
+				auto segmentNext = pair.intersection2.intersecting_segment;
+				if (street == streetNext)
+				{
+					streetNext = pair.intersection2.own_segment.street;
+					segmentNext = pair.intersection2.own_segment;
+				}
+				processStreet2(streetNext, segmentNext, pair.point2, pair, side);
+			}
+			else
+			{
+				std::cerr << "Next pair was not found, using end point." << std::endl;
+				// žádná další dvojice křižovatek nalezena nebyla
+				parcel->AddBorderPoint(street->GetSegment().endPoint);
+			}
+		};
+
+		std::function<void(std::shared_ptr<Infrastructure::Street>, glm::vec3, Infrastructure::StreetIntersectionSide)> processStreet =
+			[&](const std::shared_ptr<Infrastructure::Street>& street, const glm::vec3& point_from, const Infrastructure::StreetIntersectionSide side)
+		{
+			/*
+			std::cerr << "processStreet" << std::endl;
+			std::cerr << "Street: " << street.get() << std::endl;
+			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
+			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
+			*/
+
+			if (std::find(visited.begin(), visited.end(), street) != visited.end())
+				return;
+
+			Infrastructure::StreetNarrowPair pair;
+			if (street->GetNextIntersectionPointPair(point_from, side, side, false, &pair))
+			{
+				// byla nalezena navazující dvojice křižovatek
+				parcel->AddBorderPoint(pair.point1);
+				if (!parcel->AddBorderPoint(pair.point2))
+					return;
+
+				visited.push_back(street);
+				auto streetNext = pair.intersection2.intersecting_segment.street;
+				auto segmentNext = pair.intersection2.intersecting_segment;
+				if (street == streetNext)
+				{
+					streetNext = pair.intersection2.own_segment.street;
+					segmentNext = pair.intersection2.own_segment;
+				}
+				processStreet2(streetNext, segmentNext, pair.point2, pair, side);
+			}
+			else
+			{
+				std::cerr << "Next pair was not found, using end point." << std::endl;
+				// žádná další dvojice křižovatek nalezena nebyla
+				parcel->AddBorderPoint(street->GetSegment().endPoint);
+			}
+		};
 
 		static auto parcelGenerated = false;
 		if (KeyDown['k'])
 		{
 			if (!parcelGenerated)
 			{
-				/*
-				std::cerr << std::endl << "Generating parcel..." << std::endl;
-
 				for (const auto& street : streetMap.GetStreets())
 					street->GenerateIntersectionPointLists();
 
-				const auto street = streetMap.GetStreets()[1];
-				const auto rightPairs = street->GetRightIntersectionPointPairs();
-				std::cerr << "Right intersections: " << rightPairs.size() << "    (initial)" << std::endl;
-				std::cerr << "Left intersections : " << street->GetLeftIntersectionPointPairs().size() << "    (initial)" << std::endl;
-
-				if (id < rightPairs.size())
+				std::function<void(std::shared_ptr<Infrastructure::Street>)> processStreetToList =
+					[&](const std::shared_ptr<Infrastructure::Street>& street)
 				{
-					auto parcel = std::make_shared<Infrastructure::Parcel>();
-					parcels.push_back(parcel);
-
-					if (!rightPairs.empty())
+					for (const auto& pair : street->GetLeftIntersectionPointPairs())
 					{
-						auto currentPair = rightPairs[id];
-						auto currentStreet = currentPair.intersecting_segment2.street;
-						auto wasInverted = false;
-						auto isInverted = currentPair.invertedNext;
-						parcel->AddBorderPoint(currentPair.point1);
+						parcel = std::make_shared<Infrastructure::Parcel>();
+						parcels.push_back(parcel);
+						processStreet(street, pair.point1, Infrastructure::LEFT);
+						parcel->Finish();
 
-						std::vector<std::shared_ptr<Infrastructure::Street>> visited{street};
-						do
-						{
-							visited.push_back(currentStreet);
-							if (wasInverted)
-							{
-								std::cerr << "Using point1 - wasInverted." << std::endl;
-								std::cerr << "Border PT from: " << glm::to_string(currentPair.point2) << std::endl;
-								std::cerr << "Border PT to  : " << glm::to_string(currentPair.point1) << std::endl;
-								parcel->AddBorderPoint(currentPair.point1);
-							}
-							else
-							{
-								std::cerr << "Using point2." << std::endl;
-								std::cerr << "Border PT from: " << glm::to_string(currentPair.point1) << std::endl;
-								std::cerr << "Border PT to  : " << glm::to_string(currentPair.point2) << std::endl;
-								parcel->AddBorderPoint(currentPair.point2);
-							}
-
-							std::cerr << "Right intersections: " << currentStreet->GetRightIntersectionPointPairs().size() << std::endl;
-							std::cerr << "Left intersections : " << currentStreet->GetLeftIntersectionPointPairs().size() << std::endl;
-
-							auto newPair = currentStreet->GetNextIntersectionPointPair(currentPair, wasInverted);
-							if (currentPair == newPair)
-							{
-								std::cerr << "No new pair exists, finishing parcel." << std::endl;
-								parcel->AddBorderPoint(currentStreet->GetSegment().endPoint);
-								break;
-							}
-
-							currentPair = newPair;
-							currentStreet = currentPair.intersecting_segment2.street;
-							if (isInverted)
-							{
-								std::cerr << "Using intersecting_segment1 - isInverted." << std::endl;
-								currentStreet = currentPair.intersecting_segment1.street;
-							}
-							wasInverted = isInverted;
-							isInverted = currentPair.invertedNext;
-						}
-						while (std::find(visited.begin(), visited.end(), currentStreet) == visited.end());
+						processStreetToList(pair.intersection2.intersecting_segment.street);
 					}
 
-					parcel->Finish();
-					id++;
-				}
-				*/
+					for (const auto& pair : street->GetRightIntersectionPointPairs())
+					{
+						parcel = std::make_shared<Infrastructure::Parcel>();
+						parcels.push_back(parcel);
+						processStreet(street, pair.point1, Infrastructure::RIGHT);
+						parcel->Finish();
+
+						processStreetToList(pair.intersection2.intersecting_segment.street);
+					}
+				};
+				processStreetToList(streetMap.GetStreets()[1]);
 			}
 
 			parcelGenerated = true;
 		}
-		else
-			parcelGenerated = false;
-
-		if (KeyDown['l'])
+		else if (KeyDown['l'])
 		{
 			if (!parcelGenerated)
 			{
-				auto processStreet = [&](std::shared_ptr<Infrastructure::Street> street, glm::vec3 point_from)
-				{
-					Infrastructure::StreetNarrowPair pair;
-					street->GetNextIntersectionPointPair(point_from, Infrastructure::RIGHT, Infrastructure::RIGHT, &pair);
-				};
-
+				for (const auto& street : streetMap.GetStreets())
+					street->GenerateIntersectionPointLists();
+				
 				auto street_current = streetMap.GetStreets()[1];
-				auto point_from = street_current->GetSegment(0).startPoint;
+				auto rightPairs = street_current->GetRightIntersectionPointPairs();
+				if (id < rightPairs.size())
+				{
+					auto pair = rightPairs[id];
 
-				processStreet(street_current, point_from);
+					std::cerr << std::endl << "New right parcel..." << std::endl;
+					parcel = std::make_shared<Infrastructure::Parcel>();
+					parcels.push_back(parcel);
+					processStreet(street_current, pair.point1, Infrastructure::RIGHT);
+					parcel->Finish();
+
+					visited.clear();
+				}
+
+				auto leftPairs = street_current->GetLeftIntersectionPointPairs();
+				if (id < leftPairs.size())
+				{
+					auto pair = leftPairs[id];
+
+					std::cerr << std::endl << "New left parcel..." << std::endl;
+					parcel = std::make_shared<Infrastructure::Parcel>();
+					parcels.push_back(parcel);
+					processStreet(street_current, pair.point1, Infrastructure::LEFT);
+					parcel->Finish();
+
+					visited.clear();
+				}
+
+				id++;
 			}
 
 			parcelGenerated = true;

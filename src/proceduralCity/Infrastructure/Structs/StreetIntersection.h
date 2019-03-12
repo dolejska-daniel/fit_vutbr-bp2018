@@ -26,5 +26,10 @@ namespace Infrastructure
 		bool					is_substreet;
 		StreetSegment			intersecting_segment;
 		StreetSegment			own_segment;
+
+		void Invert()
+		{
+			std::swap(this->own_segment, this->intersecting_segment);
+		}
 	};
 }

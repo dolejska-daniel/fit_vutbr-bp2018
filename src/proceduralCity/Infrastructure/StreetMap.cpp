@@ -213,8 +213,7 @@ void StreetMap::BuildStep()
 			StreetRootNode->Remove(street->ReadSegment());
 			street->SetSegmentEndPoint(intersectionPoint);
 			StreetRootNode->Insert(street->ReadSegment());
-			street->End();
-			street->AddIntersection(intersectionPoint, intersection.ownSegment, intersection.intersectingSegment);
+			street->End(intersectionPoint, intersection.ownSegment, intersection.intersectingSegment);
 			intersection.ownSegment.street->AddIntersection(intersectionPoint, intersection.intersectingSegment, intersection.ownSegment);
 
 			intersecting_segment = street->GetSegment();

@@ -38,6 +38,7 @@ namespace Application
 		/// @brief
 		///
 		void Render(std::shared_ptr<IRenderableElementArray> const& object) const;
+		/*
 		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 
 		void Attach(std::shared_ptr<IRenderableBase> const& object);
@@ -45,6 +46,7 @@ namespace Application
 
 		void Attach(std::shared_ptr<IRenderableCollection> const& collection);
 		void Detach(std::shared_ptr<IRenderableCollection> const& collection);
+		*/
 
 	private:
 		///

@@ -31,5 +31,13 @@ namespace Infrastructure
 				&& this->intersection1.side == other.intersection1.side
 				&& this->intersection2.side == other.intersection2.side;
 		}
+
+		void Invert()
+		{
+			std::swap(this->point1, this->point2);
+			std::swap(this->intersection1, this->intersection2);
+			this->intersection1.Invert();
+			this->intersection2.Invert();
+		}
 	};
 }

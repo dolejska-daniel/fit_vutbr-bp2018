@@ -15,10 +15,6 @@
 #include <Infrastructure/Structs/StreetVertex.h>
 #include <Terrain/HeightMap.h>
 #include <glm/detail/_noise.hpp>
-#include <glm/detail/_noise.hpp>
-#include <glm/detail/_noise.hpp>
-#include <glm/detail/_noise.hpp>
-#include <glm/detail/_noise.hpp>
 
 
 using namespace ge::gl;
@@ -141,6 +137,15 @@ void Street::SetSegmentEndPoint(glm::vec3 const& endPoint)
 void Street::ResetSegmentSplit()
 {
 	lengthSplit = 0.f;
+}
+
+void Street::End(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment,
+	StreetSegment const& own_segment)
+{
+	_ended = true;
+	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_segment.street) != _substreets.end();
+	AddIntersection(intersection_point, intersecting_segment, LEFT, own_segment, is_substreet);
+	AddIntersection(intersection_point, intersecting_segment, RIGHT, own_segment, is_substreet);
 }
 
 void Street::BuildStep()
@@ -329,7 +334,7 @@ void Street::GenerateIntersectionPointLists()
 			_intersectionPointsLeft.push_back({
 				source_point_left,
 				intersection.point,
-				intersection,
+				last_intersection_left,
 				intersection,
 			});
 			source_point_left = intersection.point;
@@ -340,7 +345,7 @@ void Street::GenerateIntersectionPointLists()
 			_intersectionPointsRight.push_back({
 				source_point_right,
 				intersection.point,
-				intersection,
+				last_intersection_right,
 				intersection,
 			});
 			source_point_right = intersection.point;
@@ -396,20 +401,24 @@ StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair co
 	return currentPair;
 }
 
-bool Street::GetNextIntersectionPointPair(StreetNarrowPair const& current_pair, const StreetIntersectionSide side_to,
+bool Street::GetNextIntersectionPointPair(StreetNarrowPair const& current_pair,
+                                          StreetSegment const& intersecting_segment,
+                                          const StreetIntersectionSide side_to,
 										  StreetNarrowPair* result)
 {
 	// TODO: Possibly invalide reference segment selection for side evaluation
-	const auto side_from = GetPointSide(current_pair.point1, current_pair.intersection2.own_segment);
-	return GetNextIntersectionPointPair(current_pair.point2, side_from, side_to, result);
+	const auto side_from = GetPointSide(current_pair.point1, intersecting_segment);
+	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_segment.street) != _substreets.end();
+	return GetNextIntersectionPointPair(current_pair.point2, side_from, side_to, is_substreet, result);
 }
 
 bool Street::GetNextIntersectionPointPair(const glm::vec3& point_from, const StreetIntersectionSide side_from,
-                                          const StreetIntersectionSide side_to, StreetNarrowPair* result)
+                                          const StreetIntersectionSide side_to, const bool is_substreet,
+                                          StreetNarrowPair* result)
 {
 	// pokud křižovatka navazuje zleva a cíl její cesty je doprava
 	// dochází k inverzi směru a je nutné zvolit odlišnou dvojici křižovatek
-	const auto direction_inverted = side_from != side_to;
+	const auto direction_inverted = side_from != side_to || is_substreet;
 	const auto comparer = [&](StreetNarrowPair const& pair)
 	{
 		if (direction_inverted)
@@ -437,10 +446,9 @@ bool Street::GetNextIntersectionPointPair(const glm::vec3& point_from, const Str
 		*result = *result_iter;
 	}
 
-	if (direction_inverted)
+	if (direction_inverted/* && !is_substreet*/)
 	{
-		std::swap(result->point1, result->point2);
-		std::swap(result->intersection1, result->intersection2);
+		result->Invert();
 	}
 	return true;
 }

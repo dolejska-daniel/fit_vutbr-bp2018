@@ -20,7 +20,7 @@ using namespace Infrastructure;
 
 const float stepSize = 6.f;
 const float stepLevelOffset = .75f;
-const float splitLimit = 24.f;
+const float splitLimit = 30.f;
 
 StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float radius,
 	std::function<void(std::shared_ptr<Street> const& street)> buildStep,
@@ -61,7 +61,6 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 					direction.x = segment.direction.z;
 					direction.y = segment.direction.y;
 					direction.z = -segment.direction.x;
-					return;
 				}
 
 				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1);

@@ -9,6 +9,8 @@
 #include <Infrastructure/Parcel.h>
 #include <Infrastructure/Structs/ParcelVertex.h>
 #include <Infrastructure/Structs/ParcelIndex.h>
+#include <glm/detail/_noise.hpp>
+#include <glm/detail/_noise.hpp>
 
 
 using namespace Infrastructure;
@@ -25,21 +27,43 @@ Parcel::Parcel()
 Parcel::~Parcel()
 = default;
 
-void Parcel::AddBorderPoint(glm::vec3 point)
+bool Parcel::AddBorderPoint(glm::vec3 point)
 {
-	if (finished) return;
+	if (finished) return true;
 
 	point.y += 1;
 	std::cerr << "Parcel border pt.: " << glm::to_string(point) << std::endl;
+
+	if (!borderPoints.empty())
+	{
+		if (borderPoints.front() == point)
+		{
+			Finish();
+			return false;
+		}
+
+		if (borderPoints.back() == point)
+		{
+			std::cerr << "Parcel border pt. is same as the last one, skipping." << std::endl;
+			return true;
+		}
+	}
+
 	/*
-	if (!_borderPoints.empty())
-		std::cerr << "Front  border pt.: " << glm::to_string(_borderPoints.front()) << std::endl;
-	if (!_borderPoints.empty() && _borderPoints.front() == point)
+	if (!borderPoints.empty())
+		std::cerr << "Front  border pt.: " << glm::to_string(borderPoints.front()) << std::endl;
+	if (!borderPoints.empty() && borderPoints.front() == point)
 	{
 		std::cerr << "Parcel has been closed by points." << std::endl;
 		return Finish();
 	}*/
-	_borderPoints.push_back(point);
+	borderPoints.push_back(point);
+	return true;
+}
+
+std::vector<glm::vec3> const& Parcel::GetBorderPoints() const
+{
+	return borderPoints;
 }
 
 void Parcel::Finish()
@@ -49,7 +73,7 @@ void Parcel::Finish()
 	BindVA();
 
 	std::vector<ParcelVertex> vertices;
-	for (const auto& point : _borderPoints)
+	for (const auto& point : borderPoints)
 		vertices.push_back({ point });
 
 	const auto vb = GetVB();
@@ -57,9 +81,12 @@ void Parcel::Finish()
 	GetVA()->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(ParcelVertex));
 
 	std::vector<ParcelIndex> indices;
-	for (size_t i = 0; i < vertices.size() - 1; i++)
-		indices.push_back({ { i, i + 1 } });
-	indices.push_back({ { vertices.size() - 1, 0 } });
+	if (!vertices.empty())
+	{
+		for (size_t i = 0; i < vertices.size() - 1; i++)
+			indices.push_back({ { i, i + 1 } });
+		indices.push_back({ { vertices.size() - 1, 0 } });
+	}
 
 	const auto ib = GetIB();
 	ib->alloc(indices.size() * sizeof(ParcelIndex), indices.data());

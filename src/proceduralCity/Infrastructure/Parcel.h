@@ -23,13 +23,12 @@ namespace Infrastructure
 		Parcel();
 		~Parcel();
 
-		void AddBorderPoint(glm::vec3 point);
+		bool AddBorderPoint(glm::vec3 point);
+		std::vector<glm::vec3> const& GetBorderPoints() const;
 
 		void Finish();
 
 		bool finished;
-
-	protected:
-		std::vector<glm::vec3> _borderPoints;
+		std::vector<glm::vec3> borderPoints;
 	};
 }

@@ -89,6 +89,10 @@ namespace Infrastructure
 		/// @brief 
 		///
 		void End() { _ended = true; }
+		///
+		/// @brief 
+		///
+		void End(glm::vec3 const& intersection_point, StreetSegment const& intersecting_segment, StreetSegment const& own_segment);
 
 		///
 		/// @brief 
@@ -127,10 +131,10 @@ namespace Infrastructure
 		std::vector<StreetNarrowPair> const& GetRightIntersectionPointPairs() const;
 
 		StreetNarrowPair const& GetNextIntersectionPointPair(StreetNarrowPair const& currentPair, bool wasInverted);
-		bool GetNextIntersectionPointPair(StreetNarrowPair const& current_pair, StreetIntersectionSide side_to,
-		                                  StreetNarrowPair* result);
-		bool GetNextIntersectionPointPair(const glm::vec3& point_from, StreetIntersectionSide side_from,
-		                                  StreetIntersectionSide side_to, StreetNarrowPair* result);
+		bool GetNextIntersectionPointPair(StreetNarrowPair const& current_pair, StreetSegment const& intersecting_segment,
+		                                  const StreetIntersectionSide side_to, StreetNarrowPair* result);
+		bool GetNextIntersectionPointPair(const glm::vec3& point_from, const StreetIntersectionSide side_from,
+		                                  const StreetIntersectionSide side_to, const bool is_substreet, StreetNarrowPair* result);
 
 		float		lengthSplit = 0;
 		StreetIntersection parentIntersection;
