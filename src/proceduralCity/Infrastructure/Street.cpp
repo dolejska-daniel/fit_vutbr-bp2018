@@ -66,24 +66,28 @@ Street::~Street()
 
 void Street::Destroy()
 {
-	const auto thisStreet = this->shared_from_this();
+	const auto this_street = this->shared_from_this();
 
 	// TODO: Napojit segmenty
 	for (const auto& segment : GetSegments())
 		StreetRootNode->Remove(segment);
 
 	// TODO: Správně odstranit substreet a intersection
-	/*
-	if (parentIntersection.street)
+	if (parentIntersection.intersecting_segment.street)
 	{
-		parentIntersection.street->RemoveSubstreet(thisStreet);
-		parentIntersection.street->RemoveIntersection(thisStreet);
-		parentIntersection.street = nullptr;
+		auto parent_street = parentIntersection.intersecting_segment.street;
+		if (parent_street == this_street)
+			parent_street = parentIntersection.own_segment.street;
+
+		if (parent_street)
+		{
+			parent_street->RemoveSubstreet(this_street);
+			parent_street->RemoveIntersection(this_street);
+		}
 	}
-	*/
 
 	for (const auto& intersection : GetIntersections())
-		intersection.intersecting_segment.street->RemoveIntersection(thisStreet);
+		intersection.intersecting_segment.street->RemoveIntersection(this_street);
 }
 
 
@@ -250,7 +254,8 @@ void Street::AddSubstreet(StreetIntersection const& source_intersection, std::sh
 
 void Street::RemoveSubstreet(const std::shared_ptr<Street>& substreet)
 {
-	_substreets.erase(std::remove(_substreets.begin(), _substreets.end(), substreet), _substreets.end());
+	if (!_substreets.empty())
+		_substreets.erase(std::remove(_substreets.begin(), _substreets.end(), substreet), _substreets.end());
 }
 
 std::vector<StreetIntersection> const& Street::GetIntersections() const

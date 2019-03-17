@@ -176,6 +176,41 @@ void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Stre
 	}
 }
 
+void StreetMap::ValidateIntersections()
+{
+	// TODO: procházet od konce
+	for (const auto& street : GetStreets())
+	{
+		ValidateIntersections(street);
+	}
+}
+
+void StreetMap::ValidateIntersections(const std::shared_ptr<Street>& street)
+{
+	for (const auto& street_segment : street->GetSegments())
+	{
+		for (const auto& other_street : GetStreets())
+		{
+			const auto intersection = Intersection(street_segment, other_street);
+			if (intersection.exists)
+			{
+				// TODO: get segment point
+
+				// TODO: set end point
+				//street_segment.
+
+				// TODO: remove next segments
+
+				// TODO: close street
+				//street->End(point, intersection.ownSegment, intersection.intersectingSegment);
+
+				// TODO: validate substreets, intersecting streets
+				return;
+			}
+		}
+	}
+}
+
 void StreetMap::BuildStep()
 {
 	for (auto const& street : ReadStreets())

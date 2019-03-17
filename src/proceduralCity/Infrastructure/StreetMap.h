@@ -76,6 +76,14 @@ namespace Infrastructure
 		///
 		void Intersections(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const;
 
+		///
+		/// @brief 
+		///
+		void ValidateIntersections();
+		///
+		/// @brief 
+		///
+		void ValidateIntersections(const std::shared_ptr<Street>& street);
 
 		///
 		/// @brief 
