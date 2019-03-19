@@ -129,7 +129,7 @@ int main(const int argc, char* argv[])
 
 	const auto map = Generator::GenerateMap(vars);
 
-	auto streetMap = Infrastructure::StreetMap(map);
+	auto streetMap = std::make_shared<Infrastructure::StreetMap>(map);
 	//auto parcel = new Infrastructure::Parcel();
 	std::vector<std::shared_ptr<Infrastructure::Parcel>> parcels;
 	std::vector<std::shared_ptr<Infrastructure::Building>> buildings;
@@ -194,16 +194,19 @@ int main(const int argc, char* argv[])
 
 		if (KeyDown['x'])
 		{
-			streetMap.BuildStep();
+			streetMap->BuildStep();
+			std::cerr << "Number of streets: " << streetMap->ReadStreets().size() << std::endl;
 		}
 
 		static auto built = false;
-		if (KeyDown['v'])
+		if (KeyDown['y'])
 		{
 			if (!built)
 			{
 				std::cerr << std::endl << "Building..." << std::endl;
-				streetMap.BuildStep();
+				std::cerr << "Number of streets: " << streetMap->ReadStreets().size() << std::endl;
+
+				streetMap->BuildStep();
 				built = true;
 			}
 		}
@@ -222,6 +225,19 @@ int main(const int argc, char* argv[])
 		}
 		else
 			changedRenderer = false;
+
+
+		static auto _m = false;
+		if (KeyDown['m'])
+		{
+			if (!_m)
+			{
+				streetMap->ValidateIntersections();
+				_m = true;
+			}
+		}
+		else
+			_m = false;
 
 
 		static size_t parcel_id = 0;
@@ -256,7 +272,7 @@ int main(const int argc, char* argv[])
 		if (KeyDown['p'])
 		{
 			std::vector<std::shared_ptr<Infrastructure::Street>> nearby_streets;
-			for (const auto& street1 : streetMap.GetStreets())
+			for (const auto& street1 : streetMap->GetStreets())
 			{
 				if (std::find(nearby_streets.begin(), nearby_streets.end(), street1) != nearby_streets.end())
 					// Již  přidáno
@@ -264,8 +280,10 @@ int main(const int argc, char* argv[])
 
 				auto s1_segment_first = street1->GetSegment(0);
 				auto s1_segment_last = street1->GetSegment();
-				for (const auto& street2 : streetMap.GetStreets())
+				for (auto s2iter = streetMap->GetStreets().rbegin(); s2iter != streetMap->GetStreets().rend(); ++s2iter)
 				{
+					auto street2 = *s2iter;
+
 					if (street1 == street2)
 						// Tatáž ulice
 						continue;
@@ -337,12 +355,10 @@ int main(const int argc, char* argv[])
 			shaders->GetActiveProgram()->set3fv("color", &color[0]);
 			for (const auto& street : nearby_streets)
 			{
+				renderer->Render(street);
+
 				if (KeyDown['o'])
-				{
-					streetMap.RemoveStreet(street);
-				}
-				else
-					renderer->Render(street);
+					streetMap->RemoveStreet(street);
 			}
 
 			postprocessed = true;
@@ -406,7 +422,7 @@ int main(const int argc, char* argv[])
 			}
 			else
 			{
-				std::cerr << "Next pair was not found, using end point." << std::endl;
+				//std::cerr << "Next pair was not found, using end point." << std::endl;
 				// žádná další dvojice křižovatek nalezena nebyla
 				parcel->AddBorderPoint(street->GetSegment().endPoint);
 			}
@@ -445,7 +461,7 @@ int main(const int argc, char* argv[])
 			}
 			else
 			{
-				std::cerr << "Next pair was not found, using end point." << std::endl;
+				//std::cerr << "Next pair was not found, using end point." << std::endl;
 				// žádná další dvojice křižovatek nalezena nebyla
 				parcel->AddBorderPoint(street->GetSegment().endPoint);
 			}
@@ -456,7 +472,7 @@ int main(const int argc, char* argv[])
 		{
 			if (!parcelGenerated)
 			{
-				for (const auto& street : streetMap.GetStreets())
+				for (const auto& street : streetMap->GetStreets())
 					street->GenerateIntersectionPointLists();
 
 				std::function<void(std::shared_ptr<Infrastructure::Street>)> processStreetToList =
@@ -464,25 +480,27 @@ int main(const int argc, char* argv[])
 				{
 					for (const auto& pair : street->GetLeftIntersectionPointPairs())
 					{
-						std::cerr << std::endl << "New left parcel..." << std::endl;
+						//std::cerr << std::endl << "New left parcel..." << std::endl;
 						parcel = std::make_shared<Infrastructure::Parcel>();
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::LEFT);
+						//std::cerr << "Finishing parcel." << std::endl;
 						parcel->Finish();
 						visited.clear();
 					}
 
 					for (const auto& pair : street->GetRightIntersectionPointPairs())
 					{
-						std::cerr << std::endl << "New right parcel..." << std::endl;
+						//std::cerr << std::endl << "New right parcel..." << std::endl;
 						parcel = std::make_shared<Infrastructure::Parcel>();
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::RIGHT);
+						//std::cerr << "Finishing parcel." << std::endl;
 						parcel->Finish();
 						visited.clear();
 					}
 				};
-				for (auto street : streetMap.GetStreets())
+				for (auto street : streetMap->GetStreets())
 					processStreetToList(street);
 			}
 
@@ -492,19 +510,20 @@ int main(const int argc, char* argv[])
 		{
 			if (!parcelGenerated)
 			{
-				for (const auto& street : streetMap.GetStreets())
+				for (const auto& street : streetMap->GetStreets())
 					street->GenerateIntersectionPointLists();
 				
-				auto street_current = streetMap.GetStreets()[1];
+				auto street_current = streetMap->GetStreets()[1];
 				auto rightPairs = street_current->GetRightIntersectionPointPairs();
 				if (id < rightPairs.size())
 				{
 					auto pair = rightPairs[id];
 
-					std::cerr << std::endl << "New right parcel..." << std::endl;
+					//std::cerr << std::endl << "New right parcel..." << std::endl;
 					parcel = std::make_shared<Infrastructure::Parcel>();
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::RIGHT);
+					//std::cerr << "Finishing parcel." << std::endl;
 					parcel->Finish();
 
 					visited.clear();
@@ -515,10 +534,11 @@ int main(const int argc, char* argv[])
 				{
 					auto pair = leftPairs[id];
 
-					std::cerr << std::endl << "New left parcel..." << std::endl;
+					//std::cerr << std::endl << "New left parcel..." << std::endl;
 					parcel = std::make_shared<Infrastructure::Parcel>();
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::LEFT);
+					//std::cerr << "Finishing parcel." << std::endl;
 					parcel->Finish();
 
 					visited.clear();
@@ -534,21 +554,15 @@ int main(const int argc, char* argv[])
 
 		color = { 0, 0, 1 };
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
-		for (const auto& parcel : parcels)
-			if (parcel->finished)
-				renderer->Render(parcel);
-
-		if (KeyDown['y'])
-		{
-			printf("Number of streets: %llu\n", streetMap.ReadStreets().size());
-		}
+		for (const auto& p : parcels)
+			if (p->finished)
+				renderer->Render(p);
 
 		color = { 1, 1, 1 };
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
-		for (const auto& street : streetMap.ReadStreets())
-		{
-			renderer->Render(street);
-		}
+		for (const auto& s : streetMap->ReadStreets())
+			if (!s->Destroyed())
+				renderer->Render(s);
 
 		glFinish();
         window->swap();

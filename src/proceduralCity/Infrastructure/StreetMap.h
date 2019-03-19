@@ -30,7 +30,7 @@ namespace Infrastructure
 	///
 	/// @brief 
 	///
-	class StreetMap
+	class StreetMap : public std::enable_shared_from_this<StreetMap>
 	{
 	public:
 		Terrain::Map *terrainMap;

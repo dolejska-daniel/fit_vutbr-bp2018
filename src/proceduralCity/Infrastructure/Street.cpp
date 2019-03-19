@@ -60,13 +60,15 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 }
 
 Street::~Street()
-{
-	Destroy();
-}
+= default;
 
-void Street::Destroy()
+void Street::Destroy(const std::shared_ptr<StreetMap>& streetMap)
 {
+	if (_destroyed) return;
+	_destroyed = true;
+
 	const auto this_street = this->shared_from_this();
+	std::cerr << "Removing: " << this_street << std::endl;
 
 	// TODO: Napojit segmenty
 	for (const auto& segment : GetSegments())
@@ -87,9 +89,24 @@ void Street::Destroy()
 	}
 
 	for (const auto& intersection : GetIntersections())
-		intersection.intersecting_segment.street->RemoveIntersection(this_street);
-}
+	{
+		auto street = intersection.intersecting_segment.street;
+		if (street == this_street)
+			street = intersection.own_segment.street;
 
+		street->RemoveIntersection(this_street);
+		street->Unend();
+	}
+
+	for (const auto& sub_street : _substreets)
+	{
+		if (sub_street)
+		{
+			std::cerr << "Removing sub: " << sub_street << std::endl;
+			streetMap->RemoveStreet(sub_street);
+		}
+	}
+}
 
 StreetSegment const& Street::ReadSegment() const
 {
@@ -121,21 +138,54 @@ StreetSegment const& Street::GetSegment(const size_t segment)
 glm::vec3 Street::GetSegmentPoint(const float t) const
 {
 	const auto seg = ReadSegment(_segments.size() - 1);
-	return (1.f - t) * seg.startPoint + t * seg.endPoint;
+	return seg.GetPoint(t);
 }
 
 glm::vec3 Street::GetSegmentPoint(const size_t segment, const float t) const
 {
 	const auto seg = ReadSegment(segment);
-	return (1.f - t) * seg.startPoint + t * seg.endPoint;
+	return seg.GetPoint(t);
 }
 
 void Street::SetSegmentEndPoint(glm::vec3 const& endPoint)
 {
 	assert(GetVB() != nullptr);
+
 	_segments.back().endPoint = endPoint;
 	_vertices.back().position = endPoint;
 	GetVB()->setData(&_vertices[0]);
+}
+
+void Street::SetSegmentEndPoint(const size_t segment, glm::vec3 const& endPoint)
+{
+	assert(segment < _segments.size());
+
+	_segments[segment].endPoint = endPoint;
+	RebuildVertices();
+}
+
+void Street::RemoveSegmentsToEnd(const size_t segment)
+{
+	_segments.erase(_segments.begin() + segment, _segments.end());
+	RebuildVertices();
+}
+
+void Street::RebuildVertices()
+{
+	assert(GetVB() != nullptr);
+
+	_vertices.clear();
+	for (const auto& street_segment : _segments)
+	{
+		_vertices.push_back({
+			street_segment.startPoint,
+		});
+		_vertices.push_back({
+			street_segment.endPoint,
+		});
+	}
+	SetRenderableCount(_vertices.size());
+	GetVB()->setData(_vertices.data());
 }
 
 void Street::ResetSegmentSplit()
@@ -198,7 +248,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 			shared_from_this(),
 		};
 
-		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint) + 0.2f;
+		newSegment.endPoint.y = _heightMap->GetData(newSegment.endPoint) + .2f;
 		//std::cerr << glm::abs(newSegment.startPoint.y - newSegment.endPoint.y) << std::endl;
 		if (glm::abs(newSegment.startPoint.y - newSegment.endPoint.y) >= .75f)
 		{
@@ -209,13 +259,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		//	Uložení nového segmentu
 		const auto segmentsSize = _segments.max_size();
 		StreetRootNode->Insert(newSegment);
-		_segments.push_back(newSegment);/*
-		if (segmentsSize < _segments.max_size())
-		{
-			std::cerr << "Segment vector resized!" << std::endl;
-			StreetSegment segment0{ glm::vec3(0), glm::vec3(0), glm::vec3(0), 0 };
-			std::fill(_segments.begin() + _segments.size(), _segments.end(), segment0);
-		}*/
+		_segments.push_back(newSegment);
 
 		//	Uložení nových vertexů
 		const auto verticesSize = _segments.max_size();
@@ -226,13 +270,6 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 			newSegment.endPoint,
 		});
 		SetRenderableCount(_vertices.size());
-		/*
-		if (verticesSize < _vertices.max_size())
-		{
-			std::cerr << "Vertex vector resized!" << std::endl;
-			StreetVertex vertex0{ glm::vec3(0) };
-			std::fill(_vertices.begin() + _vertices.size(), _vertices.end(), vertex0);
-		}*/
 
 		//	Kontrola velikosti bufferu
 		if (_vertices.size() * sizeof(StreetVertex) > GetVB()->getSize())
@@ -244,6 +281,11 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 
 	//	Aktualizace dat v bufferu
 	GetVB()->setData(_vertices.data());
+}
+
+bool Street::HasSubstreet(const std::shared_ptr<Street>& street)
+{
+	return std::find(_substreets.begin(), _substreets.end(), street) != _substreets.end();
 }
 
 void Street::AddSubstreet(StreetIntersection const& source_intersection, std::shared_ptr<Street> const& substreet)
@@ -285,7 +327,7 @@ void Street::AddIntersection(glm::vec3 const& intersection_point, StreetSegment 
                              StreetSegment const& own_segment)
 {
 	const auto intersection_side = GetPointSide(intersecting_segment.startPoint, own_segment);
-	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_segment.street) != _substreets.end();
+	const auto is_substreet = HasSubstreet(intersecting_segment.street);
 	AddIntersection(intersection_point, intersecting_segment, intersection_side, own_segment, is_substreet);
 }
 
@@ -316,7 +358,8 @@ void Street::RemoveIntersection(std::shared_ptr<Street> const& street)
 		_intersections.erase(std::remove_if(_intersections.begin(), _intersections.end(),
 			[&](StreetIntersection const& intersection)
 		{
-			return intersection.intersecting_segment.street == street;
+			return intersection.intersecting_segment.street == street
+				|| intersection.own_segment.street == street;
 		}), _intersections.end());
 	}
 }
@@ -379,7 +422,7 @@ StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair co
 	side = GetPointSide(currentPair.point1, currentPair.intersection2.intersecting_segment);
 	if (side == LEFT)
 	{
-		auto nextPair = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(),
+		const auto nextPair = std::find_if(_intersectionPointsLeft.begin(), _intersectionPointsLeft.end(),
 			[&](StreetNarrowPair const& pair)
 		{/*
 			if (wasInverted)
@@ -392,7 +435,7 @@ StreetNarrowPair const& Street::GetNextIntersectionPointPair(StreetNarrowPair co
 	}
 	else if (side == RIGHT)
 	{
-		auto nextPair = std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
+		const auto nextPair = std::find_if(_intersectionPointsRight.begin(), _intersectionPointsRight.end(),
 			[&](StreetNarrowPair const& pair)
 		{/*
 			if (wasInverted)

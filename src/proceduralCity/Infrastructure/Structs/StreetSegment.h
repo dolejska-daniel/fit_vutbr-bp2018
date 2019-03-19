@@ -27,5 +27,10 @@ namespace Infrastructure
 			return this->startPoint == other.startPoint
 				&& this->direction == other.direction;
 		}
+
+		glm::vec3 GetPoint( const float t ) const
+		{
+			return (1.f - t) * this->startPoint + t * this->endPoint;
+		}
 	};
 }

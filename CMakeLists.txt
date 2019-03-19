@@ -62,7 +62,6 @@ set(INCLUDES
 	src/proceduralCity/Application/Renderer.h
 	src/proceduralCity/Application/ShaderLoader.h
 	src/proceduralCity/Application/ShaderManager.h
-	src/proceduralCity/Infrastructure/Structs/BuildingPartIndex.h
 	src/proceduralCity/Infrastructure/Structs/BuildingPartVertex.h
 	src/proceduralCity/Infrastructure/Structs/ParcelIndex.h
 	src/proceduralCity/Infrastructure/Structs/ParcelVertex.h

@@ -41,7 +41,7 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 		_splitStep = [&](StreetMap* map, std::shared_ptr<Street> const& street)
 		{
 			const auto segment = street->GetSegment();
-			if (street->lengthSplit >= splitLimit && street->GetLevel() < 4)
+			if (street->lengthSplit >= splitLimit/* && street->GetLevel() < 4*/)
 			{
 				street->ResetSegmentSplit();
 

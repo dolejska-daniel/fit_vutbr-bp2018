@@ -27,6 +27,15 @@ namespace Infrastructure
 		StreetSegment			intersecting_segment;
 		StreetSegment			own_segment;
 
+		bool operator==(StreetIntersection const& other) const
+		{
+			return this->point == other.point
+				&& this->side == other.side
+				&& this->is_substreet == other.is_substreet
+				&& this->intersecting_segment == other.intersecting_segment
+				&& this->own_segment == other.own_segment;
+		}
+
 		void Invert()
 		{
 			std::swap(this->own_segment, this->intersecting_segment);

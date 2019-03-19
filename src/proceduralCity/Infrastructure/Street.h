@@ -12,6 +12,7 @@
 #include <Infrastructure/Structs/StreetIntersection.h>
 #include <Infrastructure/Structs/StreetNarrowPair.h>
 #include "Structs/StreetSegmentIntersection.h"
+#include "StreetMap.h"
 
 
 namespace Terrain
@@ -39,7 +40,10 @@ namespace Infrastructure
 		///
 		~Street();
 
-		void Destroy();
+		///
+		/// @brief 
+		///
+		void Destroy(const std::shared_ptr<StreetMap>& streetMap );
 
 		///
 		/// @brief 
@@ -79,8 +83,26 @@ namespace Infrastructure
 		///
 		/// @brief 
 		///
+		void SetSegmentEndPoint(size_t segment, glm::vec3 const& endPoint);
+
+		///
+		/// @brief 
+		///
+		void RemoveSegmentsToEnd(size_t segment);
+		///
+		/// @brief 
+		///
+		void RebuildVertices();
+
+		///
+		/// @brief 
+		///
 		void ResetSegmentSplit();
 
+		///
+		/// @brief 
+		///
+		bool Destroyed() const { return _destroyed; }
 		///
 		/// @brief 
 		///
@@ -89,6 +111,10 @@ namespace Infrastructure
 		/// @brief 
 		///
 		void End() { _ended = true; }
+		///
+		/// @brief 
+		///
+		void Unend() { _ended = false; ResetSegmentSplit(); }
 		///
 		/// @brief 
 		///
@@ -116,6 +142,7 @@ namespace Infrastructure
 		///
 		void BuildStep(glm::vec3 const& direction, float length);
 
+		bool HasSubstreet(const std::shared_ptr<Street>& street);
 		void AddSubstreet(StreetIntersection const& source_intersection, std::shared_ptr<Street> const& substreet);
 		void RemoveSubstreet(const std::shared_ptr<Street>& substreet);
 
@@ -173,6 +200,10 @@ namespace Infrastructure
 		/// @brief 
 		///
 		bool _ended = false;
+		///
+		/// @brief 
+		///
+		bool _destroyed = false;
 		///
 		/// @brief 
 		///
