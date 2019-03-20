@@ -10,12 +10,10 @@
 #include <algorithm>
 #include <utility>
 
-
-
-std::shared_ptr<Infrastructure::StreetNode> Infrastructure::StreetRootNode = nullptr;
-
-
 using namespace Infrastructure;
+
+
+std::shared_ptr<StreetNode> Infrastructure::StreetRootNode = nullptr;
 
 StreetNode::StreetNode(glm::vec2 const& position, const float size, std::shared_ptr<StreetNode> parent)
 	: _parent(std::move(parent)), _position(position), _size(size), _isRoot(false), _hasChildren(false)

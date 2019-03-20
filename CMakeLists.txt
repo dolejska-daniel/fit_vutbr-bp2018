@@ -51,6 +51,9 @@ set(SOURCES
 	src/proceduralCity/Terrain/Chunk.cpp
 	src/proceduralCity/Terrain/Map.cpp
 	src/proceduralCity/Utils/Curve.cpp
+	src/proceduralCity/Utils/QuadTree.cpp
+	src/proceduralCity/Utils/QuadTreeNode.cpp
+	src/proceduralCity/Utils/RectBounds.cpp
 	)
 
 set(INCLUDES
@@ -86,6 +89,11 @@ set(INCLUDES
 	src/proceduralCity/Terrain/Chunk.h
 	src/proceduralCity/Terrain/Map.h
 	src/proceduralCity/Utils/Curve.h
+	src/proceduralCity/Utils/functions.h
+	src/proceduralCity/Utils/IHasRectBounds.h
+	src/proceduralCity/Utils/QuadTree.h
+	src/proceduralCity/Utils/QuadTreeNode.h
+	src/proceduralCity/Utils/RectBounds.h
 	)
 
 file(GLOB_RECURSE SHADERS LIST_DIRECTORIES false RELATIVE ${ROOT_DIR} *.shader)

@@ -14,7 +14,7 @@
 #include <Infrastructure/Structs/StreetSegment.h>
 #include <Infrastructure/Structs/StreetVertex.h>
 #include <Terrain/HeightMap.h>
-#include <glm/detail/_noise.hpp>
+#include <Utils/QuadTree.h>
 
 
 using namespace ge::gl;
@@ -36,12 +36,13 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 
 	const StreetSegment newSegment = {
 		startPoint,
-		startPoint + length * direction,
+		startPoint,
 		direction,
 		length,
 		ptr,
 	};
 	StreetRootNode->Insert(newSegment);
+	//Utils::StreetQuadTree->Insert(newSegment);
 
 	_segments.reserve(16 * sizeof(StreetVertex));
 	_vertices.reserve(16 * 2 * sizeof(StreetVertex));
@@ -51,7 +52,7 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 		newSegment.startPoint,
 	});
 	_vertices.push_back({
-		newSegment.endPoint,
+		newSegment.startPoint,
 	});
 
 	vb->alloc(2 * sizeof(StreetVertex));
@@ -72,10 +73,14 @@ void Street::Destroy(const std::shared_ptr<StreetMap>& streetMap)
 
 	// TODO: Napojit segmenty
 	for (const auto& segment : GetSegments())
+	{
 		StreetRootNode->Remove(segment);
+		Utils::StreetQuadTree->Remove(segment);
+	}
 
 	// TODO: Správně odstranit substreet a intersection
-	if (parentIntersection.intersecting_segment.street)
+	if (parentIntersection.intersecting_segment.street
+		|| parentIntersection.own_segment.street)
 	{
 		auto parent_street = parentIntersection.intersecting_segment.street;
 		if (parent_street == this_street)
@@ -83,8 +88,8 @@ void Street::Destroy(const std::shared_ptr<StreetMap>& streetMap)
 
 		if (parent_street)
 		{
-			parent_street->RemoveSubstreet(this_street);
 			parent_street->RemoveIntersection(this_street);
+			parent_street->RemoveSubstreet(this_street);
 		}
 	}
 
@@ -228,6 +233,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	{
 		//	TODO: Odstranit, aktualizovat referencí?
 		StreetRootNode->Remove(ReadSegment());
+		Utils::StreetQuadTree->Remove(ReadSegment());
 
 		//	Směrnice jsou stejné, pouze prodloužíme původní úsečku
 		_segments.back().endPoint = _segments.back().endPoint + length * direction;
@@ -236,6 +242,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 
 		//	TODO: Odstranit, aktualizovat referencí?
 		StreetRootNode->Insert(ReadSegment());
+		Utils::StreetQuadTree->Insert(ReadSegment());
 	}
 	else
 	{
@@ -259,6 +266,7 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		//	Uložení nového segmentu
 		const auto segmentsSize = _segments.max_size();
 		StreetRootNode->Insert(newSegment);
+		Utils::StreetQuadTree->Insert(newSegment);
 		_segments.push_back(newSegment);
 
 		//	Uložení nových vertexů

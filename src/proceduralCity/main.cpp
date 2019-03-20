@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
+#include <Utils/QuadTree.h>
 
 
 using namespace glm;
@@ -113,6 +114,9 @@ int main(const int argc, char* argv[])
 	// =============================================================
 	Infrastructure::StreetRootNode = std::make_shared<Infrastructure::StreetNode>(vec2(0.f), 8.f);
 	Infrastructure::StreetRootNode->SetRoot();
+
+	const auto v = float(vars.getUint32("terrain.map.width")) * float(vars.getUint32("terrain.chunk.width")) * vars.getFloat("terrain.chunk.scale");
+	Utils::StreetQuadTree = std::make_shared<Utils::QuadTree>(Utils::RectBounds({ -v, -v }, { v * 2, v * 2 }));
 
 	//	Initialize ShaderManager
 	auto shaders = std::make_shared<ShaderManager>(vars);

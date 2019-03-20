@@ -6,7 +6,7 @@
 ///
 #include <Infrastructure/BuildingPart.h>
 #include <Infrastructure/Parcel.h>
-#include <glm/detail/func_geometric.inl>
+#include <glm/glm.hpp>
 
 
 using namespace Infrastructure;

@@ -15,6 +15,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <algorithm>
+#include <Utils/QuadTree.h>
 
 
 using namespace Infrastructure;
@@ -41,24 +42,26 @@ StreetMap::StreetMap(Terrain::Map *map)
 			street->BuildStep(dir, float(glm::pow(.75f, street->GetLevel()) * 6.f));
 		})); */
 
-	/*
 	auto startPoint = glm::vec3(0, 0, 32 * 8);
 	startPoint.y = map->GetHeightMap()->GetData(startPoint);
 
 	auto street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(1, 0, 0), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
+	Utils::StreetQuadTree->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, -.5), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
+	Utils::StreetQuadTree->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, .5), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
+	Utils::StreetQuadTree->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
-	*/
 
-	auto startPoint1 = glm::vec3(-200, 0, 50);
+	/*
+	auto startPoint1 = glm::vec3(-190, 0, 40);
 	startPoint1.y = map->GetHeightMap()->GetData(startPoint1) + .2f;
 	
 	auto street = std::make_shared<Street>(map->GetHeightMap(), startPoint1, glm::vec3(1.f, 0, 0), 2.f);
@@ -66,12 +69,13 @@ StreetMap::StreetMap(Terrain::Map *map)
 	GetStreets().push_back(street);
 
 
-	auto startPoint2 = glm::vec3(-175, 0, 30);
+	auto startPoint2 = glm::vec3(-160, 0, 20);
 	startPoint2.y = map->GetHeightMap()->GetData(startPoint2) + .2f;
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint2, glm::vec3(0, 0, 1.f), 2.f);
 	StreetRootNode->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
+	*/
 }
 
 StreetMap::~StreetMap()
@@ -86,7 +90,7 @@ void StreetMap::AddStreet(const std::shared_ptr<Street>& street)
 void StreetMap::RemoveStreet(const std::shared_ptr<Street>& street)
 {
 	street->Destroy(shared_from_this());
-	_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
+	//_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
 }
 
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street)
@@ -157,8 +161,28 @@ StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment1,
 std::shared_ptr<std::vector<StreetSegmentIntersection>> StreetMap::Intersections(StreetSegment const& segment) const
 {
 	auto intersections = std::make_shared<std::vector<StreetSegmentIntersection>>();
-	Intersections(segment, StreetRootNode, intersections);
+	//Intersections(segment, StreetRootNode, intersections);
+	Intersections(segment, Utils::StreetQuadTree, intersections);
 	return intersections;
+}
+
+void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Utils::QuadTree> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const
+{
+	auto segment_qentry = StreetSegmentQEntry(segment);
+	for (auto const& street_segment : node->Query(segment_qentry.GetRectBounds()))
+	{
+		if (segment == street_segment)
+			continue;
+
+		auto intersection = Intersection(segment, street_segment);
+		if (intersection.exists)
+		{
+			//	Průsečík existuje
+			intersection.intersectingSegment = segment;
+			intersection.ownSegment = street_segment;
+			intersections->push_back(intersection);
+		}
+	}
 }
 
 void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const
@@ -234,9 +258,10 @@ void StreetMap::ValidateIntersections(const std::shared_ptr<Street>& street)
 
 				auto point = street_segment.GetPoint(point_position);
 				std::cerr << "  Validating existing intersections against: " << glm::to_string(point) << std::endl;
-				if (std::find_if(street->GetIntersections().begin(), street->GetIntersections().begin(), [&](StreetIntersection existing_intersection)
+				if (std::find_if(street->GetIntersections().begin(), street->GetIntersections().end(), [&](StreetIntersection existing_intersection)
 				{
-					return existing_intersection.point == point;
+					return existing_intersection.intersecting_segment.street == street
+						|| existing_intersection.own_segment.street == street;
 				}) != street->GetIntersections().end())
 				{
 					std::cerr << "  Intersection already exists, skipping..." << std::endl;
@@ -293,8 +318,13 @@ void StreetMap::BuildStep()
 			}
 
 			StreetRootNode->Remove(street->ReadSegment());
+			Utils::StreetQuadTree->Remove(street->ReadSegment());
+
 			street->SetSegmentEndPoint(intersectionPoint);
+
 			StreetRootNode->Insert(street->ReadSegment());
+			Utils::StreetQuadTree->Insert(street->ReadSegment());
+
 			street->End(intersectionPoint, intersection.ownSegment, intersection.intersectingSegment);
 			intersection.ownSegment.street->AddIntersection(intersectionPoint, intersection.intersectingSegment, intersection.ownSegment);
 

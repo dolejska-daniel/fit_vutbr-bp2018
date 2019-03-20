@@ -8,6 +8,7 @@
 #include <glm/vec2.hpp>
 #include <Application/IRenderableCollection.h>
 #include <Infrastructure/Structs/StreetSegmentIntersection.h>
+#include <Utils/QuadTree.h>
 
 
 namespace vars
@@ -71,6 +72,8 @@ namespace Infrastructure
 		/// @brief 
 		///
 		std::shared_ptr<std::vector<StreetSegmentIntersection>> Intersections(StreetSegment const& segment) const;
+		void Intersections(StreetSegment const& segment, std::shared_ptr<Utils::QuadTree> const& node,
+		                   std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const;
 		///
 		/// @brief 
 		///
