@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <Infrastructure/Street.h>
-#include <Infrastructure/StreetNode.h>
 #include <Infrastructure/Structs/StreetIntersection.h>
 #include <Infrastructure/Structs/StreetSegmentIntersection.h>
 #include <Infrastructure/Structs/StreetSegment.h>
@@ -41,7 +40,6 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 		length,
 		ptr,
 	};
-	StreetRootNode->Insert(newSegment);
 	//Utils::StreetQuadTree->Insert(newSegment);
 
 	_segments.reserve(16 * sizeof(StreetVertex));
@@ -73,10 +71,7 @@ void Street::Destroy(const std::shared_ptr<StreetMap>& streetMap)
 
 	// TODO: Napojit segmenty
 	for (const auto& segment : GetSegments())
-	{
-		StreetRootNode->Remove(segment);
 		Utils::StreetQuadTree->Remove(segment);
-	}
 
 	// TODO: Správně odstranit substreet a intersection
 	if (parentIntersection.intersecting_segment.street
@@ -232,7 +227,6 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 	if (false && direction == ReadSegment().direction)
 	{
 		//	TODO: Odstranit, aktualizovat referencí?
-		StreetRootNode->Remove(ReadSegment());
 		Utils::StreetQuadTree->Remove(ReadSegment());
 
 		//	Směrnice jsou stejné, pouze prodloužíme původní úsečku
@@ -241,7 +235,6 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		_vertices.back().position = _segments.back().endPoint;
 
 		//	TODO: Odstranit, aktualizovat referencí?
-		StreetRootNode->Insert(ReadSegment());
 		Utils::StreetQuadTree->Insert(ReadSegment());
 	}
 	else
@@ -264,13 +257,12 @@ void Street::BuildStep(glm::vec3 const& direction, const float length)
 		}
 
 		//	Uložení nového segmentu
-		const auto segmentsSize = _segments.max_size();
-		StreetRootNode->Insert(newSegment);
+		const auto segments_size = _segments.max_size();
 		Utils::StreetQuadTree->Insert(newSegment);
 		_segments.push_back(newSegment);
 
 		//	Uložení nových vertexů
-		const auto verticesSize = _segments.max_size();
+		const auto vertices_size = _segments.max_size();
 		_vertices.push_back({
 			newSegment.startPoint,
 		});

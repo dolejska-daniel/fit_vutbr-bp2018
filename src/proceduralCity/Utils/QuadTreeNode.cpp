@@ -35,20 +35,16 @@ std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> QuadTreeNode::
 	return _contents;
 }
 
-std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> QuadTreeNode::SubTreeContents() const
+void QuadTreeNode::SubTreeContents(std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> results) const
 {
-	auto results = Contents();
+	merge_vectors(results, _contents);
 	for (const auto& node : _nodes)
-		MergeVectors(results, node->SubTreeContents());
-
-	return results;
+		node->SubTreeContents(results);
 }
 
-std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> QuadTreeNode::Query(const RectBounds& search_bounds) const
+void QuadTreeNode::Query(const RectBounds& search_bounds,
+	std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>>& results) const
 {
-	// výsledky hledání
-	std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> results;
-
 	// tento uzel obsahuje výsledky alespoň částečně odpovídající vyhledávané oblasti
 	for (const auto& item : _contents)
 	{
@@ -60,14 +56,13 @@ std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> QuadTreeNode::
 
 	for (const auto& node : _nodes)
 	{
-		if (node->IsEmpty())
-			continue;
+		//if (node->IsEmpty()) continue;
 
 		// Případ 1: prohledávaná oblast je kompletně pokryta rozměry uzlu
 		// (výsledky se nacházejí pouze v tomto podstromu/jeho části)
 		if (node->GetRectBounds().Contains(search_bounds))
 		{
-			MergeVectors(results, node->Query(search_bounds));
+			node->Query(search_bounds, results);
 			break;
 		}
 
@@ -75,7 +70,7 @@ std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> QuadTreeNode::
 		// (výsledky se nacházejí v celém tomto podstromu)
 		if (search_bounds.Contains(node->GetRectBounds()))
 		{
-			MergeVectors(results, node->SubTreeContents());
+			node->SubTreeContents(results);
 			continue;
 		}
 
@@ -83,11 +78,9 @@ std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> QuadTreeNode::
 		// (výsledky se nacházejí pouze v části tohoto podstromu)
 		if (node->GetRectBounds().IntersectsWith(search_bounds))
 		{
-			MergeVectors(results, node->SubTreeContents());
+			node->Query(search_bounds, results);
 		}
 	}
-
-	return results;
 }
 
 void QuadTreeNode::Insert(const std::shared_ptr<Infrastructure::StreetSegmentQEntry>& item)

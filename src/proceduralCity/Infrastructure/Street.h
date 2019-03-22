@@ -11,8 +11,8 @@
 #include <Infrastructure/Structs/StreetSegment.h>
 #include <Infrastructure/Structs/StreetIntersection.h>
 #include <Infrastructure/Structs/StreetNarrowPair.h>
-#include "Structs/StreetSegmentIntersection.h"
-#include "StreetMap.h"
+#include <Infrastructure/Structs/StreetSegmentIntersection.h>
+#include <Infrastructure/StreetMap.h>
 
 
 namespace Terrain

@@ -26,7 +26,6 @@
 #include <Infrastructure/Parcel.h>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
-#include <Infrastructure/StreetNode.h>
 #include <algorithm>
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
@@ -112,9 +111,6 @@ int main(const int argc, char* argv[])
 	// ==========================================================dd=
 	//	DALŠÍ INICIALIZACE
 	// =============================================================
-	Infrastructure::StreetRootNode = std::make_shared<Infrastructure::StreetNode>(vec2(0.f), 8.f);
-	Infrastructure::StreetRootNode->SetRoot();
-
 	const auto v = float(vars.getUint32("terrain.map.width")) * float(vars.getUint32("terrain.chunk.width")) * vars.getFloat("terrain.chunk.scale");
 	Utils::StreetQuadTree = std::make_shared<Utils::QuadTree>(Utils::RectBounds({ -v, -v }, { v * 2, v * 2 }));
 

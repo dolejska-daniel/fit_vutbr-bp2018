@@ -76,7 +76,7 @@ namespace Utils
 		///
 		/// @brief
 		///
-		glm::vec2 position;
+		glm::vec2 position{};
 
 		///
 		/// @brief
@@ -89,6 +89,6 @@ namespace Utils
 		///
 		/// @brief
 		///
-		glm::vec2 size;
+		glm::vec2 size{};
 	};
 }

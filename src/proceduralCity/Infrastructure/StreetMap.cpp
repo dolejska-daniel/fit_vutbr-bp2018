@@ -8,7 +8,6 @@
 #include <Vars/Vars.h>
 #include <Infrastructure/Street.h>
 #include <Infrastructure/StreetMap.h>
-#include <Infrastructure/StreetNode.h>
 #include <Infrastructure/StreetZone.h>
 #include <Terrain/Map.h>
 #include <Terrain/HeightMap.h>
@@ -27,8 +26,8 @@ const float error = 0.0f;
 StreetMap::StreetMap(Terrain::Map *map)
 	: terrainMap(map)
 {
-	if (StreetRootNode == nullptr)
-		throw std::runtime_error("StreetRootNode is nullptr.");
+	if (Utils::StreetQuadTree == nullptr)
+		throw std::runtime_error("Utils::StreetQuadTree is nullptr.");
 
 	_zone = std::make_shared<StreetZone>(map->GetVars(), glm::vec2(0.f, 0.f), INFINITY);
 	/*
@@ -46,18 +45,15 @@ StreetMap::StreetMap(Terrain::Map *map)
 	startPoint.y = map->GetHeightMap()->GetData(startPoint);
 
 	auto street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(1, 0, 0), 2.f);
-	StreetRootNode->Insert(street->ReadSegment());
-	Utils::StreetQuadTree->Insert(street->ReadSegment());
+	//Utils::StreetQuadTree->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, -.5), 2.f);
-	StreetRootNode->Insert(street->ReadSegment());
-	Utils::StreetQuadTree->Insert(street->ReadSegment());
+	//Utils::StreetQuadTree->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, .5), 2.f);
-	StreetRootNode->Insert(street->ReadSegment());
-	Utils::StreetQuadTree->Insert(street->ReadSegment());
+	//Utils::StreetQuadTree->Insert(street->ReadSegment());
 	GetStreets().push_back(street);
 
 	/*
@@ -185,36 +181,6 @@ void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<Util
 	}
 }
 
-void StreetMap::Intersections(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const
-{
-	for (auto const& street_segment : node->GetSegments())
-	{
-		auto intersection = Intersection(segment, street_segment);
-		if (intersection.exists)
-		{
-			//	Průsečík existuje
-			intersection.intersectingSegment = segment;
-			intersection.ownSegment = street_segment;
-			intersections->push_back(intersection);
-		}
-	}
-
-	const auto position = node->RelativePositionFor(segment);
-	if (position == StreetNode::RelativePosition::NONE)
-	{
-		// Nepatří jednoznačně do žádného z poduzlů
-		for (auto const& childNode : node->GetChildren())
-			Intersections(segment, childNode.second, intersections);
-	}
-	else
-	{
-		// Patří do některého z poduzlů
-		const auto childNode = node->GetChildren().find(position);
-		if (childNode != node->GetChildren().end())
-			return Intersections(segment, childNode->second, intersections);
-	}
-}
-
 void StreetMap::ValidateIntersections()
 {
 	auto streets = GetStreets();
@@ -317,12 +283,8 @@ void StreetMap::BuildStep()
 				}
 			}
 
-			StreetRootNode->Remove(street->ReadSegment());
 			Utils::StreetQuadTree->Remove(street->ReadSegment());
-
 			street->SetSegmentEndPoint(intersectionPoint);
-
-			StreetRootNode->Insert(street->ReadSegment());
 			Utils::StreetQuadTree->Insert(street->ReadSegment());
 
 			street->End(intersectionPoint, intersection.ownSegment, intersection.intersectingSegment);

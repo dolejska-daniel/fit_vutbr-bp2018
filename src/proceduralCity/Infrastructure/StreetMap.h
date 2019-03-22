@@ -24,7 +24,6 @@ namespace Terrain
 namespace Infrastructure
 {
 	class Street;
-	class StreetNode;
 	class StreetZone;
 
 
@@ -74,10 +73,6 @@ namespace Infrastructure
 		std::shared_ptr<std::vector<StreetSegmentIntersection>> Intersections(StreetSegment const& segment) const;
 		void Intersections(StreetSegment const& segment, std::shared_ptr<Utils::QuadTree> const& node,
 		                   std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const;
-		///
-		/// @brief 
-		///
-		void Intersections(StreetSegment const& segment, std::shared_ptr<StreetNode> const& node, std::shared_ptr<std::vector<StreetSegmentIntersection>> const& intersections) const;
 
 		///
 		/// @brief 

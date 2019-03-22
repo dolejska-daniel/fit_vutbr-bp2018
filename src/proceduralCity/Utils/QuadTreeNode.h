@@ -47,12 +47,12 @@ namespace Utils
 		///
 		/// @brief
 		///
-		std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> SubTreeContents() const;
+		void SubTreeContents(std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> results) const;
 
 		///
 		/// @brief
 		///
-		std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> Query(const RectBounds& search_bounds) const;
+		void Query(const RectBounds& search_bounds, std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>>& results) const;
 		///
 		/// @brief
 		///

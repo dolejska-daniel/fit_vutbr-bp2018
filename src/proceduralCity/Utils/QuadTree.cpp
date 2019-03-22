@@ -27,9 +27,10 @@ int QuadTree::Count() const
 
 std::vector<Infrastructure::StreetSegment> QuadTree::Query(const RectBounds& search_bounds) const
 {
-	std::vector<Infrastructure::StreetSegment> results;
-	auto query_results = _root->Query(search_bounds);
+	std::vector<std::shared_ptr<Infrastructure::StreetSegmentQEntry>> query_results;
+	_root->Query(search_bounds, query_results);
 
+	std::vector<Infrastructure::StreetSegment> results;
 	results.reserve(query_results.size());
 	for (const auto& query_result : query_results)
 		results.push_back(query_result->segment);

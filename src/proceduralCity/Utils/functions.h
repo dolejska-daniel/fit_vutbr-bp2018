@@ -13,7 +13,7 @@
 namespace Utils
 {
 	template<typename T>
-	static void MergeVectors(std::vector<T>& vec1, const std::vector<T>& vec2)
+	static void merge_vectors(std::vector<T>& vec1, const std::vector<T>& vec2)
 	{
 		vec1.insert(std::end(vec1), std::begin(vec2), std::end(vec2));
 	}

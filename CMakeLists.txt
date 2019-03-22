@@ -43,7 +43,6 @@ set(SOURCES
 	src/proceduralCity/Infrastructure/Parcel.cpp
 	src/proceduralCity/Infrastructure/Street.cpp
 	src/proceduralCity/Infrastructure/StreetMap.cpp
-	src/proceduralCity/Infrastructure/StreetNode.cpp
 	src/proceduralCity/Infrastructure/StreetZone.cpp
 	src/proceduralCity/Terrain/Builder.cpp
 	src/proceduralCity/Terrain/Generator.cpp
@@ -78,7 +77,6 @@ set(INCLUDES
 	src/proceduralCity/Infrastructure/Parcel.h
 	src/proceduralCity/Infrastructure/Street.h
 	src/proceduralCity/Infrastructure/StreetMap.h
-	src/proceduralCity/Infrastructure/StreetNode.h
 	src/proceduralCity/Infrastructure/StreetZone.h
 	src/proceduralCity/Terrain/Structs/ChunkVertex.h
 	src/proceduralCity/Terrain/Structs/ChunkIndex.h

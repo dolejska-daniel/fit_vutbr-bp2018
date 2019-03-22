@@ -17,7 +17,7 @@ RectBounds::RectBounds(const glm::vec2 p, const glm::vec2 size)
 {
 }
 
-RectBounds::RectBounds(glm::vec3 point1, glm::vec3 point2)
+RectBounds::RectBounds(const glm::vec3 point1, const glm::vec3 point2)
 {
 	std::vector<glm::vec3> points{ point1, point2 };
 	const auto x_extremes = std::minmax_element(points.begin(), points.end(), [](const glm::vec3& p1, const glm::vec3& p2)
