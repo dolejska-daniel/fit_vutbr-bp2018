@@ -58,3 +58,29 @@ bool RectBounds::IntersectsWith(const RectBounds& bounds) const
 		&& bounds.Bottom() <= Top()
 		&& bounds.Top() >= Bottom();
 }
+
+void RectBounds::Expand(const float size)
+{
+	this->size += size * 2.f;
+	this->position -= size / 2.f;
+}
+
+RectBounds RectBounds::ExpandNew(const float size) const
+{
+	auto result = *this;
+	result.Expand(size);
+	return result;
+}
+
+void RectBounds::Shrink(const float size)
+{
+	this->size -= size * 2.f;
+	this->position += size / 2.f;
+}
+
+RectBounds RectBounds::ShrinkNew(const float size) const
+{
+	auto result = *this;
+	result.Shrink(size);
+	return result;
+}

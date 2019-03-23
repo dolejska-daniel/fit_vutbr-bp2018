@@ -83,7 +83,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		void ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street);
+		bool ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street) const;
 
 	private:
 		vars::Vars& _vars;	///<

@@ -272,17 +272,24 @@ int main(const int argc, char* argv[])
 		if (KeyDown['p'])
 		{
 			std::vector<std::shared_ptr<Infrastructure::Street>> nearby_streets;
-			for (const auto& street1 : streetMap->GetStreets())
+			for (auto s1_iter = streetMap->GetStreets().rbegin(); s1_iter != streetMap->GetStreets().rend(); ++s1_iter)
 			{
+				auto street1 = *s1_iter;
+
 				if (std::find(nearby_streets.begin(), nearby_streets.end(), street1) != nearby_streets.end())
 					// Již  přidáno
 					continue;
 
 				auto s1_segment_first = street1->GetSegment(0);
 				auto s1_segment_last = street1->GetSegment();
-				for (auto s2iter = streetMap->GetStreets().rbegin(); s2iter != streetMap->GetStreets().rend(); ++s2iter)
+
+				auto street1_bounds = Utils::RectBounds(s1_segment_first.startPoint, s1_segment_first.endPoint);
+				street1_bounds.Expand(20.f);
+				auto nearby_segments = Utils::StreetQuadTree->Query(street1_bounds);
+
+				for (const auto& street2_segment : nearby_segments)
 				{
-					auto street2 = *s2iter;
+					auto street2 = street2_segment.street;
 
 					if (street1 == street2)
 						// Tatáž ulice
@@ -344,7 +351,7 @@ int main(const int argc, char* argv[])
 								continue;
 						}
 
-						nearby_streets.push_back(street2);
+						nearby_streets.push_back(street1);
 					}
 				}
 			}
@@ -367,22 +374,24 @@ int main(const int argc, char* argv[])
 			postprocessed = false;
 
 
-		static size_t id = 0;
+		static size_t intersection_id = 0;
+		static size_t street_id = 0;
 		if (KeyDown['h'])
 		{
-			id = 0;
+			intersection_id = 0;
+			street_id = 0;
 			parcels.clear();
 		}
 
 		if (KeyDown['j'])
 		{
-			std::vector<std::shared_ptr<Infrastructure::Parcel>> parcelsInvalid;
+			std::vector<std::shared_ptr<Infrastructure::Parcel>> parcels_invalid;
 
 			for (const auto& parcel : parcels)
 				if (parcel->GetBorderPoints().size() != 4)
-					parcelsInvalid.push_back(parcel);
+					parcels_invalid.push_back(parcel);
 
-			for (const auto& parcel : parcelsInvalid)
+			for (const auto& parcel : parcels_invalid)
 				parcels.erase(std::remove(parcels.begin(), parcels.end(), parcel), parcels.end());
 		}
 
@@ -392,15 +401,17 @@ int main(const int argc, char* argv[])
 		std::function<void(std::shared_ptr<Infrastructure::Street>, Infrastructure::StreetSegment, glm::vec3, Infrastructure::StreetNarrowPair, Infrastructure::StreetIntersectionSide)> processStreet2 =
 			[&](const std::shared_ptr<Infrastructure::Street>& street, const Infrastructure::StreetSegment& segment, const glm::vec3& point_from, Infrastructure::StreetNarrowPair const& previous_pair, const Infrastructure::StreetIntersectionSide side)
 		{
-			/*
 			std::cerr << "processStreet2" << std::endl;
 			std::cerr << "Street: " << street.get() << std::endl;
-			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
-			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
-			*/
 
 			if (!street || std::find(visited.begin(), visited.end(), street) != visited.end())
 				return;
+			/*
+			*/
+			std::cerr << "I     : " << street->GetIntersections().size() << std::endl;
+			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
+			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
+
 
 			Infrastructure::StreetNarrowPair pair;
 			if (street->GetNextIntersectionPointPair(previous_pair, segment, side, &pair))
@@ -411,18 +422,18 @@ int main(const int argc, char* argv[])
 					return;
 
 				visited.push_back(street);
-				auto streetNext = pair.intersection2.intersecting_segment.street;
-				auto segmentNext = pair.intersection2.intersecting_segment;
-				if (street == streetNext)
+				auto street_next = pair.intersection2.intersecting_segment.street;
+				auto segment_next = pair.intersection2.intersecting_segment;
+				if (street == street_next)
 				{
-					streetNext = pair.intersection2.own_segment.street;
-					segmentNext = pair.intersection2.own_segment;
+					street_next = pair.intersection2.own_segment.street;
+					segment_next = pair.intersection2.own_segment;
 				}
-				processStreet2(streetNext, segmentNext, pair.point2, pair, side);
+				processStreet2(street_next, segment_next, pair.point2, pair, side);
 			}
 			else
 			{
-				//std::cerr << "Next pair was not found, using end point." << std::endl;
+				std::cerr << "Next pair was not found, using end point." << std::endl;
 				// žádná další dvojice křižovatek nalezena nebyla
 				parcel->AddBorderPoint(street->GetSegment().endPoint);
 			}
@@ -431,15 +442,17 @@ int main(const int argc, char* argv[])
 		std::function<void(std::shared_ptr<Infrastructure::Street>, glm::vec3, Infrastructure::StreetIntersectionSide)> processStreet =
 			[&](const std::shared_ptr<Infrastructure::Street>& street, const glm::vec3& point_from, const Infrastructure::StreetIntersectionSide side)
 		{
-			/*
 			std::cerr << "processStreet" << std::endl;
 			std::cerr << "Street: " << street.get() << std::endl;
-			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
-			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
-			*/
 
 			if (std::find(visited.begin(), visited.end(), street) != visited.end())
 				return;
+			/*
+			*/
+			std::cerr << "I     : " << street->GetIntersections().size() << std::endl;
+			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
+			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
+
 
 			Infrastructure::StreetNarrowPair pair;
 			if (street->GetNextIntersectionPointPair(point_from, side, side, false, &pair))
@@ -450,18 +463,18 @@ int main(const int argc, char* argv[])
 					return;
 
 				visited.push_back(street);
-				auto streetNext = pair.intersection2.intersecting_segment.street;
-				auto segmentNext = pair.intersection2.intersecting_segment;
-				if (street == streetNext)
+				auto street_next = pair.intersection2.intersecting_segment.street;
+				auto segment_next = pair.intersection2.intersecting_segment;
+				if (street == street_next)
 				{
-					streetNext = pair.intersection2.own_segment.street;
-					segmentNext = pair.intersection2.own_segment;
+					street_next = pair.intersection2.own_segment.street;
+					segment_next = pair.intersection2.own_segment;
 				}
-				processStreet2(streetNext, segmentNext, pair.point2, pair, side);
+				processStreet2(street_next, segment_next, pair.point2, pair, side);
 			}
 			else
 			{
-				//std::cerr << "Next pair was not found, using end point." << std::endl;
+				std::cerr << "Next pair was not found, using end point." << std::endl;
 				// žádná další dvojice křižovatek nalezena nebyla
 				parcel->AddBorderPoint(street->GetSegment().endPoint);
 			}
@@ -500,7 +513,7 @@ int main(const int argc, char* argv[])
 						visited.clear();
 					}
 				};
-				for (auto street : streetMap->GetStreets())
+				for (const auto& street : streetMap->GetStreets())
 					processStreetToList(street);
 			}
 
@@ -512,39 +525,51 @@ int main(const int argc, char* argv[])
 			{
 				for (const auto& street : streetMap->GetStreets())
 					street->GenerateIntersectionPointLists();
-				
-				auto street_current = streetMap->GetStreets()[1];
-				auto rightPairs = street_current->GetRightIntersectionPointPairs();
-				if (id < rightPairs.size())
-				{
-					auto pair = rightPairs[id];
 
-					//std::cerr << std::endl << "New right parcel..." << std::endl;
+				if (street_id >= streetMap->GetStreets().size())
+					return;
+
+				auto street_current = streetMap->GetStreets()[street_id];
+				auto rightPairs = street_current->GetRightIntersectionPointPairs();
+				if (intersection_id < rightPairs.size())
+				{
+					auto pair = rightPairs[intersection_id];
+
+					std::cerr << std::endl << "New right parcel..." << std::endl;
 					parcel = std::make_shared<Infrastructure::Parcel>();
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::RIGHT);
-					//std::cerr << "Finishing parcel." << std::endl;
+					std::cerr << "Finishing parcel." << std::endl;
 					parcel->Finish();
 
 					visited.clear();
 				}
 
 				auto leftPairs = street_current->GetLeftIntersectionPointPairs();
-				if (id < leftPairs.size())
+				if (intersection_id < leftPairs.size())
 				{
-					auto pair = leftPairs[id];
+					auto pair = leftPairs[intersection_id];
 
-					//std::cerr << std::endl << "New left parcel..." << std::endl;
+					std::cerr << std::endl << "New left parcel..." << std::endl;
 					parcel = std::make_shared<Infrastructure::Parcel>();
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::LEFT);
-					//std::cerr << "Finishing parcel." << std::endl;
+					std::cerr << "Finishing parcel." << std::endl;
 					parcel->Finish();
 
 					visited.clear();
 				}
 
-				id++;
+				if (intersection_id >= rightPairs.size()
+					&& intersection_id >= leftPairs.size())
+				{
+					intersection_id = 0;
+					street_id++;
+				}
+				else
+				{		
+					intersection_id++;
+				}
 			}
 
 			parcelGenerated = true;

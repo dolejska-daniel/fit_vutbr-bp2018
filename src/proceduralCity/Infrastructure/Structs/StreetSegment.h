@@ -29,7 +29,8 @@ namespace Infrastructure
 		bool operator==(StreetSegment const& other) const
 		{
 			return this->startPoint == other.startPoint
-				&& this->direction == other.direction;
+				&& this->endPoint == other.endPoint
+				&& this->street == other.street;
 		}
 
 		///
@@ -55,6 +56,14 @@ namespace Infrastructure
 			: IHasRectBounds(Utils::RectBounds(segment.startPoint, segment.endPoint)),
 			segment(segment)
 		{
+		}
+
+		///
+		/// @brief 
+		///
+		bool operator==(StreetSegmentQEntry const& other) const
+		{
+			return this->segment == other.segment;
 		}
 	};
 }

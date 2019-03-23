@@ -41,19 +41,20 @@ StreetMap::StreetMap(Terrain::Map *map)
 			street->BuildStep(dir, float(glm::pow(.75f, street->GetLevel()) * 6.f));
 		})); */
 
-	auto startPoint = glm::vec3(0, 0, 32 * 8);
+	auto startPoint = glm::vec3(-32, 0, 32 * 8);
 	startPoint.y = map->GetHeightMap()->GetData(startPoint);
 
+	// Program předpokládá nekolidující výchozí ulice (první krok výpočtu probíhá bez kontroly kolizí!)
 	auto street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(1, 0, 0), 2.f);
-	//Utils::StreetQuadTree->Insert(street->ReadSegment());
+	street->BuildStep();
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, -.5), 2.f);
-	//Utils::StreetQuadTree->Insert(street->ReadSegment());
+	street->BuildStep();
 	GetStreets().push_back(street);
 
 	street = std::make_shared<Street>(map->GetHeightMap(), startPoint, glm::vec3(-.5, 0, .5), 2.f);
-	//Utils::StreetQuadTree->Insert(street->ReadSegment());
+	street->BuildStep();
 	GetStreets().push_back(street);
 
 	/*
@@ -86,7 +87,7 @@ void StreetMap::AddStreet(const std::shared_ptr<Street>& street)
 void StreetMap::RemoveStreet(const std::shared_ptr<Street>& street)
 {
 	street->Destroy(shared_from_this());
-	//_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
+	_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
 }
 
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street)
@@ -251,51 +252,49 @@ void StreetMap::ValidateIntersections(const std::shared_ptr<Street>& street)
 
 void StreetMap::BuildStep()
 {
-	for (auto const& street : ReadStreets())
+	for (const auto& street : ReadStreets())
 	{
 		if (street->Ended())
 			continue;
 
-		auto lastEndPoint = street->GetSegment().endPoint;
-		//	TODO: BuildStep
 		_zone->BuildStep(street);
-		terrainMap->ValidateStreet(street);
+		if (!terrainMap->ValidateStreet(street))
+			continue;
 
 		auto intersecting_segment = street->GetSegment();
 		auto intersections = Intersections(intersecting_segment);
+		if (street->GetSegments().size() <= 2)
+		{
+			// jedná se o první krok - zamezíme kolizi s parent ulicí
+			intersections->erase(std::remove_if(intersections->begin(), intersections->end(),
+				[&street](const StreetSegmentIntersection& i)
+			{
+				return i.ownSegment.street->HasSubstreet(street);
+			}), intersections->end());
+		}
+
 		if (!intersections->empty())
 		{
-			//	Průsečíky byly nalezeny
-			auto intersection = intersections->front();
-			auto intersectionPoint = street->GetSegmentPoint(intersections->front().positionRelative[0]);
-			auto intersectionDistance = distance(intersectionPoint, lastEndPoint);
-
-			for (auto const& intersection_ : *intersections)
+			// byly nalezeny kolize silnic
+			auto intersection = std::min_element(intersections->begin(), intersections->end(),
+				[](const StreetSegmentIntersection& i1, const StreetSegmentIntersection& i2)
 			{
-				const auto intersectionPoint_ = street->GetSegmentPoint(intersection_.positionRelative[0]);
-				const auto intersectionDistance_ = distance(intersectionPoint_, lastEndPoint);
+				return i1.positionRelative[0] < i2.positionRelative[0];
+			});
+			auto intersection_point = street->GetSegmentPoint(intersection->positionRelative[0]);
 
-				if (intersectionDistance_ < intersectionDistance)
-				{
-					intersectionDistance = intersectionDistance_;
-					intersectionPoint    = intersectionPoint_;
-					intersection		 = intersection_;
-				}
-			}
-
+			//std::cerr << "Intersection found between " << intersection->ownSegment.street << " and " << street << " at " << intersection->positionRelative[0] << std::endl;
 			Utils::StreetQuadTree->Remove(street->ReadSegment());
-			street->SetSegmentEndPoint(intersectionPoint);
+			street->SetSegmentEndPoint(intersection_point);
 			Utils::StreetQuadTree->Insert(street->ReadSegment());
 
-			street->End(intersectionPoint, intersection.ownSegment, intersection.intersectingSegment);
-			intersection.ownSegment.street->AddIntersection(intersectionPoint, intersection.intersectingSegment, intersection.ownSegment);
+			street->End(intersection_point, intersection->ownSegment, intersection->intersectingSegment);
+			intersection->ownSegment.street->AddIntersection(intersection_point, intersection->intersectingSegment, intersection->ownSegment);
 
 			intersecting_segment = street->GetSegment();
 			continue;
 		}
 
-		//	TODO: SplitStep
 		_zone->SplitStep(this, street);
-
 	}
 }

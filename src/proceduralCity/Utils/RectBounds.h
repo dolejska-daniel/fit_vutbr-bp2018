@@ -46,6 +46,17 @@ namespace Utils
 		///
 		/// @brief
 		///
+		void Expand(float size);
+		RectBounds ExpandNew(float size) const;
+		///
+		/// @brief
+		///
+		void Shrink(float size);
+		RectBounds ShrinkNew(float size) const;
+
+		///
+		/// @brief
+		///
 		bool IsEmpty() const { return size.x == 0.f && size.y == 0.f; }
 
 
@@ -73,6 +84,10 @@ namespace Utils
 		/// @brief
 		///
 		glm::vec2 RightTop() const { return { Right(), Top() }; }
+		///
+		/// @brief
+		///
+		glm::vec2 Midpoint() const { return (LeftBottom() + RightTop()) / 2.f; }
 		///
 		/// @brief
 		///

@@ -64,7 +64,10 @@ StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float ra
 				}
 
 				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1);
-				street->AddIntersection(position, substreet->GetSegment(), side, segment, true);
+				// substreet->GetSegment je pouze jeden bod.
+				auto intersection_segment = substreet->GetSegment();
+				intersection_segment.endPoint = intersection_segment.startPoint + intersection_segment.direction;
+				street->AddIntersection(position, intersection_segment, side, segment, true);
 				street->AddSubstreet(street->GetIntersections().back(), substreet);
 				map->AddStreet(substreet);
 			}

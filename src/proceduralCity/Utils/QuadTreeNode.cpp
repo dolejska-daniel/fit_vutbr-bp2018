@@ -122,7 +122,11 @@ void QuadTreeNode::Remove(const std::shared_ptr<Infrastructure::StreetSegmentQEn
 	// v této situaci:
 	// a) žádný z poduzlů kompletně neobsahuje daný objekt
 	// b) jsme na nejnižší možné velikosti uzlu
-	_contents.erase(std::remove(_contents.begin(), _contents.end(), item), _contents.end());
+	_contents.erase(std::remove_if(_contents.begin(), _contents.end(),
+		[&item](const std::shared_ptr<Infrastructure::StreetSegmentQEntry>& i)
+	{
+		return i->segment == item->segment;
+	}), _contents.end());
 }
 
 void QuadTreeNode::CreateSubNodes()

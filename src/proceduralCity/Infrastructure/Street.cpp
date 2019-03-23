@@ -33,7 +33,7 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 	auto vb = CreateVB();
 	BindVB();
 
-	const StreetSegment newSegment = {
+	const StreetSegment new_segment = {
 		startPoint,
 		startPoint,
 		direction,
@@ -45,16 +45,15 @@ Street::Street(Terrain::HeightMap* heightMap, glm::vec3 const& startPoint, glm::
 	_segments.reserve(16 * sizeof(StreetVertex));
 	_vertices.reserve(16 * 2 * sizeof(StreetVertex));
 
-	_segments.push_back(newSegment);
+	_segments.push_back(new_segment);
 	_vertices.push_back({
-		newSegment.startPoint,
+		new_segment.startPoint,
 	});
 	_vertices.push_back({
-		newSegment.startPoint,
+		new_segment.startPoint,
 	});
 
 	vb->alloc(2 * sizeof(StreetVertex));
-	BuildStep();
 	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(StreetVertex));
 }
 
@@ -166,6 +165,8 @@ void Street::SetSegmentEndPoint(const size_t segment, glm::vec3 const& endPoint)
 
 void Street::RemoveSegmentsToEnd(const size_t segment)
 {
+	assert(segment < _segments.size());
+
 	_segments.erase(_segments.begin() + segment, _segments.end());
 	RebuildVertices();
 }
@@ -456,7 +457,7 @@ bool Street::GetNextIntersectionPointPair(StreetNarrowPair const& current_pair,
 {
 	// TODO: Possibly invalide reference segment selection for side evaluation
 	const auto side_from = GetPointSide(current_pair.point1, intersecting_segment);
-	const auto is_substreet = std::find(_substreets.begin(), _substreets.end(), intersecting_segment.street) != _substreets.end();
+	const auto is_substreet = HasSubstreet(intersecting_segment.street);
 	return GetNextIntersectionPointPair(current_pair.point2, side_from, side_to, is_substreet, result);
 }
 
@@ -467,7 +468,7 @@ bool Street::GetNextIntersectionPointPair(const glm::vec3& point_from, const Str
 	// pokud křižovatka navazuje zleva a cíl její cesty je doprava
 	// dochází k inverzi směru a je nutné zvolit odlišnou dvojici křižovatek
 	const auto direction_inverted = side_from != side_to || is_substreet;
-	const auto comparer = [&](StreetNarrowPair const& pair)
+	const auto comparer = [&direction_inverted,&point_from](StreetNarrowPair const& pair)
 	{
 		if (direction_inverted)
 			// směr je opačný, hledáme tedy dvojice "z druhé strany"
