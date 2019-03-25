@@ -9,6 +9,9 @@
 #include <Application/Renderer.h>
 #include <Application/IRenderableArray.h>
 #include <Application/IRenderableElementArray.h>
+#include <Terrain/Chunk.h>
+#include <Terrain/Map.h>
+#include <fstream>
 
 
 using namespace ge::gl;
@@ -34,4 +37,72 @@ void Renderer::Render(std::shared_ptr<IRenderableElementArray> const& object) co
 	object->BindVA();
 	//object->BindVB();
 	glDrawElements(object->GetDrawMode(), static_cast<GLsizei>(object->GetVA()->getElement()->getSize()), GL_UNSIGNED_INT, nullptr);
+}
+
+void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
+{
+	if (!output.is_open())
+		return;
+
+	const auto chunks = map->GetChunks();
+	output << "#\n# Terrain vertices\n#" << std::endl;
+	for (const auto& ch : chunks)
+	{
+		output << "# Chunk " << ch.first << std::endl;
+		const auto chunk = ch.second;
+		const auto vertices = chunk->GetVertices();
+		for (size_t i = 0; i < chunk->GetVerticesWidth() * chunk->GetVerticesHeight(); ++i)
+		{
+			const auto v = vertices[i];
+			output
+				<< "v"
+				<< " " << v.position.x
+				<< " " << v.position.y
+				<< " " << v.position.z << std::endl;
+		}
+	}
+	output << "\n#\n# Terrain normals\n#" << std::endl;
+	for (const auto& ch : chunks)
+	{
+		output << "# Chunk " << ch.first << std::endl;
+		const auto chunk = ch.second;
+		const auto vertices = chunk->GetVertices();
+		for (size_t i = 0; i < chunk->GetVerticesWidth() * chunk->GetVerticesHeight(); ++i)
+		{
+			const auto v = vertices[i];
+			output
+				<< "vn"
+				<< " " << v.normal.x
+				<< " " << v.normal.y
+				<< " " << v.normal.z << std::endl;
+		}
+	}
+
+	output << "\n#\n# Terrain vertex indices\n#" << std::endl;
+	size_t offset = 0;
+	for (const auto& ch : chunks)
+	{
+		output << "# Chunk " << ch.first << std::endl;
+		const auto chunk = ch.second;
+		const auto indices = chunk->GetIndices();
+		auto new_offset = 0;
+		for (size_t i = 0; i < chunk->GetIndicesWidth() * chunk->GetIndicesHeight(); ++i)
+		{
+			const auto idx = indices[i];
+			output
+				<< "f"
+				<< " " << idx.triangle1.x + 1 + offset
+				<< " " << idx.triangle1.y + 1 + offset
+				<< " " << idx.triangle1.z + 1 + offset << std::endl;
+
+			output
+				<< "f"
+				<< " " << idx.triangle2.x + 1 + offset
+				<< " " << idx.triangle2.y + 1 + offset
+				<< " " << idx.triangle2.z + 1 + offset << std::endl;
+
+			new_offset = idx.triangle2.z + 1 + offset;
+		}
+		offset = new_offset;
+	}
 }

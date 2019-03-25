@@ -55,6 +55,7 @@ int main(const int argc, char* argv[])
 	//	DEFINICE OBECNÝCH PROMĚNNÝCH A ARGUMENTŮ PROGRAMU
 	// =============================================================
 	vars.addString("resources.dir", args.gets("--resources-dir", "../res", "Path to resources directory (shaders, ...)"));
+	vars.addString("output.dir",    args.gets("--output-dir", "../output", "Path to output directory (for saved models)"));
 
 	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ TERÉNU
@@ -596,6 +597,27 @@ int main(const int argc, char* argv[])
 		}
 		else
 			parcelGenerated = false;
+
+		static auto save = false;
+		if (KeyDown[SDLK_LCTRL])
+		{
+			if (!save)
+			{
+				if (KeyDown['s'])
+				{
+					const auto filepath = vars.getString("output.dir") + "/terrain.obj";
+					std::cerr << "Saving terrain model to: " << filepath << std::endl;
+					auto f = Utils::write_file(filepath);
+					renderer->Save(map, f);
+
+					save = true;
+				}
+			}
+			else
+				save = false;
+		}
+		else
+			save = false;
 
 		for (const auto& p : parcels)
 		{

@@ -6,6 +6,7 @@
 ///
 #pragma once
 #include <Vars/Vars.h>
+#include <Terrain/Chunk.h>
 
 
 namespace Application
@@ -38,6 +39,11 @@ namespace Application
 		/// @brief
 		///
 		void Render(std::shared_ptr<IRenderableElementArray> const& object) const;
+
+		///
+		/// @brief
+		///
+		void Save(Terrain::Map* map, std::ofstream& output) const;
 		/*
 		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 

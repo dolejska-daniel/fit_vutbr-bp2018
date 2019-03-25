@@ -7,8 +7,10 @@
 #pragma once
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <fstream>
 #include <vector>
 #include <memory>
+#include <string>
 
 
 namespace Utils
@@ -35,5 +37,20 @@ namespace Utils
 			vec.y,
 			-vec.x,
 		};
+	}
+
+	static std::ifstream read_file(const std::string& filepath)
+	{
+		return std::ifstream(filepath.c_str());
+	}
+
+	static std::ofstream write_file(const std::string& filepath)
+	{
+		return std::ofstream(filepath.c_str());
+	}
+
+	static std::fstream open_file(const std::string& filepath)
+	{
+		return std::fstream(filepath.c_str());
 	}
 }
