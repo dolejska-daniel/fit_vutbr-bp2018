@@ -16,7 +16,16 @@
 using namespace Infrastructure;
 
 Parcel::Parcel()
-	: finished(false)
+	: type(BUILDING)
+{
+	SetDrawMode(GL_LINES);
+	CreateVA();
+	CreateVB();
+	CreateIB();
+}
+
+Parcel::Parcel(const ParcelType type)
+	: type(type)
 {
 	SetDrawMode(GL_LINES);
 	CreateVA();
@@ -57,6 +66,34 @@ bool Parcel::AddBorderPoint(glm::vec3 point)
 std::vector<glm::vec3> const& Parcel::GetBorderPoints() const
 {
 	return borderPoints;
+}
+
+glm::vec3 Parcel::GetMidpoint()
+{
+	glm::vec3 midpoint(0);
+	for (const auto& point : borderPoints)
+		midpoint+= point;
+	return midpoint / float(borderPoints.size());
+}
+
+void Parcel::Shrink(const float size)
+{
+	const auto midpoint = GetMidpoint();
+	for (auto& point : borderPoints)
+		point += glm::normalize(midpoint - point) * size;
+
+	finished = false;
+	Finish();
+}
+
+void Parcel::Expand(const float size)
+{
+	const auto midpoint = GetMidpoint();
+	for (auto& point : borderPoints)
+		point += glm::normalize(point - midpoint) * size;
+
+	finished = false;
+	Finish();
 }
 
 void Parcel::Finish()

@@ -30,6 +30,7 @@
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
 #include <Utils/QuadTree.h>
+#include <Utils/functions.h>
 
 
 using namespace glm;
@@ -74,7 +75,7 @@ int main(const int argc, char* argv[])
 	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64 ,		"Terrain chunk height in 2D (depth/length in 3D)"));
 	vars.addFloat( "terrain.chunk.scale",	args.getf32("--terrain-chunk-scale",	8.f,	"Chunk scale multiplier"));
 
-	if (args.isPresent("--help", "") || args.validate() == false)
+	if (args.isPresent("--help", "") || !args.validate())
 	{
 		std::cerr << args.toStr() << std::endl;
 		exit(EXIT_SUCCESS);
@@ -498,7 +499,7 @@ int main(const int argc, char* argv[])
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::LEFT);
 						//std::cerr << "Finishing parcel." << std::endl;
-						parcel->Finish();
+						parcel->Shrink(2.f);
 						visited.clear();
 					}
 
@@ -509,12 +510,29 @@ int main(const int argc, char* argv[])
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::RIGHT);
 						//std::cerr << "Finishing parcel." << std::endl;
-						parcel->Finish();
+						parcel->Shrink(2.f);
 						visited.clear();
 					}
 				};
+
 				for (const auto& street : streetMap->GetStreets())
+				{
 					processStreetToList(street);
+
+					std::cerr << "Creating street parcel..." << std::endl;
+					parcel = std::make_shared<Infrastructure::Parcel>(Infrastructure::STREET);
+					parcels.push_back(parcel);
+					const auto point1 = street->GetSegmentPoint(0, 0.f);
+					const auto point2 = street->GetSegmentPoint(1.f);
+					const auto dir = glm::normalize(point2 - point1);
+					const auto left = Utils::left_vector(dir);
+					const auto right = Utils::right_vector(dir);
+					parcel->AddBorderPoint(point1 + left);
+					parcel->AddBorderPoint(point1 + right);
+					parcel->AddBorderPoint(point2 + right);
+					parcel->AddBorderPoint(point2 + left);
+					parcel->Expand(1.f);
+				}
 			}
 
 			parcelGenerated = true;
@@ -540,6 +558,7 @@ int main(const int argc, char* argv[])
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::RIGHT);
 					std::cerr << "Finishing parcel." << std::endl;
+					parcel->Shrink(1.f);
 					parcel->Finish();
 
 					visited.clear();
@@ -555,6 +574,7 @@ int main(const int argc, char* argv[])
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::LEFT);
 					std::cerr << "Finishing parcel." << std::endl;
+					parcel->Shrink(1.f);
 					parcel->Finish();
 
 					visited.clear();
@@ -577,11 +597,23 @@ int main(const int argc, char* argv[])
 		else
 			parcelGenerated = false;
 
-		color = { 0, 0, 1 };
-		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& p : parcels)
+		{
 			if (p->finished)
+			{
+				if (p->type == Infrastructure::BUILDING)
+				{
+					color = { 0, 0, 1 };
+					shaders->GetActiveProgram()->set3fv("color", &color[0]);
+				}
+				else if (p->type == Infrastructure::STREET)
+				{
+					color = { 0.62745098039f, 0, 1 };
+					shaders->GetActiveProgram()->set3fv("color", &color[0]);
+				}
 				renderer->Render(p);
+			}
+		}
 
 		color = { 1, 1, 1 };
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);

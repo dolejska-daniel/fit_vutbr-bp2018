@@ -17,7 +17,7 @@ BuildingPart::BuildingPart(const std::shared_ptr<Parcel>& parcel, BuildingType t
 
 	const auto points = parcel->borderPoints;
 	const auto size = points.size();
-	const auto height_diff = 10.f + rand() % 250;
+	const auto height_diff = 5.f + rand() % 20;
 
 	glm::vec3 center(0);
 	glm::vec3 center_up(0);
