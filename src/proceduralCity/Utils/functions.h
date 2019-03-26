@@ -7,6 +7,7 @@
 #pragma once
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <fstream>
 #include <vector>
 #include <memory>
@@ -19,6 +20,33 @@ namespace Utils
 	static void merge_vectors(std::vector<T>& vec1, const std::vector<T>& vec2)
 	{
 		vec1.insert(std::end(vec1), std::begin(vec2), std::end(vec2));
+	}
+
+	const glm::vec3 color_white = { 1, 1, 1 };
+
+	const glm::vec3 color_red = { 1, 0, 0 };
+
+	const glm::vec3 color_green = { 0, 1, 0 };
+
+	const glm::vec3 color_blue = { 0, 0, 1 };
+
+	static glm::vec3 color_rgb(const unsigned r, const unsigned g, const unsigned b)
+	{
+		return {
+			r * (1.f / 255.f),
+			g * (1.f / 255.f),
+			b * (1.f / 255.f),
+		};
+	}
+
+	static glm::vec4 color_rgba(const unsigned r, const unsigned g, const unsigned b, const float a)
+	{
+		return {
+			r * (1.f / 255.f),
+			g * (1.f / 255.f),
+			b * (1.f / 255.f),
+			a,
+		};
 	}
 
 	static glm::vec3 right_vector(const glm::vec3& vec)

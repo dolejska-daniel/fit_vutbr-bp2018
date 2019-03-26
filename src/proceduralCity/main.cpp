@@ -162,7 +162,7 @@ int main(const int argc, char* argv[])
 		{
 			shaders->Use("Phong");
 
-			color = vec3(0, 1, 0);
+			color = Utils::color_green;
 			shaders->GetActiveProgram()->set3fv("color", &color[0]);
 
 			shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
@@ -264,7 +264,7 @@ int main(const int argc, char* argv[])
 		else
 			generateBuilding = false;
 
-		color = { 1, 0, 0 };
+		color = Utils::color_red;
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& building : buildings)
 			for (const auto& part : building->parts)
@@ -360,7 +360,7 @@ int main(const int argc, char* argv[])
 
 			std::cerr << "Nearby streets found: " << nearby_streets.size() << std::endl;
 
-			color = { 1, 0, 0 };
+			color = Utils::color_red;
 			shaders->GetActiveProgram()->set3fv("color", &color[0]);
 			for (const auto& street : nearby_streets)
 			{
@@ -403,16 +403,18 @@ int main(const int argc, char* argv[])
 		std::function<void(std::shared_ptr<Infrastructure::Street>, Infrastructure::StreetSegment, glm::vec3, Infrastructure::StreetNarrowPair, Infrastructure::StreetIntersectionSide)> processStreet2 =
 			[&](const std::shared_ptr<Infrastructure::Street>& street, const Infrastructure::StreetSegment& segment, const glm::vec3& point_from, Infrastructure::StreetNarrowPair const& previous_pair, const Infrastructure::StreetIntersectionSide side)
 		{
+			/*
 			std::cerr << "processStreet2" << std::endl;
 			std::cerr << "Street: " << street.get() << std::endl;
+			*/
 
 			if (!street || std::find(visited.begin(), visited.end(), street) != visited.end())
 				return;
 			/*
-			*/
 			std::cerr << "I     : " << street->GetIntersections().size() << std::endl;
 			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
 			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
+			*/
 
 
 			Infrastructure::StreetNarrowPair pair;
@@ -435,7 +437,7 @@ int main(const int argc, char* argv[])
 			}
 			else
 			{
-				std::cerr << "Next pair was not found, using end point." << std::endl;
+				//std::cerr << "Next pair was not found, using end point." << std::endl;
 				// žádná další dvojice křižovatek nalezena nebyla
 				parcel->AddBorderPoint(street->GetSegment().endPoint);
 			}
@@ -444,16 +446,18 @@ int main(const int argc, char* argv[])
 		std::function<void(std::shared_ptr<Infrastructure::Street>, glm::vec3, Infrastructure::StreetIntersectionSide)> processStreet =
 			[&](const std::shared_ptr<Infrastructure::Street>& street, const glm::vec3& point_from, const Infrastructure::StreetIntersectionSide side)
 		{
+			/*
 			std::cerr << "processStreet" << std::endl;
 			std::cerr << "Street: " << street.get() << std::endl;
+			*/
 
 			if (std::find(visited.begin(), visited.end(), street) != visited.end())
 				return;
 			/*
-			*/
 			std::cerr << "I     : " << street->GetIntersections().size() << std::endl;
 			std::cerr << "IL    : " << street->GetLeftIntersectionPointPairs().size() << std::endl;
 			std::cerr << "IR    : " << street->GetRightIntersectionPointPairs().size() << std::endl;
+			*/
 
 
 			Infrastructure::StreetNarrowPair pair;
@@ -476,7 +480,7 @@ int main(const int argc, char* argv[])
 			}
 			else
 			{
-				std::cerr << "Next pair was not found, using end point." << std::endl;
+				//std::cerr << "Next pair was not found, using end point." << std::endl;
 				// žádná další dvojice křižovatek nalezena nebyla
 				parcel->AddBorderPoint(street->GetSegment().endPoint);
 			}
@@ -625,19 +629,19 @@ int main(const int argc, char* argv[])
 			{
 				if (p->type == Infrastructure::BUILDING)
 				{
-					color = { 0, 0, 1 };
+					color = Utils::color_blue;
 					shaders->GetActiveProgram()->set3fv("color", &color[0]);
 				}
 				else if (p->type == Infrastructure::STREET)
 				{
-					color = { 0.62745098039f, 0, 1 };
+					color = Utils::color_rgb(140, 0, 255);
 					shaders->GetActiveProgram()->set3fv("color", &color[0]);
 				}
 				renderer->Render(p);
 			}
 		}
 
-		color = { 1, 1, 1 };
+		color = Utils::color_white;
 		shaders->GetActiveProgram()->set3fv("color", &color[0]);
 		for (const auto& s : streetMap->ReadStreets())
 			if (!s->Destroyed())
