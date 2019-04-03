@@ -252,11 +252,17 @@ int main(const int argc, char* argv[])
 				{
 					buildings.clear();
 				}
-				else if (parcel_id < parcels.size())
+				else
 				{
-					auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], Infrastructure::SQUARE);
-					buildings.emplace_back(building);
-					parcel_id++;
+					while (parcel_id < parcels.size() && parcels[parcel_id]->type != Infrastructure::ParcelType::BUILDING)
+						parcel_id++;
+
+					if (parcel_id < parcels.size())
+					{
+						auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], Infrastructure::SQUARE);
+						buildings.emplace_back(building);
+						parcel_id++;
+					}
 				}
 				generateBuilding = true;
 			}

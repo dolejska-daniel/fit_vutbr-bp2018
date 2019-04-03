@@ -6,7 +6,9 @@
 ///
 #include <Infrastructure/BuildingPart.h>
 #include <Infrastructure/Parcel.h>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 
 using namespace Infrastructure;
@@ -27,7 +29,7 @@ BuildingPart::BuildingPart(const std::shared_ptr<Parcel>& parcel, BuildingType t
 	center_up.y+= height_diff;
 
 	const auto get_point = [&size,&points,&height_diff](const size_t index, const bool top = false) -> glm::vec3 {
-		auto point = points[(int(top) * size + index) % size];
+		auto point = points[index % size];
 		if (top) point.y+= height_diff;
 		return point;
 	};
@@ -38,11 +40,16 @@ BuildingPart::BuildingPart(const std::shared_ptr<Parcel>& parcel, BuildingType t
 		auto p1 = get_point(index + 1);
 		auto p2 = get_point(index + 0, true);
 		auto p3 = get_point(index + 1, true);
+		auto m = (p0 + p1) / 2.f;
 
-		auto n1 = p0 - p1;
-		auto n2 = p0 - p2;
+		auto nm = glm::normalize(center - m);
+		auto n1 = p1 - p0;
+		auto n2 = p2 - p0;
+		auto n3 = p3 - p0;
 
 		auto n = glm::normalize(glm::cross(n1, n2));
+		if (nm.x * n.x >= 0.f && nm.z * n.z >= 0.f)
+			n = glm::normalize(glm::cross(n2, n3));
 
 		vertices.push_back({ p0, n });
 		vertices.push_back({ p1, n });

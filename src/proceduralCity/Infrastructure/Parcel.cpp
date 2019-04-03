@@ -41,20 +41,20 @@ bool Parcel::AddBorderPoint(glm::vec3 point)
 	if (finished) return true;
 
 	point.y += 1;
-	std::cerr << "Parcel border pt.: " << glm::to_string(point) << std::endl;
+	//std::cerr << "Parcel border pt.: " << glm::to_string(point) << std::endl;
 
 	if (!borderPoints.empty())
 	{
 		if (borderPoints.front() == point)
 		{
-			std::cerr << "Parcel has been closed by points." << std::endl;
+			//std::cerr << "Parcel has been closed by points." << std::endl;
 			Finish();
 			return false;
 		}
 
 		if (borderPoints.back() == point)
 		{
-			std::cerr << "Parcel border pt. is same as the last one, skipping." << std::endl;
+			//std::cerr << "Parcel border pt. is same as the last one, skipping." << std::endl;
 			return true;
 		}
 	}
