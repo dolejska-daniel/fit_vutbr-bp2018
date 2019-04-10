@@ -22,6 +22,26 @@ namespace Utils
 		vec1.insert(std::end(vec1), std::begin(vec2), std::end(vec2));
 	}
 
+	static glm::vec3 vec4to3(const glm::vec4& v)
+	{
+		return { v.x, v.y, v.z };
+	}
+
+	static glm::vec2 vec3to2(const glm::vec3& v)
+	{
+		return { v.x, v.z };
+	}
+
+	static glm::vec3 vec2to3(const glm::vec2& v)
+	{
+		return { v.x, 0, v.y };
+	}
+
+	static glm::vec4 vec3to4(const glm::vec3& v)
+	{
+		return { v.x, v.y, v.z, 0 };
+	}
+
 	const glm::vec3 color_white = { 1, 1, 1 };
 
 	const glm::vec3 color_red = { 1, 0, 0 };

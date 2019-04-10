@@ -83,7 +83,15 @@ namespace Utils
 		///
 		/// @brief
 		///
+		glm::vec2 LeftTop() const { return { Left(), Top() }; }
+		///
+		/// @brief
+		///
 		glm::vec2 RightTop() const { return { Right(), Top() }; }
+		///
+		/// @brief
+		///
+		glm::vec2 RightBottom() const { return { Right(), Bottom() }; }
 		///
 		/// @brief
 		///

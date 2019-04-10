@@ -9,8 +9,6 @@
 #include <Infrastructure/Parcel.h>
 #include <Infrastructure/Structs/ParcelVertex.h>
 #include <Infrastructure/Structs/ParcelIndex.h>
-#include <glm/detail/_noise.hpp>
-#include <glm/detail/_noise.hpp>
 
 
 using namespace Infrastructure;

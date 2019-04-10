@@ -17,7 +17,9 @@ namespace Infrastructure
 	class BuildingPart : public Application::IRenderableArray
 	{
 	public:
-		BuildingPart(const std::shared_ptr<Parcel>& parcel, BuildingType type);
+		BuildingPart(const std::vector<glm::vec3>& borderPoints, BuildingType type);
 		~BuildingPart();
+
+		void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector<BuildingPartVertex>& vertices, float height);
 	};
 }
