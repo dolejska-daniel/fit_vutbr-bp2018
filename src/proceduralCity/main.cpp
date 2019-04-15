@@ -385,6 +385,7 @@ int main(const int argc, char* argv[])
 		}
 
 
+		static std::vector<Infrastructure::StreetNarrowPair> visited_pairs;
 		std::vector<std::shared_ptr<Infrastructure::Street>> visited;
 		std::shared_ptr<Infrastructure::Parcel> parcel;
 		std::function<void(std::shared_ptr<Infrastructure::Street>, Infrastructure::StreetSegment, glm::vec3, Infrastructure::StreetNarrowPair, Infrastructure::StreetIntersectionSide)> processStreet2 =
@@ -407,6 +408,16 @@ int main(const int argc, char* argv[])
 			Infrastructure::StreetNarrowPair pair;
 			if (street->GetNextIntersectionPointPair(previous_pair, segment, side, &pair))
 			{
+				if (std::find_if(visited_pairs.begin(), visited_pairs.end(), [&pair](const Infrastructure::StreetNarrowPair& p)
+				{
+					return glm::distance(p.point1, pair.point1) < 1.f && glm::distance(p.point2, pair.point2) < 1.f
+						|| glm::distance(p.point2, pair.point1) < 1.f && glm::distance(p.point1, pair.point2) < 1.f;
+				}) != visited_pairs.end())
+				{
+					return;
+				}
+				visited_pairs.push_back(pair);
+
 				// byla nalezena navazující dvojice křižovatek
 				parcel->AddBorderPoint(pair.point1);
 				if (!parcel->AddBorderPoint(pair.point2))
@@ -450,6 +461,16 @@ int main(const int argc, char* argv[])
 			Infrastructure::StreetNarrowPair pair;
 			if (street->GetNextIntersectionPointPair(point_from, side, side, false, &pair))
 			{
+				if (std::find_if(visited_pairs.begin(), visited_pairs.end(), [&pair](const Infrastructure::StreetNarrowPair& p)
+				{
+					return glm::distance(p.point1, pair.point1) < 1.f && glm::distance(p.point2, pair.point2) < 1.f
+						|| glm::distance(p.point2, pair.point1) < 1.f && glm::distance(p.point1, pair.point2) < 1.f;
+				}) != visited_pairs.end())
+				{
+					return;
+				}
+				visited_pairs.push_back(pair);
+
 				// byla nalezena navazující dvojice křižovatek
 				parcel->AddBorderPoint(pair.point1);
 				if (!parcel->AddBorderPoint(pair.point2))

@@ -8,7 +8,7 @@
 #include <Infrastructure/Parcel.h>
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
-#include "Utils/functions.h"
+#include <Utils/functions.h>
 #include <glm/detail/func_geometric.inl>
 
 using namespace Infrastructure;
@@ -49,29 +49,40 @@ void Building::GenerateParts_Square()
 	*/
 	auto a = points[0];
 	auto b = points[1];
-	auto c = points[3];
-	auto ab = b - a;
-	auto ab_len = glm::length(ab);
-	auto ac = c - a;
-	auto ac_len = glm::length(ac);
+	auto c = points[2];
+	auto d = points[3];
+
+	auto u = b - a;
+	auto v = d - a;
+
+	auto dot = glm::dot(u, v);
+	/*
+	for (auto i = 0; i < points.size(); ++i)
+	{
+
+	}*/
+	std::cerr << dot << std::endl;
+
+	auto u_len = glm::length(u);
+	auto v_len = glm::length(v);
 
 	auto density = 3.f;
 	float x_max, y_max;
 	glm::vec3 z_offset, x_offset;
 
-	if (ac_len > ab_len)
+	if (v_len > u_len)
 	{
 		x_max = density;
-		y_max = std::floor(ac_len / (ab_len / density));
+		y_max = std::floor(v_len / (u_len / density));
 	}
 	else
 	{
-		x_max = std::floor(ab_len / (ac_len / density));
+		x_max = std::floor(u_len / (v_len / density));
 		y_max = density;
 	}
 
-	x_offset = ab / x_max;
-	z_offset = ac / y_max;
+	x_offset = u / x_max;
+	z_offset = v / y_max;
 
 	std::vector<glm::vec3> part_points;
 	part_points.reserve(4);
