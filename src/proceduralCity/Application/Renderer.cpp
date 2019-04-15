@@ -44,11 +44,13 @@ void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
 	if (!output.is_open())
 		return;
 
+	size_t offset = 0;
 	const auto chunks = map->GetChunks();
-	output << "#\n# Terrain vertices\n#" << std::endl;
+	output << "#\n# Terrain chunks\n#" << std::endl;
 	for (const auto& ch : chunks)
 	{
-		output << "# Chunk " << ch.first << std::endl;
+		output << "\n# Chunk " << ch.first << " vertices" << std::endl;
+		output << "g chunk_" << ch.first << std::endl;
 		const auto chunk = ch.second;
 		const auto vertices = chunk->GetVertices();
 		for (size_t i = 0; i < chunk->GetVerticesWidth() * chunk->GetVerticesHeight(); ++i)
@@ -60,13 +62,8 @@ void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
 				<< " " << v.position.y
 				<< " " << v.position.z << std::endl;
 		}
-	}
-	output << "\n#\n# Terrain normals\n#" << std::endl;
-	for (const auto& ch : chunks)
-	{
-		output << "# Chunk " << ch.first << std::endl;
-		const auto chunk = ch.second;
-		const auto vertices = chunk->GetVertices();
+
+		output << "# Chunk " << ch.first << " normals" << std::endl;
 		for (size_t i = 0; i < chunk->GetVerticesWidth() * chunk->GetVerticesHeight(); ++i)
 		{
 			const auto v = vertices[i];
@@ -76,16 +73,10 @@ void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
 				<< " " << v.normal.y
 				<< " " << v.normal.z << std::endl;
 		}
-	}
 
-	output << "\n#\n# Terrain vertex indices\n#" << std::endl;
-	size_t offset = 0;
-	for (const auto& ch : chunks)
-	{
-		output << "# Chunk " << ch.first << std::endl;
-		const auto chunk = ch.second;
-		const auto indices = chunk->GetIndices();
 		auto new_offset = 0;
+		const auto indices = chunk->GetIndices();
+		output << "# Chunk " << ch.first << " indices" << std::endl;
 		for (size_t i = 0; i < chunk->GetIndicesWidth() * chunk->GetIndicesHeight(); ++i)
 		{
 			const auto idx = indices[i];
@@ -104,5 +95,7 @@ void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
 			new_offset = idx.triangle2.z + 1 + offset;
 		}
 		offset = new_offset;
+
+		output << "end" << std::endl;
 	}
 }
