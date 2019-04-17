@@ -37,8 +37,15 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 	height += .1f;
 
 	const auto padding = .7f;
+	const auto noise_change = 10.f;
+	const auto noise_scale = 10.f;
+	const auto noise_coeff = 2.f;
+
 	const auto size = points.size();
 	const auto main_height_diff = 10.f + rand() % 20;
+	const auto noise = glm::perlin(center / noise_scale) * noise_coeff;
+
+	std::cerr << noise << std::endl;
 
 	const auto a   = glm::normalize(points[1] - points[0]);
 	const auto al  = glm::length(points[1] - points[0]) * (1.f - padding); // a length
@@ -62,7 +69,6 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 
 	// další bloky
 	auto i_max = 2 + rand() % 3;
-	base_points = Utils::create_block_base(points, padding, height);
 	for (auto i = 0; i < i_max; i++)
 	{
 		auto dir_rand = rand() % 2000 / 1000.f;
@@ -77,8 +83,10 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 		float height_rand = float(rand() % 400);
 		height_rand /= 20;
 		height_rand += 5.f;
+		height_rand += glm::pow(noise_change, noise);
 		
 		auto dir = glm::normalize(glm::vec3{ glm::cos(dir_rand), 0, glm::sin(dir_rand) });
+		base_points = Utils::create_block_base(points, padding + rand() % 100 / 1000.f - .05f, height);
 		CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height + height_rand, height);
 	}
 
