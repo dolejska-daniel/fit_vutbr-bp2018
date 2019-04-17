@@ -8,6 +8,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/glm.hpp>
 #include <fstream>
 #include <vector>
 #include <memory>
@@ -20,6 +21,43 @@ namespace Utils
 	static void merge_vectors(std::vector<T>& vec1, const std::vector<T>& vec2)
 	{
 		vec1.insert(std::end(vec1), std::begin(vec2), std::end(vec2));
+	}
+
+	static std::vector<glm::vec3> create_block_base(const std::vector<glm::vec3>& p, const float padding = 0.f, const float height = 0.f, float al = 0.f, float bl = 0.f)
+	{
+		if (al == 0.f)
+			al = glm::length(p[1] - p[0]) * (1.f - padding);
+		if (bl == 0.f)
+			bl = glm::length(p[3] - p[0]) * (1.f - padding);
+		const auto vl = glm::length(p[2] - p[0]);
+
+		const auto a = glm::normalize(p[1] - p[0]);
+		const auto b = glm::normalize(p[3] - p[0]);
+		const auto v = glm::normalize(a * al + b * bl);
+		const auto o = v * padding / 2.f * vl;
+
+		std::vector<glm::vec3> points
+		{
+			p[0] + o,
+			p[0] + o + a * al,
+			p[0] + o + v * sqrt(al * al + bl * bl),
+			p[0] + o + b * bl,
+		};
+		if (height != 0)
+		{
+			for (auto& point : points)
+				point.y = height;
+		}
+
+		return points;
+	}
+
+	static std::vector<glm::vec3> move_vecs(const std::vector<glm::vec3>& v, const glm::vec3& dir, float len = 1)
+	{
+		auto o(v);
+		for (auto& vec : o)
+			vec += dir * len;
+		return o;
 	}
 
 	static glm::vec3 vec4to3(const glm::vec4& v)

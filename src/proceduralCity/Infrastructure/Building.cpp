@@ -9,13 +9,12 @@
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
 #include <Utils/functions.h>
-#include <glm/detail/func_geometric.inl>
 
 using namespace Infrastructure;
 
 
-Building::Building(std::shared_ptr<Parcel> parcel, const BuildingType type)
-	: _parcel(std::move(parcel)), _type(type)
+Building::Building(std::shared_ptr<Parcel> parcel, Terrain::HeightMap *heightMap, const BuildingType type)
+	: _parcel(std::move(parcel)), _type(type), _heightMap(heightMap)
 {
 	GenerateParts();
 }
@@ -49,24 +48,44 @@ void Building::GenerateParts_Square()
 	*/
 	auto a = points[0];
 	auto b = points[1];
-	auto c = points[2];
-	auto d = points[3];
+	auto c = points[3];
 
 	auto u = b - a;
-	auto v = d - a;
+	auto v = c - a;
 
-	auto dot = glm::dot(u, v);
-	/*
+	auto dot = glm::abs(glm::dot(u, v));
 	for (auto i = 0; i < points.size(); ++i)
 	{
+		auto i1 = (i + 1) % points.size();
+		auto i2 = i - 1;
+		if (i2 < 0) i2 += points.size();
 
-	}*/
+		auto a_ = points[i];
+		auto b_ = points[i1];
+		auto c_ = points[i2];
+
+		auto u_ = b_ - a_;
+		auto v_ = c_ - a_;
+
+		auto dot_ = glm::abs(glm::dot(u_, v_));
+		if (dot_ < dot)
+		{
+			a = a_;
+			b = b_;
+			c = c_;
+
+			u = u_;
+			v = v_;
+
+			dot = dot_;
+		}
+	}
 	std::cerr << dot << std::endl;
 
 	auto u_len = glm::length(u);
 	auto v_len = glm::length(v);
 
-	auto density = 3.f;
+	auto density = 2.f;
 	float x_max, y_max;
 	glm::vec3 z_offset, x_offset;
 
@@ -83,6 +102,8 @@ void Building::GenerateParts_Square()
 
 	x_offset = u / x_max;
 	z_offset = v / y_max;
+
+	// TODO: Minimální rozměry parcely?
 
 	std::vector<glm::vec3> part_points;
 	part_points.reserve(4);
@@ -105,7 +126,7 @@ void Building::GenerateParts_Square()
 			part_points.push_back(offset + z_merge * z_offset + x_offset);
 			part_points.push_back(offset + x_offset);
 
-			const auto part = std::make_shared<BuildingPart>(part_points, _type);
+			const auto part = std::make_shared<BuildingPart>(_heightMap, part_points, _type);
 			parts.push_back(part);
 
 			part_points.clear();

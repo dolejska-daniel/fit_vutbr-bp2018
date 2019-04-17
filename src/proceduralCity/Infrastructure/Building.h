@@ -7,6 +7,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <Terrain/HeightMap.h>
 
 
 namespace Infrastructure
@@ -25,7 +26,7 @@ namespace Infrastructure
 
 		std::vector<std::shared_ptr<BuildingPart>> parts;
 
-		Building(std::shared_ptr<Parcel> parcel, BuildingType type);
+		Building(std::shared_ptr<Parcel> parcel, Terrain::HeightMap *heightMap, BuildingType type);
 		~Building();
 
 		void GenerateParts();
@@ -33,6 +34,7 @@ namespace Infrastructure
 
 	protected:
 		std::shared_ptr<Parcel> _parcel;
+		Terrain::HeightMap* _heightMap;
 		BuildingType _type;
 	};
 }

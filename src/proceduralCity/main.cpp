@@ -259,7 +259,7 @@ int main(const int argc, char* argv[])
 
 					if (parcel_id < parcels.size())
 					{
-						auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], Infrastructure::SQUARE);
+						auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], map->GetHeightMap(), Infrastructure::SQUARE);
 						buildings.emplace_back(building);
 						parcel_id++;
 					}
