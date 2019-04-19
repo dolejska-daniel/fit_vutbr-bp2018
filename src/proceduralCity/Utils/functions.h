@@ -60,6 +60,34 @@ namespace Utils
 		return o;
 	}
 
+	static glm::vec3 random_dir_vec()
+	{
+		auto dir_rand = rand() % 2000 / 1000.f;
+		dir_rand -= 1;
+
+		return glm::normalize(glm::vec3{ glm::cos(dir_rand), 0, glm::sin(dir_rand) });
+	}
+
+	static float randomf(float from = 0.f, float to = 1.f)
+	{
+		from *= 1000.f;
+		to *= 1000.f;
+		auto r = rand() % int(to - from) / 1000.f;
+		r += from;
+
+		return r;
+	}
+
+	static float randomi(int from = 0, int to = 1)
+	{
+		to += 1;
+		auto r = rand() % (to - from) / 1000;
+		r += from;
+		r -= 1;
+
+		return r;
+	}
+
 	static glm::vec3 vec4to3(const glm::vec4& v)
 	{
 		return { v.x, v.y, v.z };

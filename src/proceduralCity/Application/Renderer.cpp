@@ -12,6 +12,7 @@
 #include <Terrain/Chunk.h>
 #include <Terrain/Map.h>
 #include <fstream>
+#include "Infrastructure/Building.h"
 
 
 using namespace ge::gl;
@@ -98,4 +99,11 @@ void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
 
 		output << "end" << std::endl;
 	}
+}
+
+void Renderer::Save(const Infrastructure::Building& b, std::ofstream& output) const
+{
+	if (!output.is_open())
+		return;
+
 }

@@ -7,6 +7,7 @@
 #pragma once
 #include <Vars/Vars.h>
 #include <Terrain/Chunk.h>
+#include "Infrastructure/Building.h"
 
 
 namespace Application
@@ -44,6 +45,7 @@ namespace Application
 		/// @brief
 		///
 		void Save(Terrain::Map* map, std::ofstream& output) const;
+		void Save(const Infrastructure::Building& b, std::ofstream& output) const;
 		/*
 		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 
