@@ -36,24 +36,24 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 	center /= float(points.size());
 	height += .1f;
 
-	const auto padding = .7f;
-	const auto noise_change = 10.f;
+	const auto padding = .6f;
+	const auto noise_change = 4.f;
 	const auto noise_scale = 10.f;
-	const auto noise_coeff = 2.f;
+	const auto noise_coeff = 4.f;
 
 	const auto size = points.size();
-	const auto main_height_diff = 10.f + rand() % 20;
-	const auto noise = glm::perlin(center / noise_scale) * noise_coeff;
+	auto noise = glm::perlin(center / noise_scale);
+	noise *= noise_coeff;
 
 	std::cerr << noise << std::endl;
 
 	const auto a   = glm::normalize(points[1] - points[0]);
 	const auto al  = glm::length(points[1] - points[0]) * (1.f - padding); // a length
-	const auto ali = glm::length(points[1] - points[0]) * padding * .5f; // a length inversed
+	const auto ali = glm::length(points[1] - points[0]) * padding * .4f; // a length inversed
 
 	const auto b   = glm::normalize(points[3] - points[0]);
 	const auto bl  = glm::length(points[3] - points[0]) * (1.f - padding); // b length
-	const auto bli = glm::length(points[3] - points[0]) * padding * .5f; // b length inversed
+	const auto bli = glm::length(points[3] - points[0]) * padding * .4f; // b length inversed
 
 	const auto minli = glm::min(ali, bli);
 
@@ -68,14 +68,31 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 	auto size_rand = rand() % 1200 / 1000.f;
 	size_rand -= .2f;
 
-	// základ
+	// základy
 	CreateBlock(points, vertices, height);
 
 	// hlavní blok
-	auto base_points = Utils::create_block_base(points, .4f + rand() % 20 / 100.f, height);
+	auto base_points = Utils::create_block_base(points, .3f + rand() % 20 / 100.f, height);
 	CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_main, height);
 
 	// střešní bloky
+	auto top_points = Utils::create_block_base(base_points, .1f + (rand() % 14 - 8) / 100.f, height_main);
+	top_points = Utils::move_vecs(top_points, dir, minli * size_rand);
+
+	const auto height_core = height_main;
+	auto t_max = rand() % 4;
+	for (auto t = 0; t < t_max; t++)
+	{
+		auto top_height_diff = height_main * ((200 + rand() % 300) / 10000.f);
+		if (top_height_diff > 20.f)
+			top_height_diff = 20.f;
+
+		auto top_height = height_main + top_height_diff;
+		CreateBlock(top_points, vertices, top_height, height_main);
+
+		height_main = top_height;
+		top_points = Utils::create_block_base(top_points, .1f + (rand() % 14 - 8) / 100.f, height_main);
+	}
 
 	// další bloky
 	auto i_max = 2 + rand() % 3;
@@ -86,49 +103,11 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 		size_rand = rand() % 1200 / 1000.f;
 		size_rand -= .2f;
 
-		//auto x = glm::perlin(center);
-		//std::cerr << x << std::endl;
-
-		auto height_rand = rand() % 400 / 40.f;
-		height_rand += 5.f;
-		height_rand += glm::pow(noise_change, noise);
+		auto height_rand = .2f + rand() % 700 / 1000.f;
 		
 		base_points = Utils::create_block_base(points, padding + rand() % 100 / 1000.f - .05f, height);
-		CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height + height_rand, height);
+		CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_core * height_rand, height);
 	}
-
-	/*
-	for (auto& point : points)
-		point += glm::normalize(center - point) * 6.f;
-	CreateBlock(points, vertices, height + main_height_diff);
-	const auto old_points = points;
-
-	auto block_count = 2 + rand() % 2;
-	auto top_blocks_height = main_height_diff;
-	for (auto i = 0; i < block_count; i++)
-	{
-		auto dir_size = float(1.f + rand() % 3);
-		for (auto& point : points)
-			point += glm::normalize(center - point) * dir_size;
-		top_blocks_height += 1.f + rand() % 4;
-		CreateBlock(points, vertices, height + top_blocks_height);
-	}
-
-	points = old_points;
-	block_count = 1 + rand() % 3;
-	for (auto i = 0; i < block_count; i++)
-	{
-		auto dir = glm::normalize(glm::vec3{ -50.f + rand() % 101, 0.f, -50.f + rand() % 101 });
-		auto dir_size = 2.f + float(rand() % 2);
-		auto shrink_size = 2.f + float(rand() % 4);
-		for (auto& point : points)
-		{
-			point += glm::normalize(center - point) * dir_size;
-			point += dir * shrink_size;
-		}
-		CreateBlock(points, vertices, height + 6.f + rand() % 15);
-		points = old_points;
-	}*/
 
 	const auto va = CreateVA();
 	BindVA();
