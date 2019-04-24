@@ -116,6 +116,8 @@ namespace Utils
 
 	const glm::vec3 color_blue = { 0, 0, 1 };
 
+	const glm::vec3 color_black = { 0, 0, 0 };
+
 	static glm::vec3 color_rgb(const unsigned r, const unsigned g, const unsigned b)
 	{
 		return {

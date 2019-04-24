@@ -17,13 +17,49 @@
 using namespace Infrastructure;
 
 BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm::vec3>& borderPoints,
-                           BuildingType type)
+                           BuildingType type): _heightMap(heightMap)
 {
-	std::cerr << "Setting up building part." << std::endl;
+	//std::cerr << "Setting up building part." << std::endl;
 
+	std::vector<BuildingPartVertex> vertices;
+
+	if (type == SQUARE)
+		RandomBuildingSquareDefault(borderPoints, vertices);
+	else if (type == STREET_SQUARE)
+		StreetSquare(borderPoints, vertices);
+
+	const auto va = CreateVA();
+	BindVA();
+
+	const auto vb = CreateVB();
+	SetRenderableCount(vertices.size());
+	vb->alloc(vertices.size() * sizeof(BuildingPartVertex), vertices.data());
+	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(BuildingPartVertex), 0 * sizeof(glm::vec3));
+	va->addAttrib(vb, 1, 3, GL_FLOAT, sizeof(BuildingPartVertex), 1 * sizeof(glm::vec3));
+}
+
+BuildingPart::~BuildingPart()
+= default;
+
+void BuildingPart::StreetSquare(const std::vector<glm::vec3>& borderPoints, std::vector<BuildingPartVertex>& vertices)
+{
 	auto points = borderPoints;
 	for (auto& point : points)
-		point.y = heightMap->GetData(point);
+		point.y = 0.f;
+
+	CreateBlock(points, vertices, 1.f, 0.f);
+	for (auto& vertex : vertices)
+	{
+		if (vertex.position.y == 1.f)
+			vertex.position.y = _heightMap->GetData(vertex.position) + .15f;
+	}
+}
+
+void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& borderPoints, std::vector<BuildingPartVertex>& vertices)
+{
+	auto points = borderPoints;
+	for (auto& point : points)
+		point.y = _heightMap->GetData(point);
 
 	auto height = points.front().y;
 	glm::vec3 center(0);
@@ -47,17 +83,15 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 
 	std::cerr << noise << std::endl;
 
-	const auto a   = glm::normalize(points[1] - points[0]);
-	const auto al  = glm::length(points[1] - points[0]) * (1.f - padding); // a length
+	const auto a = glm::normalize(points[1] - points[0]);
+	const auto al = glm::length(points[1] - points[0]) * (1.f - padding); // a length
 	const auto ali = glm::length(points[1] - points[0]) * padding * .4f; // a length inversed
 
-	const auto b   = glm::normalize(points[3] - points[0]);
-	const auto bl  = glm::length(points[3] - points[0]) * (1.f - padding); // b length
+	const auto b = glm::normalize(points[3] - points[0]);
+	const auto bl = glm::length(points[3] - points[0]) * (1.f - padding); // b length
 	const auto bli = glm::length(points[3] - points[0]) * padding * .4f; // b length inversed
 
 	const auto minli = glm::min(ali, bli);
-
-	std::vector<BuildingPartVertex> vertices;
 
 	// nastavení 
 	auto height_main = height + 10.f + rand() % 400 / 30.f;
@@ -104,23 +138,11 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 		size_rand -= .2f;
 
 		auto height_rand = .2f + rand() % 700 / 1000.f;
-		
+
 		base_points = Utils::create_block_base(points, padding + rand() % 100 / 1000.f - .05f, height);
 		CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_core * height_rand, height);
 	}
-
-	const auto va = CreateVA();
-	BindVA();
-
-	const auto vb = CreateVB();
-	SetRenderableCount(vertices.size());
-	vb->alloc(vertices.size() * sizeof(BuildingPartVertex), vertices.data());
-	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(BuildingPartVertex), 0 * sizeof(glm::vec3));
-	va->addAttrib(vb, 1, 3, GL_FLOAT, sizeof(BuildingPartVertex), 1 * sizeof(glm::vec3));
 }
-
-BuildingPart::~BuildingPart()
-= default;
 
 void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector<BuildingPartVertex>& vertices, float height_top, float height_bottom)
 {

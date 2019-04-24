@@ -76,9 +76,18 @@ glm::vec3 Parcel::GetMidpoint()
 
 void Parcel::Shrink(const float size)
 {
-	const auto midpoint = GetMidpoint();
-	for (auto& point : borderPoints)
-		point += glm::normalize(midpoint - point) * size;
+	for (auto i = 1u; i <= borderPoints.size(); ++i)
+	{
+		const auto a = borderPoints[i - 1];
+		const auto b = borderPoints[i % borderPoints.size()];
+		const auto c = borderPoints[(i + 1) % borderPoints.size()];
+
+		const auto u = glm::normalize(a - b);
+		const auto v = glm::normalize(c - b);
+
+		const auto w = glm::normalize(u + v);
+		borderPoints[i % borderPoints.size()] += w * size;
+	}
 
 	finished = false;
 	Finish();
@@ -86,9 +95,18 @@ void Parcel::Shrink(const float size)
 
 void Parcel::Expand(const float size)
 {
-	const auto midpoint = GetMidpoint();
-	for (auto& point : borderPoints)
-		point += glm::normalize(point - midpoint) * size;
+	for (auto i = 1u; i <= borderPoints.size(); ++i)
+	{
+		const auto a = borderPoints[i - 1];
+		const auto b = borderPoints[i % borderPoints.size()];
+		const auto c = borderPoints[(i + 1) % borderPoints.size()];
+
+		const auto u = glm::normalize(b - a);
+		const auto v = glm::normalize(b - c);
+
+		const auto w = glm::normalize(u + v);
+		borderPoints[i % borderPoints.size()] += w * size;
+	}
 
 	finished = false;
 	Finish();

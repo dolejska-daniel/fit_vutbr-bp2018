@@ -135,7 +135,7 @@ int main(const int argc, char* argv[])
 	//auto parcel = new Infrastructure::Parcel();
 	std::vector<std::shared_ptr<Infrastructure::Parcel>> parcels;
 	std::vector<std::shared_ptr<Infrastructure::Building>> buildings;
-
+	std::vector<std::shared_ptr<Infrastructure::Building>> streets;
 
 
 	// ==========================================================dd=
@@ -217,13 +217,22 @@ int main(const int argc, char* argv[])
 
 
 		static auto changedRenderer = false;
+		static auto debugRender = true;
 		if (KeyDown['r'])
 		{
-			if (!changedRenderer)
+			if (KeyDown[SDLK_LCTRL])
+			{
+				if (!changedRenderer)
+				{
+					debugRender = !debugRender;
+				}
+			}
+			else if (!changedRenderer)
 			{
 				render++;
-				changedRenderer = true;
 			}
+
+			changedRenderer = true;
 		}
 		else
 			changedRenderer = false;
@@ -270,11 +279,35 @@ int main(const int argc, char* argv[])
 		else
 			generateBuilding = false;
 
-		color = Utils::color_red;
-		shaders->GetActiveProgram()->set3fv("color", &color[0]);
-		for (const auto& building : buildings)
-			for (const auto& part : building->parts)
-				renderer->Render(part);
+		static size_t street_parcel_id = 0;
+		static auto generateStreet = false;
+		if (KeyDown['n'])
+		{
+			if (!generateStreet)
+			{
+				if (KeyDown['o'])
+				{
+					streets.clear();
+				}
+				else
+				{
+					while (street_parcel_id < parcels.size() && parcels[street_parcel_id]->type != Infrastructure::ParcelType::STREET)
+						street_parcel_id++;
+
+					if (street_parcel_id < parcels.size())
+					{
+						auto street = std::make_shared<Infrastructure::Building>(parcels[street_parcel_id], map->GetHeightMap(), Infrastructure::STREET_SQUARE);
+						streets.emplace_back(street);
+						street_parcel_id++;
+					}
+				}
+				generateStreet = true;
+			}
+		}
+		else
+			generateStreet = false;
+
+
 		/*
 		static auto postprocessed = false;
 		if (KeyDown['p'])
@@ -314,7 +347,7 @@ int main(const int argc, char* argv[])
 
 					auto tis = std::vector<std::pair<glm::vec2, float>>();
 
-					auto ti1  = Utils::tangent_intersection(a, b, c);
+					auto ti1 = Utils::tangent_intersection(a, b, c);
 					auto tid1 = glm::distance(ti1, c);
 					tis.emplace_back(ti1, tid1);
 
@@ -342,25 +375,27 @@ int main(const int argc, char* argv[])
 						std::cerr << Utils::in_line(a, b, ti->first) << std::endl;
 						nearby_streets.push_back(street2);
 					}
+				}
+
+				std::cerr << "Nearby streets found: " << nearby_streets.size() << std::endl;
+
+				color = Utils::color_red;
+				shaders->GetActiveProgram()->set3fv("color", &color[0]);
+				for (const auto& street : nearby_streets)
+				{
+					renderer->Render(street);
+
+					//if (KeyDown['o'])
+						//streetMap->RemoveStreet(street);
+				}
+
+				postprocessed = true;
 			}
-
-			std::cerr << "Nearby streets found: " << nearby_streets.size() << std::endl;
-
-			color = Utils::color_red;
-			shaders->GetActiveProgram()->set3fv("color", &color[0]);
-			for (const auto& street : nearby_streets)
-			{
-				renderer->Render(street);
-
-				//if (KeyDown['o'])
-					//streetMap->RemoveStreet(street);
-			}
-
-			postprocessed = true;
 		}
 		else
 			postprocessed = false;
-				}*/
+			
+		*/
 
 
 		static size_t intersection_id = 0;
@@ -502,6 +537,8 @@ int main(const int argc, char* argv[])
 				for (const auto& street : streetMap->GetStreets())
 					street->GenerateIntersectionPointLists();
 
+				const auto resize_factor = 1.f;
+
 				std::function<void(std::shared_ptr<Infrastructure::Street>)> processStreetToList =
 					[&](const std::shared_ptr<Infrastructure::Street>& street)
 				{
@@ -512,7 +549,7 @@ int main(const int argc, char* argv[])
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::LEFT);
 						//std::cerr << "Finishing parcel." << std::endl;
-						parcel->Shrink(2.f);
+						parcel->Shrink(resize_factor);
 						visited.clear();
 					}
 
@@ -523,7 +560,7 @@ int main(const int argc, char* argv[])
 						parcels.push_back(parcel);
 						processStreet(street, pair.point1, Infrastructure::RIGHT);
 						//std::cerr << "Finishing parcel." << std::endl;
-						parcel->Shrink(2.f);
+						parcel->Shrink(resize_factor);
 						visited.clear();
 					}
 				};
@@ -532,19 +569,42 @@ int main(const int argc, char* argv[])
 				{
 					processStreetToList(street);
 
+					auto createStreet = [&parcel,&parcels,&resize_factor](glm::vec3 p1, glm::vec3 p2)
+					{
+						//auto midpoint = (p1 + p2) / 2.f;
+						//p1 += glm::normalize(midpoint - p1) * resize_factor;
+						//p2 += glm::normalize(midpoint - p2) * resize_factor;
+
+						parcel = std::make_shared<Infrastructure::Parcel>(Infrastructure::STREET);
+						parcels.push_back(parcel);
+
+						const auto dir   = glm::normalize(p2 - p1);
+						const auto left  = Utils::left_vector(dir);
+						const auto right = Utils::right_vector(dir);
+
+						auto street_resize_factor = resize_factor / 2.f;
+						parcel->AddBorderPoint(p1 + left * street_resize_factor);
+						parcel->AddBorderPoint(p1 + right * street_resize_factor);
+						parcel->AddBorderPoint(p2 + right * street_resize_factor);
+						parcel->AddBorderPoint(p2 + left * street_resize_factor);
+						parcel->Finish();
+					};
+
 					std::cerr << "Creating street parcel..." << std::endl;
-					parcel = std::make_shared<Infrastructure::Parcel>(Infrastructure::STREET);
-					parcels.push_back(parcel);
-					const auto point1 = street->GetSegmentPoint(0, 0.f);
-					const auto point2 = street->GetSegmentPoint(1.f);
-					const auto dir = glm::normalize(point2 - point1);
-					const auto left = Utils::left_vector(dir);
-					const auto right = Utils::right_vector(dir);
-					parcel->AddBorderPoint(point1 + left);
-					parcel->AddBorderPoint(point1 + right);
-					parcel->AddBorderPoint(point2 + right);
-					parcel->AddBorderPoint(point2 + left);
-					parcel->Expand(1.f);
+					auto point1 = street->GetSegmentPoint(0, 0.f);
+					auto point2 = point1;
+					for (auto& intersection : street->GetIntersections())
+					{
+						point1 = point2;
+						point2 = intersection.point;
+
+						createStreet(point1, point2);
+					}
+
+					point1 = point2;
+					point2 = street->GetSegmentPoint(1.f);
+
+					createStreet(point1, point2);
 				}
 			}
 
@@ -631,29 +691,42 @@ int main(const int argc, char* argv[])
 		else
 			save = false;
 
-		for (const auto& p : parcels)
-		{
-			if (p->finished)
-			{
-				if (p->type == Infrastructure::BUILDING)
-				{
-					color = Utils::color_blue;
-					shaders->GetActiveProgram()->set3fv("color", &color[0]);
-				}
-				else if (p->type == Infrastructure::STREET)
-				{
-					color = Utils::color_rgb(140, 0, 255);
-					shaders->GetActiveProgram()->set3fv("color", &color[0]);
-				}
-				renderer->Render(p);
-			}
-		}
+		shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
+		for (const auto& building : buildings)
+			for (const auto& part : building->parts)
+				renderer->Render(part);
 
-		color = Utils::color_white;
-		shaders->GetActiveProgram()->set3fv("color", &color[0]);
-		for (const auto& s : streetMap->ReadStreets())
-			if (!s->Destroyed())
-				renderer->Render(s);
+		shaders->GetActiveProgram()->set3fv("color", &Utils::color_black[0]);
+		for (const auto& street : streets)
+			for (const auto& part : street->parts)
+				renderer->Render(part);
+
+		if (debugRender)
+		{
+			for (const auto& p : parcels)
+			{
+				if (p->finished)
+				{
+					if (p->type == Infrastructure::BUILDING)
+					{
+						color = Utils::color_blue;
+						shaders->GetActiveProgram()->set3fv("color", &color[0]);
+					}
+					else if (p->type == Infrastructure::STREET)
+					{
+						color = Utils::color_rgb(140, 0, 255);
+						shaders->GetActiveProgram()->set3fv("color", &color[0]);
+					}
+					renderer->Render(p);
+				}
+			}
+
+			color = Utils::color_white;
+			shaders->GetActiveProgram()->set3fv("color", &color[0]);
+			for (const auto& s : streetMap->ReadStreets())
+				if (!s->Destroyed())
+					renderer->Render(s);
+		}
 
 		glFinish();
         window->swap();

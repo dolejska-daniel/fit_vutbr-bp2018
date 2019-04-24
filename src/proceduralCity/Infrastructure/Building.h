@@ -17,7 +17,8 @@ namespace Infrastructure
 
 	enum BuildingType
 	{
-		SQUARE
+		SQUARE,
+		STREET_SQUARE
 	};
 
 	class Building 
@@ -31,6 +32,7 @@ namespace Infrastructure
 
 		void GenerateParts();
 		void GenerateParts_Square();
+		void GenerateParts_StreetSquare();
 
 	protected:
 		std::shared_ptr<Parcel> _parcel;

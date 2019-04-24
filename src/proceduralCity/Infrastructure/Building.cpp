@@ -26,6 +26,8 @@ void Building::GenerateParts()
 {
 	if (_type == SQUARE)
 		GenerateParts_Square();
+	else if (_type == STREET_SQUARE)
+		GenerateParts_StreetSquare();
 }
 
 void Building::GenerateParts_Square()
@@ -132,4 +134,10 @@ void Building::GenerateParts_Square()
 			part_points.clear();
 		}
 	}
+}
+
+void Building::GenerateParts_StreetSquare()
+{
+	const auto part = std::make_shared<BuildingPart>(_heightMap, _parcel->GetBorderPoints(), STREET_SQUARE);
+	parts.push_back(part);
 }
