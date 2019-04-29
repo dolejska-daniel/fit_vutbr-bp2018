@@ -5,9 +5,11 @@
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
 #pragma once
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/gtx/vector_angle.hpp>
 #include <glm/glm.hpp>
 #include <fstream>
 #include <vector>
@@ -86,6 +88,12 @@ namespace Utils
 		r -= 1;
 
 		return r;
+	}
+
+	template<glm::length_t L, typename T, glm::qualifier Q>
+	static float vec_angle(const glm::vec<L, T, Q>& u, const glm::vec<L, T, Q>& v)
+	{
+		return glm::angle(u, v) * 180.f / glm::pi<float>();
 	}
 
 	static glm::vec3 vec4to3(const glm::vec4& v)
@@ -168,5 +176,16 @@ namespace Utils
 	static std::fstream open_file(const std::string& filepath)
 	{
 		return std::fstream(filepath.c_str());
+	}
+
+	static glm::vec2 tangent_intersection(const glm::vec2 a, const glm::vec2 b, const glm::vec2 v)
+	{
+		const auto u = (v.x - a.x) * (b.x - a.x) + (v.y - a.y) * (b.y - a.y)
+			/ glm::pow(glm::length(b - a), 2.f);
+
+		return {
+			a.x + u * (b.x - a.x),
+			a.y + u * (b.y - a.y)
+		};
 	}
 }

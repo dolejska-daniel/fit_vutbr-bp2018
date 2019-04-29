@@ -162,9 +162,6 @@ int main(const int argc, char* argv[])
 		{
 			shaders->Use("Phong");
 
-			color = Utils::color_green;
-			shaders->GetActiveProgram()->set3fv("color", &color[0]);
-
 			shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
 			shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 		}
@@ -179,18 +176,30 @@ int main(const int argc, char* argv[])
 		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
 
+		if (render == 0)
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_green[0]);
 		for (const auto& chunk : map->GetChunks())
 			if (chunk.second)
 				renderer->Render(chunk.second);
-		/*
-		for (auto i = 0; i < map->GetChunks().size(); i++)
-		{
-			auto chunk = map->GetChunk(i);
-			if (chunk)
-				renderer->Render(chunk);
-		}*/
+
+		if (render == 0)
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
+		for (const auto& building : buildings)
+			for (const auto& part : building->parts)
+				renderer->Render(part);
+
+		if (render == 0)
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_black[0]);
+		for (const auto& street : streets)
+			for (const auto& part : street->parts)
+				renderer->Render(part);
+
 
 		shaders->Use("Phong");
+		shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
+		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
+		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
+
 		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
 		shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 
@@ -257,9 +266,23 @@ int main(const int argc, char* argv[])
 		{
 			if (!generateBuilding)
 			{
-				if (KeyDown['o'])
+				if (KeyDown[SDLK_LCTRL])
+				{
+					while (parcel_id < parcels.size())
+					{
+						if (parcels[parcel_id]->type != Infrastructure::ParcelType::BUILDING)
+							continue;
+
+						auto building = std::make_shared<Infrastructure::Building>(parcels[parcel_id], map->GetHeightMap(), Infrastructure::SQUARE);
+						buildings.emplace_back(building);
+
+						parcel_id++;
+					}
+				}
+				else if (KeyDown['o'])
 				{
 					buildings.clear();
+					parcel_id = 0;
 				}
 				else
 				{
@@ -273,7 +296,9 @@ int main(const int argc, char* argv[])
 						parcel_id++;
 					}
 				}
-				generateBuilding = true;
+
+				if (!KeyDown[SDLK_LSHIFT])
+					generateBuilding = true;
 			}
 		}
 		else
@@ -301,101 +326,118 @@ int main(const int argc, char* argv[])
 						street_parcel_id++;
 					}
 				}
-				generateStreet = true;
+
+				if (!KeyDown[SDLK_LSHIFT])
+					generateStreet = true;
 			}
 		}
 		else
 			generateStreet = false;
 
-
-		/*
 		static auto postprocessed = false;
 		if (KeyDown['p'])
 		{
-			auto streets = streetMap->GetStreets();
-			auto nearby_streets = std::vector<std::shared_ptr<Infrastructure::Street>>();
-			for (auto street_iter1 = streets.begin(); street_iter1 != streets.end(); ++street_iter1)
+			std::vector<std::shared_ptr<Infrastructure::Street>> nearby_streets;
+			for (const auto& street1 : streetMap->GetStreets())
 			{
-				const auto street1 = *street_iter1;
+				if (!street1->Ended())
+					continue;
 				if (std::find(nearby_streets.begin(), nearby_streets.end(), street1) != nearby_streets.end())
+					// Již  přidáno
 					continue;
 
-				const auto a = Utils::vec3to2(street1->GetSegment(0).startPoint);
-				const auto b = Utils::vec3to2(street1->GetSegment().endPoint);
-				const auto s1 = b - a;
-
-				for (auto street_iter2 = streets.rbegin(); street_iter2 != streets.rend(); ++street_iter2)
+				auto s1_segment_first = street1->GetSegment(0);
+				auto s1_segment_last = street1->GetSegment();
+				for (const auto& street2 : streetMap->GetStreets())
 				{
-					const auto street2 = *street_iter2;
-					if (street2 == street1)
+					if (street1 == street2)
+						// Tatáž ulice
 						continue;
+					/*
+					if (!street2->Ended())
+						// Pouze ukončené ulice
+						continue;*/
 					if (std::find(nearby_streets.begin(), nearby_streets.end(), street2) != nearby_streets.end())
+						// Již  přidáno
 						continue;
 
-					const auto c = Utils::vec3to2(street2->GetSegment(0).startPoint);
-					const auto d = Utils::vec3to2(street2->GetSegment().endPoint);
-					const auto s2 = d - c;
+					auto s2_segment_first = street2->GetSegment(0);
+					auto s2_segment_last = street2->GetSegment();
 
-					std::cerr << "s1: " << glm::to_string(glm::normalize(s1)) << std::endl;
-					std::cerr << "s2: " << glm::to_string(glm::normalize(s2)) << std::endl;
-					if (glm::normalize(s1) != glm::normalize(s2)
-						&& glm::normalize(s1) != -glm::normalize(s2))
+					if (s1_segment_first.direction == -s2_segment_last.direction
+						&& s1_segment_last.direction == -s2_segment_first.direction)
 					{
-						std::cerr << "Dir?! " << std::endl;
-						continue;
+						// Rovnoběžné, opačný směr
 					}
-
-					auto tis = std::vector<std::pair<glm::vec2, float>>();
-
-					auto ti1 = Utils::tangent_intersection(a, b, c);
-					auto tid1 = glm::distance(ti1, c);
-					tis.emplace_back(ti1, tid1);
-
-					auto ti2 = Utils::tangent_intersection(a, b, d);
-					auto tid2 = glm::distance(ti2, d);
-					tis.emplace_back(ti2, tid2);
-
-					auto ti3 = Utils::tangent_intersection(c, d, a);
-					auto tid3 = glm::distance(ti3, a);
-					tis.emplace_back(ti3, tid3);
-
-					auto ti4 = Utils::tangent_intersection(c, d, b);
-					auto tid4 = glm::distance(ti4, b);
-					tis.emplace_back(ti4, tid4);
-
-					auto ti = std::min_element(tis.begin(), tis.end(), [](std::pair<glm::vec2, float> x, std::pair<glm::vec2, float> y)
+					else if (s1_segment_first.direction == s2_segment_last.direction
+						&& s1_segment_last.direction == s2_segment_first.direction)
 					{
-						return x.second < y.second;
-					});
+						// Rovnoběžné, stejný směr
+					}
+					else
+						continue;
 
-					if (ti->second < 20.f)
+					//--------------------------------------------------------------------
+					// https://math.stackexchange.com/a/210865
+					//
+					auto x = glm::vec2{ s1_segment_first.direction.x, s1_segment_first.direction.z };
+					auto x1 = glm::vec2{ s1_segment_first.startPoint.x, s1_segment_first.startPoint.z };
+					auto y1 = glm::vec2{ s2_segment_first.startPoint.x, s2_segment_first.startPoint.z };
+					auto d = x1 - y1;
+					auto xparallel = glm::dot(d, x) / glm::pow(glm::length(x), 2) * x;
+					auto xperpendicular = d - xparallel;
+					//--------------------------------------------------------------------
+
+					const auto dist_max = 20.f;
+					if (glm::length(xperpendicular) < dist_max)
 					{
-						//auto angle = glm::acos(glm::dot(glm::normalize(s1), glm::normalize(s2)));
-						//std::cerr << angle << std::endl;
-						std::cerr << Utils::in_line(a, b, ti->first) << std::endl;
+						glm::vec3 direction_left{ -s2_segment_first.direction.z, s2_segment_first.direction.y, s2_segment_first.direction.x };
+						glm::vec3 direction_right{ s2_segment_first.direction.z, s2_segment_first.direction.y, -s2_segment_first.direction.x };
+						Infrastructure::StreetSegment first_segment =
+						{
+							s2_segment_first.startPoint + s2_segment_first.direction + direction_left * dist_max * 2.f,
+							s2_segment_first.startPoint + s2_segment_first.direction + direction_right * dist_max * 2.f,
+							glm::vec3(0),
+							dist_max * 2.f,
+						};
+						auto intersection = Infrastructure::StreetMap::Intersection(first_segment, street1);
+						if (!intersection.exists)
+						{
+							Infrastructure::StreetSegment last_segment =
+							{
+								s2_segment_last.endPoint - s2_segment_last.direction + direction_left * dist_max * 2.f,
+								s2_segment_last.endPoint - s2_segment_last.direction + direction_right * dist_max * 2.f,
+								glm::vec3(0),
+								dist_max * 2.f,
+							};
+							intersection = Infrastructure::StreetMap::Intersection(last_segment, street1);
+							if (!intersection.exists)
+								continue;
+						}
+
 						nearby_streets.push_back(street2);
 					}
 				}
-
-				std::cerr << "Nearby streets found: " << nearby_streets.size() << std::endl;
-
-				color = Utils::color_red;
-				shaders->GetActiveProgram()->set3fv("color", &color[0]);
-				for (const auto& street : nearby_streets)
-				{
-					renderer->Render(street);
-
-					//if (KeyDown['o'])
-						//streetMap->RemoveStreet(street);
-				}
-
-				postprocessed = true;
 			}
+
+			std::cerr << "Nearby streets found: " << nearby_streets.size() << std::endl;
+
+			color = { 1, 0, 0 };
+			shaders->GetActiveProgram()->set3fv("color", &color[0]);
+			for (const auto& street : nearby_streets)
+			{
+				if (KeyDown['o'])
+				{
+					streetMap->RemoveStreet(street);
+				}
+				else
+					renderer->Render(street);
+			}
+
+			postprocessed = true;
 		}
 		else
 			postprocessed = false;
-			
-		*/
 
 
 		static size_t intersection_id = 0;
@@ -690,16 +732,6 @@ int main(const int argc, char* argv[])
 		}
 		else
 			save = false;
-
-		shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
-		for (const auto& building : buildings)
-			for (const auto& part : building->parts)
-				renderer->Render(part);
-
-		shaders->GetActiveProgram()->set3fv("color", &Utils::color_black[0]);
-		for (const auto& street : streets)
-			for (const auto& part : street->parts)
-				renderer->Render(part);
 
 		if (debugRender)
 		{
