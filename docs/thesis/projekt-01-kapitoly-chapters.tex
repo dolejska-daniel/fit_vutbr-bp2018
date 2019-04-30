@@ -7,9 +7,7 @@
 % - seznámení s prací
 % - krátké seznámení s odvětvím (v rámci IT - grafika, ...)
 %===========================================================================================
-\chapter{Úvod}
-\label{ch:uvod}
-
+\chapter{Úvod}\label{ch:uvod}
 \todo{Úvod do tématu - obecně známá slova, nejlépe bez odborných výrazů}
 
 \todo{Cíl práce - o co se pokoušíme, co má být výsledkem práce}
@@ -24,12 +22,166 @@
 % - vhodné psát vlastními slovy, obsahově může kopírovat literaturu
 % - trohu znalý člověk z oblasti by měl být schopen vše pochopit
 %===========================================================================================
-\chapter{Teorie}
-\label{ch:teorie}
+\chapter{\todo{Teorie}}\label{ch:teorie}
+\todo{Co je obsahem této sekce...}
 
-\section{Vizualizace}
 
-\section{Perlinův šum}
+\section{OpenGL}\label{ch:teorie:opengl}
+\todo{Co je to OpenGL, k čemu se používá?}
+
+\subsection{Vertex}\label{ch:teorie:opengl:vertex}
+\todo{Co je to vertex?}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Pozice}
+		\label{fig:opengl:vertex:p}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Pozice, Normála}
+		\label{fig:opengl:vertex:pn}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Pozice, Normála, Barva}
+		\label{fig:opengl:vertex:pnb}
+	\end{subfigure}
+	\caption{Ukázka vertexů s různými atributy}
+	\label{fig:opengl:vertex}
+\end{figure}
+
+\todo{K čemu se používá?}
+\todo{Jak a kde se používá?}
+
+\subsubsection*{Vertex atribut}\label{ch:teorie:opengl:vertex:attr}
+\todo{Co je to vertex?}
+\todo{Jak a kde se používá?}
+
+\subsection{Index}\label{ch:teorie:opengl:index}
+\todo{Co je to index?}
+\todo{Jak a kde se používá?}
+
+\subsection{Shadery}\label{ch:teorie:opengl:shadery}
+\todo{Co je to shader?}
+\todo{Jak a kde se používá?}
+
+\subsubsection*{Vertex shader}\label{ch:teorie:opengl:vertex-shader}
+\todo{Co konkrétně dělá vertex shader?}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Demonstrace funkce vertex shaderu}
+	\label{fig:opengl:vertex-shader}
+\end{figure}
+
+\subsubsection*{Fragment shader}\label{ch:teorie:opengl:fragment-shader}
+\todo{Co konkrétně dělá fragment shader?}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Demonstrace funkce fragment shaderu}
+	\label{fig:opengl:vertex-shader}
+\end{figure}
+
+
+\section{Lineární algebra}\label{ch:teorie:lineární-algebra}
+\todo{XXXXXXXXXXXXXXXXXXXXXX}
+
+\subsection{Vektory}\label{ch:teorie:lineární-algebra:vektory}
+\todo{XXXXXXXXXXXXXXXXXXXXXX}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Vektor}
+	\label{fig:lineární-algebra:vektor}
+\end{figure}
+
+\subsubsection*{Sčítání}
+\todo{Jak funguje sčítání vektorů?}
+\todo{Kdy je užitečné a kdy se používá? Příklad.}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Sčítání vektorů}
+	\label{fig:lineární-algebra:sčítání}
+\end{figure}
+
+\subsubsection*{Odčítání}
+\todo{Jak funguje odečítání vektorů?}
+\todo{Kdy je užitečné a kdy se používá? Příklad.}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Odčítání vektorů}
+	\label{fig:lineární-algebra:odčítání}
+\end{figure}
+
+\subsubsection*{\todo{Dot product}}
+\todo{Co je to DOT product a jak to funguje?}
+\todo{Kdy je užitečné a kdy se používá? Příklad.}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{DOT product}
+	\label{fig:lineární-algebra:dot}
+\end{figure}
+
+\subsubsection*{\todo{Cross product}}
+\todo{Co je to CROSS product a jak to funguje?}
+\todo{Kdy je užitečné a kdy se používá? Příklad.}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{DOT product}
+	\label{fig:lineární-algebra:cross}
+\end{figure}
+
+\subsection{Průsečíky}\label{ch:teorie:lineární-algebra:průsečíky}
+\todo{XXXXXXXXXXXXXXXXXXXXXX}
+
+
+\section{Perlinův šum}\label{ch:teorie:perlin}
+\todo{Co je to Perlinův šum a čím je speciální?}
+\todo{Jaké existují další typy šumů?}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Náhodný šum}
+		\label{fig:perlin:porovnání:náhodný}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Perlinův šum}
+		\label{fig:perlin:porovnání:perlin}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Simplexní šum}
+		\label{fig:perlin:porovnání:simplex}
+	\end{subfigure}
+	\caption{Porovnání náhodného, Perlinova a simplexního šumu}
+	\label{fig:perlin:porovnání}
+\end{figure}
+
+
+\section{Textury}\label{ch:teorie:textury}
+\todo{XXXXXXXXXXXXXXXXXXXXXX}
 
 
 %===========================================================================================
@@ -39,8 +191,7 @@
 % - obecně platný (není konkrétní k C++ či OpenGL, ...)
 % - odkazy na teoretickou část
 %===========================================================================================
-\chapter{Návrh řešení}
-\label{ch:navrh}
+\chapter{Návrh řešení}\label{ch:navrh}
 
 \todo{Co už existuje, co už je vyřešeno.}
 
@@ -58,8 +209,7 @@
 % - jaké jsou výsledky práce
 % - veškeré technické detaily, které nejsou podstatné k pochopení podstaty práce patří do příloh
 %===========================================================================================
-\chapter{Implementace}
-\label{ch:implementace}
+\chapter{Implementace}\label{ch:impl}
 
 \todo{Blokové schéma, objektový návrh, seznam tříd, struktura SW...}
 
@@ -67,16 +217,109 @@
 \todo{Volba programovacího jazyka...}
 \todo{Volba knihoven...}
 
-
 \todo{Omezení, problémy SW...}
+
+
+\section{Použité knihovny}\label{ch:impl:knihovny}
+\todo{geGL}
+\todo{ovládání OpenGL}
+
+\todo{ArgumentViewer}
+\todo{zpracování příkazů}
+
+\todo{BasicCamera}
+\todo{snadná správa kamery}
+\todo{transformační matice, ...}
+
+\todo{SDL2CPP}
+\todo{SDL wrapper pro C++}
+
+\todo{Vars}
+\todo{správa proměnných napříč programem}
+
+\todo{glm}
+\todo{matematická knihovna}
+\todo{"implementuje" funkce z shaderů}
+
+\todo{SDL2}
+\todo{komunikace s Windows API}
+\todo{sprava okna}
+\todo{správa input (keyboard, mouse)}
+
+
+\section{Zobrazení}\label{ch:impl:zobrazení}
+\todo{Jak probíhá vykreslování?}
+\todo{Klíčové vlastnosti?}
+
+
+\section{Terén}\label{ch:impl:terén}
+\todo{Jaký je cíl, co má být výsledkem generování?}
+
+\todo{Potřebné třídy pro generování - map, chunk, heightMap}
+
+\todo{Samotný proces generování}
+\todo{vytváření vrcholů}
+\todo{vytváření normál}
+\todo{vytváření indexů}
+
+\todo{Použité struktury}
+
+\todo{Existující problémy, podněty pro zlepšení?}
+
+
+\section{Silnice}\label{ch:impl:silnice}
+\todo{Jaký je cíl, co má být výsledkem generování?}
+
+\todo{Potřebné třídy pro generování - streetMap, street, heightMap, map}
+
+\todo{Samotný proces generování}
+\todo{vytváření podsilnic}
+\todo{rozšiřování silnic ("prodlužování")}
+\todo{výpočet kolizí (+ QuadTree)}
+\todo{ukládání kolizí a práce s nimi}
+
+\todo{Existující problémy, podněty pro zlepšení?}
+
+
+\section{Parcely}\label{ch:impl:parcely}
+\todo{Jaký je cíl, co má být výsledkem generování?}
+\todo{parcely pro budovy}
+\todo{parcely pro silnice}
+
+\todo{Potřebné třídy pro generování - streetMap, street}
+
+\todo{Samotný proces generování}
+\todo{průchod přes silnice}
+\todo{vyhledání a použití "křižovatek"}
+\todo{neduplicita parcel}
+
+
+\section{Budovy}\label{ch:impl:budovy}
+\todo{Jaký je cíl, co má být výsledkem generování?}
+\todo{typy budov}
+
+\todo{Potřebné třídy pro generování - parcel, building, buildingPart, heightMap}
+
+\todo{Samotný proces generování}
+\todo{vytváření kvádrů/jiných tvarů}
+\todo{jejich posun/orientace}
+\todo{generování normál}
+
+
+\section{Textury}\label{ch:impl:textury}
+
+\subsection{Térén}\label{ch:impl:textury:terén}
+
+\subsection{Budovy}\label{ch:impl:textury:budovy}
+
+\subsection{Prostředí}
 
 
 %===========================================================================================
 %	ZÁVĚREČNÁ KAPITOLA
 %
 %===========================================================================================
-\chapter{Závěr}
-\label{ch:zaver}
+\chapter{Závěr}\label{ch:zaver}
 
 \todo{Krátké shrnutí závěru práce...}
 
