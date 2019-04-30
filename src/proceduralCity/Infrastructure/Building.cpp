@@ -102,6 +102,13 @@ void Building::GenerateParts_Square()
 		y_max = density;
 	}
 
+	auto ratio = glm::max(x_max / y_max, y_max / x_max);
+	if (ratio > 5.f)
+	{
+		std::cerr << "Not building on parcel, ratio is too big: " << ratio << std::endl;
+		return;
+	}
+
 	x_offset = u / x_max;
 	z_offset = v / y_max;
 

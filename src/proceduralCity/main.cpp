@@ -624,7 +624,7 @@ int main(const int argc, char* argv[])
 						const auto left  = Utils::left_vector(dir);
 						const auto right = Utils::right_vector(dir);
 
-						auto street_resize_factor = resize_factor / 2.f;
+						auto street_resize_factor = resize_factor * .7f;
 						parcel->AddBorderPoint(p1 + left * street_resize_factor);
 						parcel->AddBorderPoint(p1 + right * street_resize_factor);
 						parcel->AddBorderPoint(p2 + right * street_resize_factor);
@@ -719,10 +719,21 @@ int main(const int argc, char* argv[])
 			{
 				if (KeyDown['s'])
 				{
-					const auto filepath = vars.getString("output.dir") + "/terrain.obj";
-					std::cerr << "Saving terrain model to: " << filepath << std::endl;
-					auto f = Utils::write_file(filepath);
-					renderer->Save(map, f);
+					auto terrain_fp = vars.getString("output.dir") + "/terrain.obj";
+					auto terrain_f = Utils::write_file(terrain_fp);
+
+					std::cerr << "Saving terrain model to: " << terrain_fp << std::endl;
+					renderer->Save(map, terrain_f);
+
+					auto building_fp = terrain_fp;
+					auto building_f = std::move(terrain_f);
+					if (!KeyDown[SDLK_LSHIFT])
+					{
+						building_fp = vars.getString("output.dir") + "/buildings.obj";
+						building_f = Utils::write_file(building_fp);
+					}
+					std::cerr << "Saving building models to: " << building_fp << std::endl;
+					renderer->Save(buildings, building_f);
 
 					save = true;
 				}

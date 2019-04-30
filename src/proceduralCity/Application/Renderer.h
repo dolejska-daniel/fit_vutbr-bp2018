@@ -46,6 +46,7 @@ namespace Application
 		///
 		void Save(Terrain::Map* map, std::ofstream& output) const;
 		void Save(const Infrastructure::Building& b, std::ofstream& output) const;
+		void Save(const std::vector<std::shared_ptr<Infrastructure::Building>>& buildings, std::ofstream& output);
 		/*
 		void Render(std::shared_ptr<IRenderableCollection> const& collection) const;
 

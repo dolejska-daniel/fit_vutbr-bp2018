@@ -87,7 +87,7 @@ void StreetMap::AddStreet(const std::shared_ptr<Street>& street)
 void StreetMap::RemoveStreet(const std::shared_ptr<Street>& street)
 {
 	street->Destroy(shared_from_this());
-	_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
+	//_streets.erase(std::remove(_streets.begin(), _streets.end(), street), _streets.end());
 }
 
 StreetSegmentIntersection StreetMap::Intersection(StreetSegment const& segment, std::shared_ptr<Street> const& street)

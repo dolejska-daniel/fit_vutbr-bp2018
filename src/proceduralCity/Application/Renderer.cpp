@@ -12,7 +12,8 @@
 #include <Terrain/Chunk.h>
 #include <Terrain/Map.h>
 #include <fstream>
-#include "Infrastructure/Building.h"
+#include <Infrastructure/Building.h>
+#include <Infrastructure/BuildingPart.h>
 
 
 using namespace ge::gl;
@@ -101,9 +102,61 @@ void Renderer::Save(Terrain::Map *map, std::ofstream& output) const
 	}
 }
 
-void Renderer::Save(const Infrastructure::Building& b, std::ofstream& output) const
+void Renderer::Save(const std::vector<std::shared_ptr<Infrastructure::Building>>& buildings,
+	std::ofstream& output)
 {
 	if (!output.is_open())
 		return;
 
+	size_t offset = 0;
+	for (auto i = 0u; i < buildings.size(); ++i)
+	{
+		const auto& building = buildings.at(i);
+
+		const auto parts = building->parts;
+		output << "#\n# Buildings\n#" << std::endl;
+		output << "g building_" << i << std::endl;
+		auto ip = 0;
+		for (const auto& part : parts)
+		{
+			output << "\n# Building " << i << ", part " << ip << " vertices" << std::endl;
+			output << "g building_part_" << ip << std::endl;
+			const auto vertices = part->vertices;
+			for (auto v : vertices)
+			{
+				output
+					<< "v"
+					<< " " << v.position.x
+					<< " " << v.position.y
+					<< " " << v.position.z << std::endl;
+			}
+
+			output << "# Building " << i << ", part " << ip << " normals" << std::endl;
+			for (auto v : vertices)
+			{
+				output
+					<< "vn"
+					<< " " << v.normal.x
+					<< " " << v.normal.y
+					<< " " << v.normal.z << std::endl;
+			}
+
+			output << "# Building " << i << ", part " << ip << " indices" << std::endl;
+			auto new_offset = 0;
+			for (auto i = 1u; i <= vertices.size(); i+=3)
+			{
+				output
+					<< "f"
+					<< " " << i + 0 + offset
+					<< " " << i + 1 + offset
+					<< " " << i + 2 + offset << std::endl;
+				new_offset = i + 2 + offset;
+			}
+			offset = new_offset;
+
+			output << "end" << std::endl;
+			ip++;
+		}
+		output << "end" << std::endl;
+	}
 }

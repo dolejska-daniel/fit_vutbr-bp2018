@@ -29,5 +29,6 @@ namespace Infrastructure
 		void RandomBuildingSquareDefault(const std::vector<glm::vec3>& borderPoints, std::vector<BuildingPartVertex>& vertices);
 		void CreateBlock(const std::vector<glm::vec3>& points, std::vector<BuildingPartVertex>& vertices, float height_top, float height_bottom = 0);
 		Terrain::HeightMap* _heightMap;
+		std::vector<BuildingPartVertex> vertices;
 	};
 }

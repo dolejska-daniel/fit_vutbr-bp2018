@@ -21,8 +21,6 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 {
 	//std::cerr << "Setting up building part." << std::endl;
 
-	std::vector<BuildingPartVertex> vertices;
-
 	if (type == SQUARE)
 		RandomBuildingSquareDefault(borderPoints, vertices);
 	else if (type == STREET_SQUARE)
