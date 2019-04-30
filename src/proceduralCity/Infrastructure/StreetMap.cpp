@@ -254,7 +254,7 @@ void StreetMap::BuildStep()
 {
 	for (const auto& street : ReadStreets())
 	{
-		if (street->Ended())
+		if (street->Ended() || street->Destroyed())
 			continue;
 
 		_zone->BuildStep(street);

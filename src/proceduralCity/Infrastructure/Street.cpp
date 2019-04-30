@@ -472,10 +472,14 @@ bool Street::GetNextIntersectionPointPair(const glm::vec3& point_from, const Str
 	{
 		if (direction_inverted)
 			// směr je opačný, hledáme tedy dvojice "z druhé strany"
-			return  pair.point2 == point_from;
+			return  pair.point2 == point_from
+				&& pair.intersection1.intersecting_segment.street
+				&& !pair.intersection1.intersecting_segment.street->Destroyed();
 
 		// směr nebyl změněn
-		return pair.point1 == point_from;
+		return pair.point1 == point_from
+			&& pair.intersection2.intersecting_segment.street
+			&& !pair.intersection2.intersecting_segment.street->Destroyed();
 	};
 
 	if (side_from == LEFT)

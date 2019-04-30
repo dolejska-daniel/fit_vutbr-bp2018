@@ -87,6 +87,15 @@ void Building::GenerateParts_Square()
 	auto u_len = glm::length(u);
 	auto v_len = glm::length(v);
 
+	std::cerr << u_len << std::endl;
+	std::cerr << v_len << std::endl;
+	auto len_ratio = glm::min(u_len, v_len);
+	if (len_ratio < 10.f)
+	{
+		std::cerr << "Not building on parcel, len is too low: " << len_ratio << std::endl;
+		return;
+	}
+
 	auto density = 2.f;
 	float x_max, y_max;
 	glm::vec3 z_offset, x_offset;

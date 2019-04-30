@@ -340,7 +340,7 @@ int main(const int argc, char* argv[])
 			std::vector<std::shared_ptr<Infrastructure::Street>> nearby_streets;
 			for (const auto& street1 : streetMap->GetStreets())
 			{
-				if (!street1->Ended())
+				if (street1->Destroyed())
 					continue;
 				if (std::find(nearby_streets.begin(), nearby_streets.end(), street1) != nearby_streets.end())
 					// Již  přidáno
@@ -353,10 +353,8 @@ int main(const int argc, char* argv[])
 					if (street1 == street2)
 						// Tatáž ulice
 						continue;
-					/*
-					if (!street2->Ended())
-						// Pouze ukončené ulice
-						continue;*/
+					if (/*!street1->Ended() || */street1->Destroyed())
+						continue;
 					if (std::find(nearby_streets.begin(), nearby_streets.end(), street2) != nearby_streets.end())
 						// Již  přidáno
 						continue;
@@ -399,6 +397,7 @@ int main(const int argc, char* argv[])
 							s2_segment_first.startPoint + s2_segment_first.direction + direction_right * dist_max * 2.f,
 							glm::vec3(0),
 							dist_max * 2.f,
+							nullptr
 						};
 						auto intersection = Infrastructure::StreetMap::Intersection(first_segment, street1);
 						if (!intersection.exists)
@@ -409,6 +408,7 @@ int main(const int argc, char* argv[])
 								s2_segment_last.endPoint - s2_segment_last.direction + direction_right * dist_max * 2.f,
 								glm::vec3(0),
 								dist_max * 2.f,
+								nullptr
 							};
 							intersection = Infrastructure::StreetMap::Intersection(last_segment, street1);
 							if (!intersection.exists)
@@ -439,6 +439,9 @@ int main(const int argc, char* argv[])
 		else
 			postprocessed = false;
 
+		static std::vector<Infrastructure::StreetNarrowPair> visited_pairs;
+		std::vector<std::shared_ptr<Infrastructure::Street>> visited;
+		std::shared_ptr<Infrastructure::Parcel> parcel;
 
 		static size_t intersection_id = 0;
 		static size_t street_id = 0;
@@ -447,24 +450,22 @@ int main(const int argc, char* argv[])
 			intersection_id = 0;
 			street_id = 0;
 			parcels.clear();
+			visited_pairs.clear();
+			
 		}
 
 		if (KeyDown['j'])
 		{
 			std::vector<std::shared_ptr<Infrastructure::Parcel>> parcels_invalid;
 
-			for (const auto& parcel : parcels)
-				if (parcel->GetBorderPoints().size() != 4)
-					parcels_invalid.push_back(parcel);
+			for (const auto& p : parcels)
+				if (p->GetBorderPoints().size() < 4)
+					parcels_invalid.push_back(p);
 
-			for (const auto& parcel : parcels_invalid)
-				parcels.erase(std::remove(parcels.begin(), parcels.end(), parcel), parcels.end());
+			for (const auto& p : parcels_invalid)
+				parcels.erase(std::remove(parcels.begin(), parcels.end(), p), parcels.end());
 		}
 
-
-		static std::vector<Infrastructure::StreetNarrowPair> visited_pairs;
-		std::vector<std::shared_ptr<Infrastructure::Street>> visited;
-		std::shared_ptr<Infrastructure::Parcel> parcel;
 		std::function<void(std::shared_ptr<Infrastructure::Street>, Infrastructure::StreetSegment, glm::vec3, Infrastructure::StreetNarrowPair, Infrastructure::StreetIntersectionSide)> processStreet2 =
 			[&](const std::shared_ptr<Infrastructure::Street>& street, const Infrastructure::StreetSegment& segment, const glm::vec3& point_from, Infrastructure::StreetNarrowPair const& previous_pair, const Infrastructure::StreetIntersectionSide side)
 		{
@@ -609,6 +610,9 @@ int main(const int argc, char* argv[])
 
 				for (const auto& street : streetMap->GetStreets())
 				{
+					if (street->Destroyed())
+						continue;
+
 					processStreetToList(street);
 
 					auto createStreet = [&parcel,&parcels,&resize_factor](glm::vec3 p1, glm::vec3 p2)
