@@ -14,6 +14,7 @@
 #include <vector>
 
 
+using namespace glm;
 using namespace Infrastructure;
 
 BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm::vec3>& borderPoints,
@@ -89,7 +90,7 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 	const auto bl = glm::length(points[3] - points[0]) * (1.f - padding); // b length
 	const auto bli = glm::length(points[3] - points[0]) * padding * .4f; // b length inversed
 
-	const auto minli = glm::min(ali, bli);
+	const auto minli = min(ali, bli);
 
 	// nastavení 
 	auto height_main = height + 10.f + rand() % 400 / 30.f;

@@ -62,6 +62,6 @@ namespace Terrain
 
 		glm::vec2* _offsets;	///< 
 
-		std::shared_ptr<Utils::Curve> _curve;	///< 
+		std::shared_ptr<Utils::Curve2D> _curve;	///< 
 	};
 }

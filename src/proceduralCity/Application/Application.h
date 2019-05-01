@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <SDL2/SDL.h>
+#include <Vars/Vars.h>
 
 
 ///
@@ -19,6 +20,11 @@ namespace Application
 	/// @brief
 	///
 	extern std::map<SDL_Keycode, bool> KeyDown;
+
+	///
+	/// @brief
+	///
+	extern vars::Vars Vars;
 
 	///
 	/// @brief

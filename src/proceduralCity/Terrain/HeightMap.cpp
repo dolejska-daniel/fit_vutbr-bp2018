@@ -38,49 +38,42 @@ HeightMap::HeightMap(vars::Vars& vars)
 		frequency *= lacunarity;
 	}
 
-	auto heightCurvePoints = std::make_shared<std::vector<glm::vec2>>();
-	heightCurvePoints->push_back({ 0.f, -1.0f });
-	heightCurvePoints->push_back({ 0.f, -2.0f });
-	heightCurvePoints->push_back({ 0.f, -1.0f });
-	heightCurvePoints->push_back({ 0.f, -2.0f });
-	heightCurvePoints->push_back({ 0.f,  0.0f });
-	heightCurvePoints->push_back({ 0.f,  0.0f });
-	heightCurvePoints->push_back({ 0.f,  0.02f });
-	heightCurvePoints->push_back({ 0.f,  0.04f });
-	heightCurvePoints->push_back({ 0.f,  0.06f });
-	heightCurvePoints->push_back({ 0.f,  0.08f });
-	heightCurvePoints->push_back({ 0.f,  0.1f });
-	heightCurvePoints->push_back({ 0.f,  0.1f });
-	heightCurvePoints->push_back({ 0.f,  0.1f });
-	heightCurvePoints->push_back({ 0.f,  0.1f });
-	heightCurvePoints->push_back({ 0.f,  0.12f });
-	heightCurvePoints->push_back({ 0.f,  0.14f });
-	heightCurvePoints->push_back({ 0.f,  0.16f });
-	heightCurvePoints->push_back({ 0.f,  0.18f });
-	heightCurvePoints->push_back({ 0.f,  0.2f });
-	heightCurvePoints->push_back({ 0.f,  0.2f });
-	heightCurvePoints->push_back({ 0.f,  0.2f });
-	heightCurvePoints->push_back({ 0.f,  0.2f });
-	heightCurvePoints->push_back({ 0.f,  2.f });
-	heightCurvePoints->push_back({ 0.f,  4.f });
-	heightCurvePoints->push_back({ 0.f,  8.f });
-	_curve = std::make_shared<Utils::Curve>(heightCurvePoints);
+	auto heightCurvePoints = std::vector<glm::vec2>{
+		{ 0.f, -1.0f },
+		{ 0.f, -2.0f },
+		{ 0.f, -1.0f },
+		{ 0.f, -2.0f },
+		{ 0.f,  0.0f },
+		{ 0.f,  0.0f },
+		{ 0.f,  0.02f },
+		{ 0.f,  0.04f },
+		{ 0.f,  0.06f },
+		{ 0.f,  0.08f },
+		{ 0.f,  0.1f },
+		{ 0.f,  0.1f },
+		{ 0.f,  0.1f },
+		{ 0.f,  0.1f },
+		{ 0.f,  0.12f },
+		{ 0.f,  0.14f },
+		{ 0.f,  0.16f },
+		{ 0.f,  0.18f },
+		{ 0.f,  0.2f },
+		{ 0.f,  0.2f },
+		{ 0.f,  0.2f },
+		{ 0.f,  0.2f },
+		{ 0.f,  2.f  },
+		{ 0.f,  4.f  },
+		{ 0.f,  8.f  },
+	};
+	_curve = std::make_shared<Utils::Curve2D>(heightCurvePoints);
 
 	std::cerr << "ALL SET!" << std::endl;
 	std::cerr << minNoise << std::endl;
 	std::cerr << maxNoise << std::endl << std::endl;
 	std::cerr << "Height mults: " << std::endl;
-	std::cerr << _curve->GetPoint(0.f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.1f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.2f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.3f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.4f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.5f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.6f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.7f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.7f).y << std::endl;
-	std::cerr << _curve->GetPoint(0.9f).y << std::endl;
-	std::cerr << _curve->GetPoint(1.f).y << std::endl << std::endl;
+	for (auto f = 0.f; f <= 1.f; f+=0.05f)
+		std::cerr << _curve->GetPoint(f).y << std::endl;
+	std::cerr << std::endl;
 }
 
 HeightMap::~HeightMap()

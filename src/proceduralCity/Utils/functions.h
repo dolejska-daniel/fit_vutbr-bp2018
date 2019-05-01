@@ -15,10 +15,59 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <geGL/Texture.h>
+#include <FreeImagePlus.h>
+#include <geGL/StaticCalls.h>
 
+
+using namespace glm;
 
 namespace Utils
 {
+	static std::shared_ptr<ge::gl::Texture> load_texture_from_file(const std::string& filepath)
+	{
+		fipImage image;
+		image.load(filepath.c_str());
+
+		GLenum format = GL_RGB;
+		GLenum type = GL_UNSIGNED_BYTE;
+		if (image.getImageType() == FIT_BITMAP) {
+			switch (image.getBitsPerPixel())
+			{
+			case 24:
+				format = GL_BGR; break;
+			case 32:
+				format = GL_BGRA; break;
+			default:
+				std::cerr << "Invalid BPP for loaded image" << std::endl;
+			}
+			type = GL_UNSIGNED_BYTE;
+		}
+		if (image.getImageType() == FIT_RGBAF) {
+			switch (image.getBitsPerPixel())
+			{
+			case 32 * 4:
+				format = GL_RGBA; break;
+			case 32 * 3:
+				format = GL_RGB; break;
+			default:
+				std::cerr << "Invalid BPP for loaded image" << std::endl;
+			}
+			type = GL_FLOAT;
+		}
+		
+		static GLfloat largest_supported_anisotropy = 0;
+		if (largest_supported_anisotropy == 0)
+			ge::gl::glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
+
+		const auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D, GL_RGB8, 1, image.getWidth(), image.getHeight());
+		texture->texParameterfv(GL_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
+		texture->setData2D(image.accessPixels(), format, type);
+
+		image.clear();
+		return texture;
+	}
+
 	template<typename T>
 	static void merge_vectors(std::vector<T>& vec1, const std::vector<T>& vec2)
 	{

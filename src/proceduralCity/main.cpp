@@ -30,12 +30,13 @@
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
 #include <Utils/QuadTree.h>
+#include <Utils/Curve.h>
 #include <Utils/functions.h>
+#include <FreeImagePlus.h>
 
 
 using namespace glm;
 using namespace ge::gl;
-using namespace vars;
 using namespace argumentViewer;
 using namespace Application;
 using namespace Terrain;
@@ -49,32 +50,31 @@ using namespace Terrain;
 int main(const int argc, char* argv[])
 {
 	ArgumentViewer args(argc, argv);
-	Vars vars;
 
 	// ==========================================================dd=
 	//	DEFINICE OBECNÝCH PROMĚNNÝCH A ARGUMENTŮ PROGRAMU
 	// =============================================================
-	vars.addString("resources.dir", args.gets("--resources-dir", "../res", "Path to resources directory (shaders, ...)"));
-	vars.addString("output.dir",    args.gets("--output-dir", "../output", "Path to output directory (for saved models)"));
+	Vars.addString("resources.dir", args.gets("--resources-dir", "../res", "Path to resources directory (shaders, ...)"));
+	Vars.addString("output.dir", args.gets("--output-dir", "../output", "Path to output directory (for saved models)"));
 
 	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ TERÉNU
 	// =============================================================
-	vars.addUint32("terrain.seed",			args.getu32("--terrain-seed",			12345,	"Default seed for terrain generation"));
-	vars.addFloat( "terrain.scale",			args.getf32("--terrain-scale",			80.f,	"Perlin noise scale (higher the number smoother the changes)"));
-	vars.addFloat( "terrain.amplitude",		args.getf32("--terrain-amplitude",		2.5f,	"Noise function amplitudes"));
-	vars.addFloat( "terrain.frequency",		args.getf32("--terrain-frequency",		0.2f,	""));
-	vars.addFloat( "terrain.persistence",	args.getf32("--terrain-persistence",	0.7f,	""));
-	vars.addFloat( "terrain.lacunarity",	args.getf32("--terrain-lacunarity",		1.3f,	""));
-	vars.addUint32("terrain.octaves",		args.getu32("--terrain-octaves",		3,		"Number of noises from which is the terrain going to be generated"));
-	vars.addUint32("terrain.detail",		args.getu32("--terrain-detail",			1,		"Default level of object detail"));
+	Vars.addUint32("terrain.seed", args.getu32("--terrain-seed", 12345, "Default seed for terrain generation"));
+	Vars.addFloat("terrain.scale", args.getf32("--terrain-scale", 80.f, "Perlin noise scale (higher the number smoother the changes)"));
+	Vars.addFloat("terrain.amplitude", args.getf32("--terrain-amplitude", 2.5f, "Noise function amplitudes"));
+	Vars.addFloat("terrain.frequency", args.getf32("--terrain-frequency", 0.2f, ""));
+	Vars.addFloat("terrain.persistence", args.getf32("--terrain-persistence", 0.7f, ""));
+	Vars.addFloat("terrain.lacunarity", args.getf32("--terrain-lacunarity", 1.3f, ""));
+	Vars.addUint32("terrain.octaves", args.getu32("--terrain-octaves", 3, "Number of noises from which is the terrain going to be generated"));
+	Vars.addUint32("terrain.detail", args.getu32("--terrain-detail", 1, "Default level of object detail"));
 
-	vars.addUint32("terrain.map.width",		args.getu32("--terrain-map-width",	2, "Terrain map width (count of chunks)"));
-	vars.addUint32("terrain.map.height",	args.getu32("--terrain-map-height", 1, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
+	Vars.addUint32("terrain.map.width", args.getu32("--terrain-map-width", 2, "Terrain map width (count of chunks)"));
+	Vars.addUint32("terrain.map.height", args.getu32("--terrain-map-height", 1, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
 
-	vars.addUint32("terrain.chunk.width",	args.getu32("--terrain-chunk-width",	64,		"Chunk width"));
-	vars.addUint32("terrain.chunk.height",	args.getu32("--terrain-chunk-height",	64 ,		"Terrain chunk height in 2D (depth/length in 3D)"));
-	vars.addFloat( "terrain.chunk.scale",	args.getf32("--terrain-chunk-scale",	8.f,	"Chunk scale multiplier"));
+	Vars.addUint32("terrain.chunk.width", args.getu32("--terrain-chunk-width", 64, "Chunk width"));
+	Vars.addUint32("terrain.chunk.height", args.getu32("--terrain-chunk-height", 64, "Terrain chunk height in 2D (depth/length in 3D)"));
+	Vars.addFloat("terrain.chunk.scale", args.getf32("--terrain-chunk-scale", 8.f, "Chunk scale multiplier"));
 
 	if (args.isPresent("--help", "") || !args.validate())
 	{
@@ -91,9 +91,9 @@ int main(const int argc, char* argv[])
 
 	//	Create main loop & window
 	auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
-	auto window   = std::make_shared<sdl2cpp::Window  >(width, height);
-    window->createContext("rendering", 450u, sdl2cpp::Window::CORE, sdl2cpp::Window::DEBUG);
-    mainLoop->addWindow("mainWindow", window);
+	auto window = std::make_shared<sdl2cpp::Window  >(width, height);
+	window->createContext("rendering", 450u, sdl2cpp::Window::CORE, sdl2cpp::Window::DEBUG);
+	mainLoop->addWindow("mainWindow", window);
 
 	//	Initialize geGL
 	init();
@@ -105,7 +105,7 @@ int main(const int argc, char* argv[])
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	srand(vars.getUint32("terrain.seed"));
+	srand(Vars.getUint32("terrain.seed"));
 
 	std::cerr << "Using " << glGetString(GL_VERSION) << std::endl;
 
@@ -113,15 +113,16 @@ int main(const int argc, char* argv[])
 	// ==========================================================dd=
 	//	DALŠÍ INICIALIZACE
 	// =============================================================
-	const auto v = float(vars.getUint32("terrain.map.width")) * float(vars.getUint32("terrain.chunk.width")) * vars.getFloat("terrain.chunk.scale");
+	const auto v = float(Vars.getUint32("terrain.map.width")) * float(Vars.getUint32("terrain.chunk.width")) * Vars.getFloat("terrain.chunk.scale");
 	Utils::StreetQuadTree = std::make_shared<Utils::QuadTree>(Utils::RectBounds({ -v, -v }, { v * 2, v * 2 }));
 
 	//	Initialize ShaderManager
-	auto shaders = std::make_shared<ShaderManager>(vars);
+	auto shaders = std::make_shared<ShaderManager>(Vars);
 	shaders->Use("Phong");
 
-	auto renderer = std::make_shared<Renderer>(vars);
+	auto renderer = std::make_shared<Renderer>(Vars);
 	auto color = vec3(0, 1, 0);
+	
 
 	//	Setup main camera
 	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, INFINITY);
@@ -129,7 +130,7 @@ int main(const int argc, char* argv[])
 	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
 	freeLook->setPosition(vec3(1, 1, 4));
 
-	const auto map = Generator::GenerateMap(vars);
+	const auto map = Generator::GenerateMap(Vars);
 
 	auto streetMap = std::make_shared<Infrastructure::StreetMap>(map);
 	//auto parcel = new Infrastructure::Parcel();
@@ -137,6 +138,29 @@ int main(const int argc, char* argv[])
 	std::vector<std::shared_ptr<Infrastructure::Building>> buildings;
 	std::vector<std::shared_ptr<Infrastructure::Building>> streets;
 
+	auto cameraPathPoints = std::vector<glm::vec3>{
+		{ 0.f, 0.f, 0.f },
+		{ 100.f, 100.f, 100.f },
+		{ -100.f, 100.f, -100.f },
+	};
+	auto cameraPath = std::make_shared<Utils::Curve3D>(cameraPathPoints);
+
+	auto cameraRotationPoints = std::vector<glm::vec2>{
+		{ 0.f, 0.f },
+		{ 45.f, 0.f },
+		{ 0.f, 0.f },
+	};
+	auto cameraRotation = std::make_shared<Utils::Curve2D>(cameraRotationPoints);
+
+	const auto grassTexture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/grass.jpg");
+	const auto dirtTexture  = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/dirt.jpg");
+	const auto rockTexture  = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/rock.jpg");
+
+	grassTexture->bind(0);
+	dirtTexture->bind(1);
+	rockTexture->bind(2);
+
+	auto f = 0.f;
 
 	// ==========================================================dd=
 	//	VYKRESLOVÁNÍ
@@ -149,8 +173,69 @@ int main(const int argc, char* argv[])
 		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		for (auto a = 0; a < 3; a++)
-			freeLook->move(a, float(KeyDown["d s"[a]] - KeyDown["acw"[a]]) * float(.25f + KeyDown[SDLK_LSHIFT] * 2.f));
+
+		static auto camFrame = false;
+		if (KeyDown['f'])
+		{
+			if (!camFrame)
+			{
+				if (KeyDown['o'])
+				{
+					cameraPathPoints.clear();
+					cameraRotationPoints.clear();
+				}
+				else
+				{
+					cameraPathPoints.push_back(freeLook->getPosition());
+					cameraRotationPoints.emplace_back(
+						glm::degrees(freeLook->getXAngle()),
+						glm::degrees(freeLook->getYAngle())
+					);
+				}
+			}
+			camFrame = true;
+		}
+		else
+			camFrame = false;
+
+		static auto camAutoRunning = false;
+		static auto camAuto = false;
+		if (KeyDown['g'])
+		{
+			if (!camAuto)
+			{
+				camAutoRunning = !camAutoRunning;
+
+				cameraPath->points = cameraPathPoints;
+				cameraPath->LaplacianSmooth(3);
+
+				cameraRotation->points = cameraRotationPoints;
+				//cameraRotation->LaplacianSmooth();
+
+				camAuto = true;
+			}
+		}
+		else
+			camAuto = false;
+
+		if (camAutoRunning)
+		{
+			if (f > 1.f)
+				f = 0.f;
+
+			freeLook->setPosition(cameraPath->GetPointLinear(f));
+
+			auto r = cameraRotation->GetPoint(f);
+			r = glm::radians(r);
+			freeLook->setXAngle(r.x);
+			freeLook->setYAngle(r.y);
+			f += 0.0001f;
+		}
+		else
+		{
+			for (auto a = 0; a < 3; a++)
+				freeLook->move(a, float(KeyDown["d s"[a]] - KeyDown["acw"[a]]) * float(.25f + KeyDown[SDLK_LSHIFT] * 2.f));
+		}
 
 		auto cameraPosition = freeLook->getPosition();
 		auto projectionMatrix = cameraProjection->getProjection();
@@ -162,8 +247,8 @@ int main(const int argc, char* argv[])
 		{
 			shaders->Use("Phong");
 
-			shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-			shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+			//shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+			//shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 		}
 		else if (render == 1)
 		{
@@ -199,9 +284,9 @@ int main(const int argc, char* argv[])
 		shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
 		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
-
-		shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-		shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+		
+		//shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
+		//shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 
 		if (KeyDown['x'])
 		{
@@ -723,7 +808,7 @@ int main(const int argc, char* argv[])
 			{
 				if (KeyDown['s'])
 				{
-					auto terrain_fp = vars.getString("output.dir") + "/terrain.obj";
+					auto terrain_fp = Vars.getString("output.dir") + "/terrain.obj";
 					auto terrain_f = Utils::write_file(terrain_fp);
 
 					std::cerr << "Saving terrain model to: " << terrain_fp << std::endl;
@@ -733,7 +818,7 @@ int main(const int argc, char* argv[])
 					auto building_f = std::move(terrain_f);
 					if (!KeyDown[SDLK_LSHIFT])
 					{
-						building_fp = vars.getString("output.dir") + "/buildings.obj";
+						building_fp = Vars.getString("output.dir") + "/buildings.obj";
 						building_f = Utils::write_file(building_fp);
 					}
 					std::cerr << "Saving building models to: " << building_fp << std::endl;

@@ -10,6 +10,7 @@
 #include <Infrastructure/BuildingPart.h>
 #include <Utils/functions.h>
 
+using namespace glm;
 using namespace Infrastructure;
 
 
@@ -36,10 +37,10 @@ void Building::GenerateParts_Square()
 	auto max = points.front(), min = points.front();
 	for (auto& point : points)
 	{
-		max.x = std::max(max.x, point.x);
-		max.z = std::max(max.z, point.z);
-		min.x = std::min(min.x, point.x);
-		min.z = std::min(min.z, point.z);
+		max.x = max(max.x, point.x);
+		max.z = max(max.z, point.z);
+		min.x = min(min.x, point.x);
+		min.z = min(min.z, point.z);
 	}
 
 	Utils::RectBounds bounds(min, max);
@@ -84,12 +85,12 @@ void Building::GenerateParts_Square()
 	}
 	std::cerr << dot << std::endl;
 
-	auto u_len = glm::length(u);
-	auto v_len = glm::length(v);
+	auto u_len = length(u);
+	auto v_len = length(v);
 
 	std::cerr << u_len << std::endl;
 	std::cerr << v_len << std::endl;
-	auto len_ratio = glm::min(u_len, v_len);
+	auto len_ratio = min(u_len, v_len);
 	if (len_ratio < 10.f)
 	{
 		std::cerr << "Not building on parcel, len is too low: " << len_ratio << std::endl;
@@ -98,7 +99,7 @@ void Building::GenerateParts_Square()
 
 	auto density = 2.f;
 	float x_max, y_max;
-	glm::vec3 z_offset, x_offset;
+	vec3 z_offset, x_offset;
 
 	if (v_len > u_len)
 	{
@@ -111,7 +112,7 @@ void Building::GenerateParts_Square()
 		y_max = density;
 	}
 
-	auto ratio = glm::max(x_max / y_max, y_max / x_max);
+	auto ratio = max(x_max / y_max, y_max / x_max);
 	if (ratio > 5.f)
 	{
 		std::cerr << "Not building on parcel, ratio is too big: " << ratio << std::endl;
@@ -123,7 +124,7 @@ void Building::GenerateParts_Square()
 
 	// TODO: Minimální rozměry parcely?
 
-	std::vector<glm::vec3> part_points;
+	std::vector<vec3> part_points;
 	part_points.reserve(4);
 	for (auto x = 0; x < x_max; x++)
 	{

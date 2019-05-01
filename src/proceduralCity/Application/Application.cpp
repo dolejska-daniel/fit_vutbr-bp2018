@@ -7,3 +7,5 @@
 #include <Application/Application.h>
 
 std::map<SDL_Keycode, bool> Application::KeyDown{};
+
+vars::Vars Application::Vars;
