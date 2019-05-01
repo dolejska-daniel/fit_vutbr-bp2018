@@ -328,7 +328,7 @@ output/*.obj
 .vs/
 3rd-party/build/
 CMakeFiles/
-bin/
+bin/*
 build/
 cmake*/
 include/*
@@ -342,8 +342,8 @@ share/
 !CMakeModules/*
 !3rd-party/CMakeModules/*
 !include/FreeImage.h
-!lib/FreeImage.lib
-!lib/FreeImage.dll
 !include/FreeImagePlus.h
+!lib/FreeImage.lib
 !lib/FreeImagePlus.lib
-!lib/FreeImagePlus.dll
+!bin/FreeImage.dll
+!bin/FreeImagePlus.dll
