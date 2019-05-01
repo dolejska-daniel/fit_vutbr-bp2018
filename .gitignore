@@ -324,15 +324,26 @@ TSWLatexianTemp*
 output/*.obj
 
 ### Directories
-.idea
-.vs
-3rd-party/build
+.idea/
+.vs/
+3rd-party/build/
 CMakeFiles/
-bin
-build
-cmake*
-include
-lib
+bin/
+build/
+cmake*/
+include/*
+lib/*
 docs/doxygen/
 html/
 latex/
+share/
+
+### Exceptions
+!CMakeModules/*
+!3rd-party/CMakeModules/*
+!include/FreeImage.h
+!lib/FreeImage.lib
+!lib/FreeImage.dll
+!include/FreeImagePlus.h
+!lib/FreeImagePlus.lib
+!lib/FreeImagePlus.dll

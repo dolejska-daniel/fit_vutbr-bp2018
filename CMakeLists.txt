@@ -26,6 +26,7 @@ set(LIB_DIR ${ROOT_DIR}/lib)
 set(INC_DIR ${ROOT_DIR}/include)
 set(BIN_DIR ${ROOT_DIR}/bin)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules" "${THIRDPARTY_DIR}/CMakeModules")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BIN_DIR})
 
@@ -123,6 +124,9 @@ find_package(imguiSDL2OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2CPP REQUIRED)
 
+find_package(FreeImage)
+find_package(FreeImagePlus)
+
 ###
 # Define targets
 # CMake recognises non-build files itself
@@ -141,6 +145,8 @@ target_link_libraries(proceduralCity
 	imguiSDL2OpenGL::imguiSDL2OpenGL
 	geGL::geGL
 	Vars::Vars
+	FreeImage
+	FreeImagePlus
 	)
 	
 # Build options
