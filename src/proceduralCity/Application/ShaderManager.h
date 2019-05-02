@@ -69,6 +69,6 @@ namespace Application
 		///
 		/// @brief Provede bind programu na GPU a aktualizaci proměnné `activeProgram`.
 		///
-		void BindProgram(std::shared_ptr<ge::gl::Program> const& program);
+		void BindProgram(std::shared_ptr<ge::gl::Program> const& program, std::string const& programName);
 	};
 }

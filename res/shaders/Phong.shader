@@ -65,42 +65,6 @@ void main()
 		return;
 	}
 
-	float pxFactor = clamp(dot(normal, vec3(+1, 0, 0)), 0, 1);
-	float nxFactor = clamp(dot(normal, vec3(-1, 0, 0)), 0, 1);
-	float pyFactor = clamp(dot(normal, vec3(0, +1, 0)), 0, 1);
-	float nyFactor = clamp(dot(normal, vec3(0, -1, 0)), 0, 1);
-	float pzFactor = clamp(dot(normal, vec3(0, 0, +1)), 0, 1);
-	float nzFactor = clamp(dot(normal, vec3(0, 0, -1)), 0, 1);
-
-	vec2 pxCoord = position.zy * vec2(-1, +1) * .5 + .5;
-	vec2 nxCoord = position.zy * vec2(+1, +1) * .5 + .5;
-	vec2 pyCoord = position.xz * vec2(+1, -1) * .5 + .5;
-	vec2 nyCoord = position.xz * vec2(+1, +1) * .5 + .5;
-	vec2 pzCoord = position.xy * vec2(+1, +1) * .5 + .5;
-	vec2 nzCoord = position.xy * vec2(-1, +1) * .5 + .5;
-
-	vec3 pxDiffuseColor = texture(diffuseTextureDirt, pxCoord).xyz * pxFactor;
-	vec3 nxDiffuseColor = texture(diffuseTextureDirt, nxCoord).xyz * nxFactor;
-	vec3 pyDiffuseColor = texture(diffuseTextureGrass,  pyCoord).xyz * pyFactor;
-	vec3 nyDiffuseColor = texture(diffuseTextureRock, nyCoord).xyz * nyFactor;
-	vec3 pzDiffuseColor = texture(diffuseTextureDirt, pzCoord).xyz * pzFactor;
-	vec3 nzDiffuseColor = texture(diffuseTextureDirt, nzCoord).xyz * nyFactor;
-
-	vec3 diffColor =
-		pxDiffuseColor +
-		nxDiffuseColor +
-		pyDiffuseColor +
-		nyDiffuseColor +
-		pzDiffuseColor +
-		nzDiffuseColor;
-
-
-	vec3 phong = 0.3 * diffColor + 0.6 * diffColor + 0.0 * lightColor;
-
-	color = vec4(phong, 1);
-	return;
-
-	/*
 	vec3 light_pos = lightPosition_worldspace;
 	vec3 camera_pos = cameraPosition_worldspace;
 
@@ -122,7 +86,6 @@ void main()
 	float spec = pow(max(dot(view_direction, reflection_direction), 0), 60);
 	vec3 specular = light_color * spec;
 
-	color = diffuse + specular;
-	*/
+	color = vec4(diffuse + specular, 1);
 }
 

@@ -150,7 +150,7 @@ target_link_libraries(proceduralCity
 	)
 	
 # Build options
-option(${PROJECT_NAME}_BUILD_TESTS "toggle building of unit tests")
+option(${PROJECT_NAME}_BUILD_TESTS "toggle building of unit tests" OFF)
 if(${PROJECT_NAME}_BUILD_TESTS)
 	enable_testing()
 

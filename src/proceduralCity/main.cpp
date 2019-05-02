@@ -115,6 +115,17 @@ int main(const int argc, char* argv[])
 	// =============================================================
 	const auto v = float(Vars.getUint32("terrain.map.width")) * float(Vars.getUint32("terrain.chunk.width")) * Vars.getFloat("terrain.chunk.scale");
 	Utils::StreetQuadTree = std::make_shared<Utils::QuadTree>(Utils::RectBounds({ -v, -v }, { v * 2, v * 2 }));
+	
+
+	//	Setup main camera
+	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, INFINITY);
+	Vars.add<std::shared_ptr<basicCamera::PerspectiveCamera>>("projection", cameraProjection);
+
+	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
+	freeLook->setPosition(vec3(1, 1, 4));
+	Vars.add<std::shared_ptr<basicCamera::FreeLookCamera>>("camera", freeLook);
+
+	Vars.add<mat4>("model", mat4(1));
 
 	//	Initialize ShaderManager
 	auto shaders = std::make_shared<ShaderManager>(Vars);
@@ -122,13 +133,6 @@ int main(const int argc, char* argv[])
 
 	auto renderer = std::make_shared<Renderer>(Vars);
 	auto color = vec3(0, 1, 0);
-	
-
-	//	Setup main camera
-	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, INFINITY);
-	//vars.add<std::shared_ptr<basicCamera::PerspectiveCamera>>("asdf", cameraProjection);
-	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
-	freeLook->setPosition(vec3(1, 1, 4));
 
 	const auto map = Generator::GenerateMap(Vars);
 
@@ -237,36 +241,38 @@ int main(const int argc, char* argv[])
 				freeLook->move(a, float(KeyDown["d s"[a]] - KeyDown["acw"[a]]) * float(.25f + KeyDown[SDLK_LSHIFT] * 2.f));
 		}
 
-		auto cameraPosition = freeLook->getPosition();
-		auto projectionMatrix = cameraProjection->getProjection();
-		auto viewMatrix = freeLook->getView();
-		mat4 modelMatrix(1);
-
 		static short render = 0;
 		if (render == 0)
 		{
-			shaders->Use("Phong");
-
-			//shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-			//shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
+			shaders->Use("Phong_Terrain");
 		}
 		else if (render == 1)
 		{
 			shaders->Use("Normal");
 		}
 		else
+		{
+			shaders->Use("Phong_Terrain");
 			render = 0;
+		}
 
-		shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
-		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
-		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
-
-		if (render == 0)
-			shaders->GetActiveProgram()->set3fv("color", &Utils::color_green[0]);
 		for (const auto& chunk : map->GetChunks())
 			if (chunk.second)
 				renderer->Render(chunk.second);
 
+		if (render == 0)
+		{
+			shaders->Use("Phong");
+		}
+		else if (render == 1)
+		{
+			shaders->Use("Normal");
+		}
+		else
+		{
+			shaders->Use("Phong");
+			render = 0;
+		}
 		if (render == 0)
 			shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
 		for (const auto& building : buildings)
@@ -281,12 +287,6 @@ int main(const int argc, char* argv[])
 
 
 		shaders->Use("Phong");
-		shaders->GetActiveProgram()->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0]);
-		shaders->GetActiveProgram()->setMatrix4fv("viewMatrix", &viewMatrix[0][0]);
-		shaders->GetActiveProgram()->setMatrix4fv("modelMatrix", &modelMatrix[0][0]);
-		
-		//shaders->GetActiveProgram()->set3fv("lightPosition_worldspace", &cameraPosition[0]);
-		//shaders->GetActiveProgram()->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 
 		if (KeyDown['x'])
 		{

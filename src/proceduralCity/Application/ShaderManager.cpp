@@ -10,6 +10,8 @@
 #include <Application/Application.h>
 #include <Application/ShaderManager.h>
 #include <Application/ShaderLoader.h>
+#include <BasicCamera/PerspectiveCamera.h>
+#include <BasicCamera/FreeLookCamera.h>
 
 
 using namespace Application;
@@ -28,7 +30,7 @@ void ShaderManager::Use(std::string const& programName)
 {
 	const auto existingProgram = _programs.find(programName);
 	if (existingProgram != _programs.end())
-		return BindProgram(existingProgram->second);
+		return BindProgram(existingProgram->second, programName);
 
 	std::shared_ptr<Shader> shader;
 	std::vector<std::shared_ptr<Shader>> shaders;
@@ -63,11 +65,26 @@ void ShaderManager::Use(std::string const& programName)
 	program->create();
 
 	_programs[programName] = program;
-	BindProgram(program);
+	BindProgram(program, programName);
 }
 
-void ShaderManager::BindProgram(std::shared_ptr<Program> const& program)
+void ShaderManager::BindProgram(std::shared_ptr<Program> const& program, std::string const& programName)
 {
 	_activeProgram = program;
 	program->use();
+
+	auto camera = *Vars.get<std::shared_ptr<basicCamera::FreeLookCamera>>("camera");
+	auto projection = *Vars.get<std::shared_ptr<basicCamera::PerspectiveCamera>>("projection");
+
+	program
+		->setMatrix4fv("projectionMatrix", &projection->getProjection()[0][0])
+		->setMatrix4fv("viewMatrix", &camera->getView()[0][0])
+		->setMatrix4fv("modelMatrix", Vars.getReinterpret<float>("model"));
+
+	if (programName == "Phong" || programName == "Phong_Terrain")
+	{
+		program
+			->set3fv("lightPosition_worldspace", &camera->getPosition()[0])
+			->set3fv("cameraPosition_worldspace", &camera->getPosition()[0]);
+	}
 }
