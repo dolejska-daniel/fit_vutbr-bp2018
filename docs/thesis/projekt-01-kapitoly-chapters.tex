@@ -8,11 +8,52 @@
 % - krátké seznámení s odvětvím (v rámci IT - grafika, ...)
 %===========================================================================================
 \chapter{Úvod}\label{ch:uvod}
-\todo{Úvod do tématu - obecně známá slova, nejlépe bez odborných výrazů}
+%\todo{Úvod do tématu - obecně známá slova, nejlépe bez odborných výrazů (5ř)}
+S~využitím procedurálního generování v~různých oblastech počítačové grafiky se můžeme setkat čím dál tím častěji.
+Cílem tohoto přístupu je zprostředkovat relativně snadné vytvoření velkého množství obsahu s~různými předem stanovenými vlastnostmi.
+Je jej využíváno především v~herním a~filmovém průmyslu.
 
-\todo{Cíl práce - o co se pokoušíme, co má být výsledkem práce}
+Ve filmovém průmyslu může být těchto principů využito například pro vytvoření komplexní a~rozsáhlé scény.
+Typickým příkladem tak může být scéna na pozadí\,--\,ať už se jedná o~městskou čtvrť, deštný prales či dechberoucí planetární scenérie ve vesmíru.
+V~herním průmyslu může být procedurálního generování využito k~zajištění vysoké různorodosti prostředí a~to i~za použití ručně vytvořených modelů.
+V neposlední řadě může sloužit k~vytváření celých herních světů, kde i~ty nejmenší detaily mohou být snadno nastavitelné.
 
-\todo{Struktura práce - co se kde probírá (odkazy na kapitoly, strany)}
+\todo{Proč je práce důležitá a jaký má význam?}
+\todo{Jaký je/byl stav v této oblasti?}
+Správným použitím procedurálního generování obsahu můžeme potenciálně ušetřit velké množství času, který bychom jinak museli investovat do jeho ručního vytváření.
+V dnešní době existují komerční i~open source programy, které poskytují různé nástroje pro procedurální generování terénu i jiných modelů.
+\todo{Nástroj má specifické využití, opensource verze neexistuje.}
+
+%\todo{Cíl práce - o co se pokoušíme, co má být výsledkem práce}
+Cílem této práce je navrhnout a~implementovat nástroj, pomocí kterého bude možné sestavit a~exportovat model města.
+Jeho hlavním rysem by měla být jeho konfigurovatelnost, tedy možnost upravit parametry generování (jako například výška budov, hustota zastavění nebo různé vlastnosti terénu) a~tím dosáhnout požadovaných výsledků.
+
+Samotné procedurální generování (myšleno vytváření zobrazitelných objektů) je zde možné rozdělit na několik částí\,--\,generování terénu, silnic a~budov.
+K~vytvoření tohoto nástroje ovšem nebude využito pouze principů procedurálního generování\,--\,ale také principů počítačové grafiky, práce s knihovnou OpenGL i~lineární algebry.
+
+\todo{Vlastní motivace - proč?}
+Pro mě osobně byla počítačová grafika vždy velmi zajímavá a přitažlivá.
+
+
+\pagebreak
+\section{Obsah kapitol}
+%\todo{Struktura práce - co se kde probírá (odkazy na kapitoly, strany)}
+Seznámení se s~principy, které jsou zapotřebí k~vytvoření výše popisovaného nástroje, proběhne v~kapitole \ref{ch:teorie} na straně \pageref{ch:teorie}.
+Jedná se například o~práci
+s~OpenGL (kapitola \ref{ch:teorie:opengl}, strana \pageref{ch:teorie:opengl}),
+základy lineární algebry (kapitola \ref{ch:teorie:lineární-algebra}, strana \pageref{ch:teorie:lineární-algebra}),
+použité šumové funkce (kapitola \ref{ch:teorie:perlin}, strana \pageref{ch:teorie:perlin})
+nebo principy práce s~texturami (kapitola \ref{ch:teorie:textury}, strana \pageref{ch:teorie:textury}).
+
+\todo{O co jde v návrhu?}
+V kapitole \ref{ch:navrh} na straně \pageref{ch:navrh} \dots
+\todo{Konkrétní ukázka na podkapitoly.}
+
+Kapitola \ref{ch:impl} na straně \pageref{ch:impl} bude pojednávat o~konkrétní implementaci všech výše zmíněných modulů programu.
+\todo{Konkrétní ukázka na podkapitoly.}
+
+V kapitole \ref{ch:závěr} na straně \pageref{ch:závěr} bude krátce zhodnocena vzniklá implementace nástroje, co s~tímto nástrojem lze a co nelze.
+Dále budou popsány i~možnosti rozšíření
 
 
 %===========================================================================================
@@ -23,7 +64,8 @@
 % - trohu znalý člověk z oblasti by měl být schopen vše pochopit
 %===========================================================================================
 \chapter{\todo{Teorie}}\label{ch:teorie}
-\todo{Co je obsahem této sekce...}
+%\todo{Co je obsahem této sekce...}
+Tato kapitola slouží k~seznámení se se základy všech různých odvětví, jejichž znalost implementace tohoto nástroje vyžaduje.
 
 
 \section{OpenGL}\label{ch:teorie:opengl}
@@ -87,19 +129,56 @@
 	\centering
 	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
 	\caption{Demonstrace funkce fragment shaderu}
-	\label{fig:opengl:vertex-shader}
+	\label{fig:opengl:fragment-shader}
 \end{figure}
+
+\subsubsection*{Stínovací modely}\label{ch:teorie:opengl:shading}
+\todo{Co jsou to stínovací modely, k čemu slouží a jak jsou použity?}
+
+\todo{Phong}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Ambient}
+		\label{fig:opengl:phong:ambient}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Diffuse}
+		\label{fig:opengl:phong:diffuse}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Specular}
+		\label{fig:opengl:phong:specular}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Result}
+		\label{fig:opengl:phong:result}
+	\end{subfigure}
+	\caption{Ukázka jednotlivých částí Phongovy rovnice}
+	\label{fig:opengl:phong}
+\end{figure}
+
+\todo{Ukázka dalších.}
 
 
 \section{Lineární algebra}\label{ch:teorie:lineární-algebra}
 \todo{XXXXXXXXXXXXXXXXXXXXXX}
 
 \subsection{Vektory}\label{ch:teorie:lineární-algebra:vektory}
-\todo{XXXXXXXXXXXXXXXXXXXXXX}
+\todo{Všeobecně co jsou to vektory?}
+\todo{K čemu jsou vektory v počítačové grafice dobré?}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\includegraphics[width=.33\linewidth]{obrazky-figures/placeholder.pdf}
 	\caption{Vektor}
 	\label{fig:lineární-algebra:vektor}
 \end{figure}
@@ -110,7 +189,7 @@
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\includegraphics[width=.33\linewidth]{obrazky-figures/placeholder.pdf}
 	\caption{Sčítání vektorů}
 	\label{fig:lineární-algebra:sčítání}
 \end{figure}
@@ -121,30 +200,30 @@
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
+	\includegraphics[width=.33\linewidth]{obrazky-figures/placeholder.pdf}
 	\caption{Odčítání vektorů}
 	\label{fig:lineární-algebra:odčítání}
 \end{figure}
 
-\subsubsection*{\todo{Dot product}}
-\todo{Co je to DOT product a jak to funguje?}
+\subsubsection*{Skalární součin}
+\todo{Co je to skalární součin a jak to funguje?}
 \todo{Kdy je užitečné a kdy se používá? Příklad.}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
-	\caption{DOT product}
+	\includegraphics[width=.33\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Skalární součin}
 	\label{fig:lineární-algebra:dot}
 \end{figure}
 
-\subsubsection*{\todo{Cross product}}
-\todo{Co je to CROSS product a jak to funguje?}
+\subsubsection*{Vektorový součin}
+\todo{Co je to vetorový součin a jak to funguje?}
 \todo{Kdy je užitečné a kdy se používá? Příklad.}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=.5\linewidth]{obrazky-figures/placeholder.pdf}
-	\caption{DOT product}
+	\includegraphics[width=.33\linewidth]{obrazky-figures/placeholder.pdf}
+	\caption{Vektorový součin}
 	\label{fig:lineární-algebra:cross}
 \end{figure}
 
@@ -178,6 +257,10 @@
 	\caption{Porovnání náhodného, Perlinova a simplexního šumu}
 	\label{fig:perlin:porovnání}
 \end{figure}
+
+
+\section{Principy procedurálního generování}\label{ch:teorie:generování}
+\todo{XXXXXXXXXXXXXXXXXXXXXX}
 
 
 \section{Textury}\label{ch:teorie:textury}
@@ -221,35 +304,46 @@
 
 
 \section{Použité knihovny}\label{ch:impl:knihovny}
-\todo{geGL}
-\todo{ovládání OpenGL}
 
-\todo{ArgumentViewer}
-\todo{zpracování příkazů}
-
-\todo{BasicCamera}
-\todo{snadná správa kamery}
-\todo{transformační matice, ...}
-
-\todo{SDL2CPP}
-\todo{SDL wrapper pro C++}
-
-\todo{Vars}
-\todo{správa proměnných napříč programem}
-
-\todo{glm}
-\todo{matematická knihovna}
-\todo{"implementuje" funkce z shaderů}
-
-\todo{SDL2}
-\todo{komunikace s Windows API}
-\todo{sprava okna}
-\todo{správa input (keyboard, mouse)}
+\begin{description}
+	\item[geGL]
+	\todo{ovládání OpenGL}
+	
+	\item[ArgumentViewer]
+	\todo{zpracování příkazů}
+	
+	\item[BasicCamera]
+	\todo{snadná správa kamery}
+	\todo{transformační matice, \dots}
+	
+	\item[SDL2CPP]
+	\todo{SDL wrapper pro C++}
+	
+	\item[Vars]
+	\todo{správa proměnných napříč programem}
+	
+	\item[glm]
+	\todo{matematická knihovna}
+	\todo{"implementuje" funkce z shaderů}
+	
+	\item[SDL2]
+	\todo{komunikace s Windows API}
+	\todo{sprava okna}
+	\todo{správa input (keyboard, mouse)}
+	
+	\item[FreeImage, FreeImagePlus]
+	\todo{načítání obrázků}
+\end{description}
 
 
 \section{Zobrazení}\label{ch:impl:zobrazení}
-\todo{Jak probíhá vykreslování?}
+\todo{Jak probíhá vykreslování? \ref{ch:teorie:opengl:shadery}}
 \todo{Klíčové vlastnosti?}
+
+\subsection{Phongovo stínování}\label{ch:impl:zobrazení:phong}
+\todo{Co je to Phongovo stínování odkaz do teorie \ref{ch:teorie:opengl:shading}.}
+
+\todo{Jak je implementováno v HLSL.}
 
 
 \section{Terén}\label{ch:impl:terén}
@@ -259,8 +353,49 @@
 
 \todo{Samotný proces generování}
 \todo{vytváření vrcholů}
-\todo{vytváření normál}
 \todo{vytváření indexů}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Vrcholy v prostoru}
+		\label{fig:terén:vrcholy}
+	\end{subfigure}%
+	\hspace{0.02\textwidth}%
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Propojení vrcholů indexy}
+		\label{fig:terén:trojůhelníky}
+	\end{subfigure}
+	\caption{Ukázka postupu vytvoření modelu terénu}
+	\label{fig:terén}
+\end{figure}
+
+\todo{vytváření normál}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Výběr blízkých vrcholů}
+		\label{fig:terén:normály:vektory}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Průběžné výpočty vektorů}
+		\label{fig:terén:normály:výpočet}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Výsledná normála}
+		\label{fig:terén:normály:výsledek}
+	\end{subfigure}
+	\caption{Ukázka výpočtu normály částí terénu}
+	\label{fig:terén:normály}
+\end{figure}
 
 \todo{Použité struktury}
 
@@ -272,19 +407,103 @@
 
 \todo{Potřebné třídy pro generování - streetMap, street, heightMap, map}
 
-\todo{Samotný proces generování}
-\todo{vytváření podsilnic}
+\todo{Samotný proces generování \ref{fig:silnice}}
+\todo{postup silnic \ref{fig:silnice:postup}}
+\todo{vznik kolizí \ref{fig:silnice:kolize}}
+\todo{vytváření podsilnic \ref{fig:silnice:nové}}
 \todo{rozšiřování silnic ("prodlužování")}
-\todo{výpočet kolizí (+ QuadTree)}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Postup silnic prostorem}
+		\label{fig:silnice:postup}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Kolize silnic}
+		\label{fig:silnice:kolize}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Vznik nových silnic}
+		\label{fig:silnice:nové}
+	\end{subfigure}
+	\caption{Ukázka postupu pro generování silnic}
+	\label{fig:silnice}
+\end{figure}
+
+\todo{výpočet kolizí (zmínka o QuadTree \ref{ch:impl:silnice:quadtree})}
 \todo{ukládání kolizí a práce s nimi}
 
 \todo{Existující problémy, podněty pro zlepšení?}
 
+\subsection{QuadTree}\label{ch:impl:silnice:quadtree}
+\todo{Co je to QuadTree a k čemu je použit?}
+
+\todo{Implementace pro hledání bodů v prostoru.}
+\todo{Popis obrázku \ref{fig:silnice:quadtree}.}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Jeden bod v prostoru}
+		\label{fig:silnice:quadtree:1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Dva body v prostoru}
+		\label{fig:silnice:quadtree:2}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Čtyři body v prostoru}
+		\label{fig:silnice:quadtree:4}
+	\end{subfigure}
+	\caption{Ukázka dělení prostoru pomocí QuadTree pro body}
+	\label{fig:silnice:quadtree}
+\end{figure}
+
+\todo{Princip fungování upravené verze QuadTree.}
+\todo{Obal objektu RectBounds.}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Jeden objekt v prostoru}
+		\label{fig:silnice:quadtree-obj:1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Dva body v prostoru}
+		\label{fig:silnice:quadtree-obj:2}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Čtyři body v prostoru}
+		\label{fig:silnice:quadtree-obj:4}
+	\end{subfigure}
+	\caption{Ukázka dělení prostoru pomocí QuadTree pro objekty}
+	\label{fig:silnice:quadtree-obj}
+\end{figure}
+
+\todo{Přesná implementace QuadTree pro objekty v obálce RectBounds.}
+
 
 \section{Parcely}\label{ch:impl:parcely}
 \todo{Jaký je cíl, co má být výsledkem generování?}
+
+\subsection{Parcely pro budovy}\label{ch:impl:parcely:budovy}
 \todo{parcely pro budovy}
-\todo{parcely pro silnice}
 
 \todo{Potřebné třídy pro generování - streetMap, street}
 
@@ -292,6 +511,80 @@
 \todo{průchod přes silnice}
 \todo{vyhledání a použití "křižovatek"}
 \todo{neduplicita parcel}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Vytvoření parcely}
+		\label{fig:parcely:budovy:vytváření:první}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Uložení částí cest}
+		\label{fig:parcely:budovy:vytváření:uložení}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Vytvoření dalších parcel}
+		\label{fig:parcely:budovy:vytváření:další}
+	\end{subfigure}
+	\caption{Ilustrace vytváření parcel pro budovy}
+	\label{fig:parcely:budovy:vytváření}
+\end{figure}
+
+\subsubsection*{Dělení parcel}\label{ch:impl:parcely:budovy:dělení}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Samotná parcela v prostoru}
+		\label{fig:parcely:budovy:dělení:samotná}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Rozdělení na „pod-parcely”}
+		\label{fig:parcely:budovy:dělení:subparcely}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Náhodné seskupení}
+		\label{fig:parcely:budovy:dělení:seskupení}
+	\end{subfigure}
+	\caption{Ilustrace zpracování parcel\,--\,vytváření míst pro jednotlivé budovy}
+	\label{fig:parcely:budovy:dělení}
+\end{figure}
+
+\subsection{Parcely pro silnice}\label{ch:impl:parcely:silnice}
+\todo{parcely pro silnice}
+
+\todo{Potřebné třídy pro generování - streetMap, street}
+
+\todo{Samotný proces generování}
+\todo{průchod přes silnice}
+\todo{vyhledání a použití "křižovatek"}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Vytvoření parcely}
+		\label{fig:parcely:silnice:vytváření:první}
+	\end{subfigure}%
+	\hspace{0.02\textwidth}%
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Vytvoření dalších parcel}
+		\label{fig:parcely:silnice:vytváření:další}
+	\end{subfigure}
+	\caption{Ilustrace vytváření parcel pro cesty}
+	\label{fig:parcely:silnice:vytváření}
+\end{figure}
 
 
 \section{Budovy}\label{ch:impl:budovy}
@@ -307,19 +600,46 @@
 
 
 \section{Textury}\label{ch:impl:textury}
+\todo{Textury?}
 
 \subsection{Térén}\label{ch:impl:textury:terén}
+\todo{Vybrané textury pro terén}
+
+\todo{Způsob mapování textur na terén - shader.}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Zvýrazněné části terénu určené texturám}
+		\label{fig:textury:terén:místa}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{obrazky-figures/placeholder.pdf}
+		\caption{Výsledné mapování textur}
+		\label{fig:textury:terén:výsledek}
+	\end{subfigure}
+	\caption{Vizualizace mapování textur na model terénu}
+	\label{fig:textury:terén}
+\end{figure}
 
 \subsection{Budovy}\label{ch:impl:textury:budovy}
+\todo{Generování textury "podkladu".}\todo{Význam a využití.}
+
+\todo{Generování textury oken.}\todo{Význam a využití.}\todo{Reflekce - shader.}
+
+\todo{Způsob mapování textury na terén - shader.}
 
 \subsection{Prostředí}
+\todo{Skybox?}
 
 
 %===========================================================================================
 %	ZÁVĚREČNÁ KAPITOLA
 %
 %===========================================================================================
-\chapter{Závěr}\label{ch:zaver}
+\chapter{Závěr}\label{ch:závěr}
 
 \todo{Krátké shrnutí závěru práce...}
 
@@ -329,8 +649,3 @@
 \todo{Co nebylo implementováno, možnost pokračování, výhled do budoucna.}
 
 \todo{Osobní dojmy - co mi práce dala?}
-
-
-
-
-
