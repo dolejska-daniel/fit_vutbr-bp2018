@@ -24,6 +24,19 @@ using namespace glm;
 
 namespace Utils
 {
+	static std::shared_ptr<ge::gl::Texture> create_texture2D(const GLsizei width, const GLsizei height, const GLvoid *data, const GLenum format = GL_RGBA, const GLenum type = GL_UNSIGNED_BYTE)
+	{
+		static GLfloat largest_supported_anisotropy = 0;
+		if (largest_supported_anisotropy == 0)
+			ge::gl::glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
+
+		const auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D, GL_RGB8, 1, width, height);
+		texture->texParameterfv(GL_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
+		texture->setData2D(data, format, type);
+
+		return texture;
+	}
+
 	static std::shared_ptr<ge::gl::Texture> load_texture_from_file(const std::string& filepath)
 	{
 		fipImage image;
@@ -55,14 +68,8 @@ namespace Utils
 			}
 			type = GL_FLOAT;
 		}
-		
-		static GLfloat largest_supported_anisotropy = 0;
-		if (largest_supported_anisotropy == 0)
-			ge::gl::glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
 
-		const auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D, GL_RGB8, 1, image.getWidth(), image.getHeight());
-		texture->texParameterfv(GL_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
-		texture->setData2D(image.accessPixels(), format, type);
+		auto texture = create_texture2D(image.getWidth(), image.getHeight(), image.accessPixels(), format, type);
 
 		image.clear();
 		return texture;

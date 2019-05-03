@@ -73,15 +73,15 @@ void ShaderManager::BindProgram(std::shared_ptr<Program> const& program, std::st
 	_activeProgram = program;
 	program->use();
 
-	auto camera = *Vars.get<std::shared_ptr<basicCamera::FreeLookCamera>>("camera");
-	auto projection = *Vars.get<std::shared_ptr<basicCamera::PerspectiveCamera>>("projection");
+	auto camera = Vars.get<basicCamera::FreeLookCamera>("camera");
+	auto projection = Vars.get<basicCamera::PerspectiveCamera>("projection");
 
 	program
 		->setMatrix4fv("projectionMatrix", &projection->getProjection()[0][0])
 		->setMatrix4fv("viewMatrix", &camera->getView()[0][0])
 		->setMatrix4fv("modelMatrix", Vars.getReinterpret<float>("model"));
 
-	if (programName == "Phong" || programName == "Phong_Terrain")
+	if (programName == "Phong" || programName == "Phong_Terrain" || programName == "Phong_Buildings")
 	{
 		program
 			->set3fv("lightPosition_worldspace", &camera->getPosition()[0])

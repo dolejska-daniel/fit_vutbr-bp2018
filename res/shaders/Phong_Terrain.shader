@@ -124,12 +124,12 @@ void main()
 	float diffuseFactor = diffuse(position, normal, lightPosition_worldspace);
 	float specularFactor = specular(position, normal, lightPosition_worldspace, cameraPosition_worldspace, shininess);
 
-	float pxFactor = clamp(dot(normal, vec3(+1.5, 0, 0)), 0, 1);
-	float nxFactor = clamp(dot(normal, vec3(-1.5, 0, 0)), 0, 1);
+	float pxFactor = clamp(dot(normal, vec3(+1, 0, 0)), 0, 1);
+	float nxFactor = clamp(dot(normal, vec3(-1, 0, 0)), 0, 1);
 	float pyFactor = clamp(dot(normal, vec3(0, +1, 0)), 0, 1);
 	float nyFactor = clamp(dot(normal, vec3(0, -1, 0)), 0, 1);
-	float pzFactor = clamp(dot(normal, vec3(0, 0, +1.5)), 0, 1);
-	float nzFactor = clamp(dot(normal, vec3(0, 0, -1.5)), 0, 1);
+	float pzFactor = clamp(dot(normal, vec3(0, 0, +1)), 0, 1);
+	float nzFactor = clamp(dot(normal, vec3(0, 0, -1)), 0, 1);
 
 
 	float scale = 1 / textureScale;

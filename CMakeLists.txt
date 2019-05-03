@@ -50,6 +50,8 @@ set(SOURCES
 	src/proceduralCity/Terrain/HeightMap.cpp
 	src/proceduralCity/Terrain/Chunk.cpp
 	src/proceduralCity/Terrain/Map.cpp
+	src/proceduralCity/Utils/CameraPath.cpp
+	src/proceduralCity/Utils/CSV.cpp
 	src/proceduralCity/Utils/Curve.cpp
 	src/proceduralCity/Utils/QuadTree.cpp
 	src/proceduralCity/Utils/QuadTreeNode.cpp
@@ -87,6 +89,8 @@ set(INCLUDES
 	src/proceduralCity/Terrain/HeightMap.h
 	src/proceduralCity/Terrain/Chunk.h
 	src/proceduralCity/Terrain/Map.h
+	src/proceduralCity/Utils/CameraPath.h
+	src/proceduralCity/Utils/CSV.h
 	src/proceduralCity/Utils/Curve.h
 	src/proceduralCity/Utils/functions.h
 	src/proceduralCity/Utils/IHasRectBounds.h

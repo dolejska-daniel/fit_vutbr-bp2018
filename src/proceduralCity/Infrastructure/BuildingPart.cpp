@@ -33,8 +33,10 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 	const auto vb = CreateVB();
 	SetRenderableCount(vertices.size());
 	vb->alloc(vertices.size() * sizeof(BuildingPartVertex), vertices.data());
-	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(BuildingPartVertex), 0 * sizeof(glm::vec3));
-	va->addAttrib(vb, 1, 3, GL_FLOAT, sizeof(BuildingPartVertex), 1 * sizeof(glm::vec3));
+	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(BuildingPartVertex), 0 * sizeof(vec3));
+	va->addAttrib(vb, 1, 3, GL_FLOAT, sizeof(BuildingPartVertex), 1 * sizeof(vec3));
+	va->addAttrib(vb, 2, 2, GL_FLOAT, sizeof(BuildingPartVertex), 2 * sizeof(vec3));
+	va->addAttrib(vb, 3, 1, GL_SHORT, sizeof(BuildingPartVertex), 2 * sizeof(vec3) + 1 * sizeof(vec2));
 }
 
 BuildingPart::~BuildingPart()
@@ -190,13 +192,18 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		if (nm.x * n.x >= 0.f && nm.z * n.z >= 0.f)
 			n = glm::normalize(glm::cross(n1, n3));
 
-		vertices.push_back({ p0, n });
-		vertices.push_back({ p1, n });
-		vertices.push_back({ p2, n });
+		auto textureScaleFactor = 4.f;
+		auto textureScaleRatio = vec2{ 1.f / 4.f, 1.f / 3.f };
+		auto textureScale = vec2{ length(n1), length(n2) } * textureScaleRatio * textureScaleFactor;
+		textureScale = floor(textureScale);
 
-		vertices.push_back({ p1, n });
-		vertices.push_back({ p2, n });
-		vertices.push_back({ p3, n });
+		vertices.push_back({ p0, n, vec2{ 0.f, 0.f } * textureScale });
+		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale });
+		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale });
+
+		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale });
+		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale });
+		vertices.push_back({ p3, n, vec2{ 1.f, 1.f } * textureScale });
 	}
 	const auto up = glm::vec3(0, 1.f, 0);
 	for (size_t index = 0; index < points.size(); ++index)

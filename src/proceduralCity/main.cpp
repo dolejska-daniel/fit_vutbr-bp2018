@@ -33,6 +33,7 @@
 #include <Utils/Curve.h>
 #include <Utils/functions.h>
 #include <FreeImagePlus.h>
+#include <Utils/CameraPath.h>
 
 
 using namespace glm;
@@ -76,6 +77,13 @@ int main(const int argc, char* argv[])
 	Vars.addUint32("terrain.chunk.height", args.getu32("--terrain-chunk-height", 64, "Terrain chunk height in 2D (depth/length in 3D)"));
 	Vars.addFloat("terrain.chunk.scale", args.getf32("--terrain-chunk-scale", 8.f, "Chunk scale multiplier"));
 
+	// ==========================================================dd=
+	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ KAMERY
+	// =============================================================
+	Vars.addString("camera.path.keyFile", args.gets("--camera-path-keyFile", "../res/camera/path.csv", ""));
+	Vars.addUint32("camera.path.length", args.getu32("--camera-path-length", 1200, ""));
+
+
 	if (args.isPresent("--help", "") || !args.validate())
 	{
 		std::cerr << args.toStr() << std::endl;
@@ -118,12 +126,16 @@ int main(const int argc, char* argv[])
 	
 
 	//	Setup main camera
-	auto cameraProjection = std::make_shared<basicCamera::PerspectiveCamera>(radians(45.f), width / height, 0.1f, INFINITY);
-	Vars.add<std::shared_ptr<basicCamera::PerspectiveCamera>>("projection", cameraProjection);
+	auto cameraProjection = Vars.add<basicCamera::PerspectiveCamera>(
+		"projection",
+		basicCamera::PerspectiveCamera(radians(45.f), width / height, 0.1f, INFINITY)
+	);
 
-	auto freeLook = std::make_shared<basicCamera::FreeLookCamera>();
+	auto freeLook = Vars.add<basicCamera::FreeLookCamera>(
+		"camera",
+		basicCamera::FreeLookCamera()
+	);
 	freeLook->setPosition(vec3(1, 1, 4));
-	Vars.add<std::shared_ptr<basicCamera::FreeLookCamera>>("camera", freeLook);
 
 	Vars.add<mat4>("model", mat4(1));
 
@@ -142,29 +154,55 @@ int main(const int argc, char* argv[])
 	std::vector<std::shared_ptr<Infrastructure::Building>> buildings;
 	std::vector<std::shared_ptr<Infrastructure::Building>> streets;
 
-	auto cameraPathPoints = std::vector<glm::vec3>{
-		{ 0.f, 0.f, 0.f },
-		{ 100.f, 100.f, 100.f },
-		{ -100.f, 100.f, -100.f },
-	};
-	auto cameraPath = std::make_shared<Utils::Curve3D>(cameraPathPoints);
+	std::shared_ptr<CameraPath> cameraPath = nullptr;
+	if (!Vars.getString("camera.path.keyFile").empty())
+		cameraPath = std::make_shared<CameraPath>(false, Vars.getString("camera.path.keyFile"));
 
-	auto cameraRotationPoints = std::vector<glm::vec2>{
-		{ 0.f, 0.f },
-		{ 45.f, 0.f },
-		{ 0.f, 0.f },
-	};
-	auto cameraRotation = std::make_shared<Utils::Curve2D>(cameraRotationPoints);
 
 	const auto grassTexture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/grass.jpg");
 	const auto dirtTexture  = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/dirt.jpg");
 	const auto rockTexture  = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/rock.jpg");
 
+	auto windows = std::vector<std::pair<uvec2, uvec2>>{
+		{ { 25 , 25 }, { 195, 275 } },
+		{ { 205, 25 }, { 375, 275 } },
+	};
+
+	auto windows_width = 400;
+	auto windows_height = 300;
+	auto windowTextureData = new vec<3, byte>[windows_width * windows_height];
+	for (auto x = 0u; x < windows_width; x++)
+	{
+		for (auto y = 0u; y < windows_height; ++y)
+		{
+			byte r, g, b;
+			r = g = b = 0;
+
+			for (const auto& w : windows)
+			{
+				if (x >= w.first.x &&
+					x <= w.second.x)
+				{
+					if (y >= w.first.y
+						&& y <= w.second.y)
+					{
+						r = g = b = 255;
+					}
+				}
+			}
+
+			auto index = (windows_height - 1 - y) * windows_width + x;
+			windowTextureData[index] = { r, g, b };
+		}
+	}
+	const auto windowTexture = Utils::create_texture2D(windows_width, windows_height, windowTextureData, GL_RGB);
+
 	grassTexture->bind(0);
 	dirtTexture->bind(1);
 	rockTexture->bind(2);
+	windowTexture->bind(3);
 
-	auto f = 0.f;
+	// Skybox: https://learnopengl.com/Advanced-OpenGL/Cubemaps
 
 	// ==========================================================dd=
 	//	VYKRESLOVÁNÍ
@@ -177,24 +215,78 @@ int main(const int argc, char* argv[])
 		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-		static auto camFrame = false;
-		if (KeyDown['f'])
+		static auto fullscreen = false;
+		if (KeyDown['t'])
 		{
-			if (!camFrame)
+			if (KeyDown[SDLK_LCTRL])
 			{
-				if (KeyDown['o'])
+				if (fullscreen)
 				{
-					cameraPathPoints.clear();
-					cameraRotationPoints.clear();
+					window->setFullscreen(sdl2cpp::Window::WINDOW);
+
+					width = 1024;
+					height = 768;
+					glViewport(0, 0, width, height);
+					cameraProjection->setAspect(float(width / height));
 				}
 				else
 				{
-					cameraPathPoints.push_back(freeLook->getPosition());
-					cameraRotationPoints.emplace_back(
-						glm::degrees(freeLook->getXAngle()),
-						glm::degrees(freeLook->getYAngle())
-					);
+					width = 2560;
+					height = 1080;
+					glViewport(0, 0, width, height);
+					cameraProjection->setAspect(float(width / height));
+
+					window->setFullscreen(sdl2cpp::Window::FULLSCREEN_DESKTOP);
+				}
+				fullscreen = !fullscreen;
+			}
+		}
+
+
+		static auto k = 0u;
+		static auto camAutoRunning = false;
+		static auto camAuto = false;
+		static auto camFrame = false;
+		if (KeyDown['f'])
+		{
+			if (KeyDown[SDLK_KP_PLUS])
+			{
+				auto delta = 1;
+				if (KeyDown[SDLK_LCTRL])
+					delta = 10;
+
+				auto l = Vars.getUint32("camera.path.length") += delta;
+				std::cerr << "camera.path.length = " << l << std::endl;
+			}
+			else if (KeyDown[SDLK_KP_MINUS])
+			{
+				auto delta = 1;
+				if (KeyDown[SDLK_LCTRL])
+					delta = 10;
+
+				auto l = Vars.getUint32("camera.path.length") -= delta;
+				std::cerr << "camera.path.length = " << l << std::endl;
+			}
+			else if (!camFrame)
+			{
+				if (KeyDown['o'])
+				{
+					if (cameraPath)
+						cameraPath->keys.clear();
+				}
+				else
+				{
+					auto rv = freeLook->getRotation();
+					auto pos = freeLook->getPosition();
+					auto up = glm::normalize(glm::vec3(glm::row(rv, 1)));
+					auto view = glm::normalize(-glm::vec3(glm::row(rv, 2)));
+
+					std::cout << pos.x << "," << pos.y << "," << pos.z << ",";
+					std::cout << view.x << "," << view.y << "," << view.z << ",";
+					std::cout << up.x << "," << up.y << "," << up.z << std::endl;
+
+					if (cameraPath)
+						cameraPath->keys.emplace_back(pos, view, up);
 				}
 			}
 			camFrame = true;
@@ -202,19 +294,15 @@ int main(const int argc, char* argv[])
 		else
 			camFrame = false;
 
-		static auto camAutoRunning = false;
-		static auto camAuto = false;
 		if (KeyDown['g'])
 		{
 			if (!camAuto)
 			{
-				camAutoRunning = !camAutoRunning;
-
-				cameraPath->points = cameraPathPoints;
-				cameraPath->LaplacianSmooth(3);
-
-				cameraRotation->points = cameraRotationPoints;
-				//cameraRotation->LaplacianSmooth();
+				if (cameraPath && !cameraPath->keys.empty())
+				{
+					camAutoRunning = !camAutoRunning;
+					k = 0u;
+				}
 
 				camAuto = true;
 			}
@@ -222,18 +310,15 @@ int main(const int argc, char* argv[])
 		else
 			camAuto = false;
 
-		if (camAutoRunning)
+		if (camAutoRunning && cameraPath)
 		{
-			if (f > 1.f)
-				f = 0.f;
+			if (k >= Vars.getUint32("camera.path.length"))
+				k = 0;
 
-			freeLook->setPosition(cameraPath->GetPointLinear(f));
-
-			auto r = cameraRotation->GetPoint(f);
-			r = glm::radians(r);
-			freeLook->setXAngle(r.x);
-			freeLook->setYAngle(r.y);
-			f += 0.0001f;
+			auto keypoint = cameraPath->getKeypoint(float(k) / float(Vars.getUint32("camera.path.length")));
+			freeLook->setPosition(keypoint.position);
+			freeLook->setRotation(keypoint.viewVector, keypoint.upVector);
+			k++;
 		}
 		else
 		{
@@ -262,6 +347,27 @@ int main(const int argc, char* argv[])
 
 		if (render == 0)
 		{
+			shaders->Use("Phong_Buildings");
+		}
+		else if (render == 1)
+		{
+			shaders->Use("Normal");
+		}
+		else
+		{
+			shaders->Use("Phong_Buildings");
+			render = 0;
+		}
+		/*
+		if (render == 0)
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
+		*/
+		for (const auto& building : buildings)
+			for (const auto& part : building->parts)
+				renderer->Render(part);
+
+		if (render == 0)
+		{
 			shaders->Use("Phong");
 		}
 		else if (render == 1)
@@ -273,12 +379,6 @@ int main(const int argc, char* argv[])
 			shaders->Use("Phong");
 			render = 0;
 		}
-		if (render == 0)
-			shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
-		for (const auto& building : buildings)
-			for (const auto& part : building->parts)
-				renderer->Render(part);
-
 		if (render == 0)
 			shaders->GetActiveProgram()->set3fv("color", &Utils::color_black[0]);
 		for (const auto& street : streets)
