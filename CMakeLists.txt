@@ -1,4 +1,4 @@
-###
+﻿###
 ### CMakeLists.txt
 ### Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ###

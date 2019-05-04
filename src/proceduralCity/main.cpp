@@ -135,7 +135,8 @@ int main(const int argc, char* argv[])
 		"camera",
 		basicCamera::FreeLookCamera()
 	);
-	freeLook->setPosition(vec3(1, 1, 4));
+	freeLook->setPosition({ -152.f, 273.f, 510.f });
+	freeLook->setRotation({ 0.176964,-0.51199,-0.840565 }, { 0.105477,0.858991,-0.501007 });
 
 	Vars.add<mat4>("model", mat4(1));
 
@@ -162,10 +163,13 @@ int main(const int argc, char* argv[])
 	const auto grassTexture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/grass.jpg");
 	const auto dirtTexture  = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/dirt.jpg");
 	const auto rockTexture  = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/rock.jpg");
+	const auto concrete1Texture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/concrete1.jpg");
+	const auto concrete2Texture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/concrete2.jpg");
+	const auto concrete3Texture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/concrete3.jpg");
 
 	auto windows = std::vector<std::pair<uvec2, uvec2>>{
-		{ { 25 , 25 }, { 195, 275 } },
-		{ { 205, 25 }, { 375, 275 } },
+		{ { 50 , 50 }, { 190, 275 } },
+		{ { 210, 50 }, { 350, 275 } },
 	};
 
 	auto windows_width = 400;
@@ -200,9 +204,30 @@ int main(const int argc, char* argv[])
 	grassTexture->bind(0);
 	dirtTexture->bind(1);
 	rockTexture->bind(2);
-	windowTexture->bind(3);
+	concrete1Texture->bind(3);
+	concrete2Texture->bind(4);
+	concrete3Texture->bind(5);
+	windowTexture->bind(6);
 
 	// Skybox: https://learnopengl.com/Advanced-OpenGL/Cubemaps
+	// from: https://assetstore.unity.com/packages/2d/textures-materials/sky/skybox-series-free-103633
+	const auto skybox_faces = std::vector<std::string>{
+		Vars.getString("resources.dir") + "/textures/skybox/right.jpg",
+		Vars.getString("resources.dir") + "/textures/skybox/left.jpg",
+		Vars.getString("resources.dir") + "/textures/skybox/top.jpg",
+		Vars.getString("resources.dir") + "/textures/skybox/bottom.jpg",
+		Vars.getString("resources.dir") + "/textures/skybox/front.jpg",
+		Vars.getString("resources.dir") + "/textures/skybox/back.jpg",
+	};
+	const unsigned skyboxTexture = Utils::load_cubemap(skybox_faces);
+
+	auto skyboxVA = std::make_shared<VertexArray>();
+	skyboxVA->bind();
+
+	auto skyboxVB = std::make_shared<Buffer>();
+	skyboxVB->alloc(36 * sizeof(vec3), Utils::skyboxVertices);
+	skyboxVA->addAttrib(skyboxVB, 0, 3, GL_FLOAT, sizeof(vec3));
+	
 
 	// ==========================================================dd=
 	//	VYKRESLOVÁNÍ
@@ -214,6 +239,17 @@ int main(const int argc, char* argv[])
 
 		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//--------------------------------------------------------------------
+		//	Převzato a upraveno z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
+		//
+		glDepthMask(GL_FALSE);
+		shaders->Use("SkyBox");
+		skyboxVA->bind();
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);
+		//--------------------------------------------------------------------
 
 		static auto fullscreen = false;
 		if (KeyDown['t'])

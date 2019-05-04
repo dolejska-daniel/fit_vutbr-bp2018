@@ -76,9 +76,17 @@ void ShaderManager::BindProgram(std::shared_ptr<Program> const& program, std::st
 	auto camera = Vars.get<basicCamera::FreeLookCamera>("camera");
 	auto projection = Vars.get<basicCamera::PerspectiveCamera>("projection");
 
+	auto projectionMatrix = projection->getProjection();
+	auto viewMatrix = camera->getView();
+
+	if (programName == "SkyBox")
+	{
+		viewMatrix = glm::mat4(glm::mat3(viewMatrix));
+	}
+
 	program
-		->setMatrix4fv("projectionMatrix", &projection->getProjection()[0][0])
-		->setMatrix4fv("viewMatrix", &camera->getView()[0][0])
+		->setMatrix4fv("projectionMatrix", &projectionMatrix[0][0])
+		->setMatrix4fv("viewMatrix", &viewMatrix[0][0])
 		->setMatrix4fv("modelMatrix", Vars.getReinterpret<float>("model"));
 
 	if (programName == "Phong" || programName == "Phong_Terrain" || programName == "Phong_Buildings")

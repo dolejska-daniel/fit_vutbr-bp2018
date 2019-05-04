@@ -36,7 +36,7 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(BuildingPartVertex), 0 * sizeof(vec3));
 	va->addAttrib(vb, 1, 3, GL_FLOAT, sizeof(BuildingPartVertex), 1 * sizeof(vec3));
 	va->addAttrib(vb, 2, 2, GL_FLOAT, sizeof(BuildingPartVertex), 2 * sizeof(vec3));
-	va->addAttrib(vb, 3, 1, GL_SHORT, sizeof(BuildingPartVertex), 2 * sizeof(vec3) + 1 * sizeof(vec2));
+	va->addAttrib(vb, 3, 1, GL_INT, sizeof(BuildingPartVertex), 2 * sizeof(vec3) + 1 * sizeof(vec2));
 }
 
 BuildingPart::~BuildingPart()
@@ -104,11 +104,11 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 	size_rand -= .2f;
 
 	// základy
-	CreateBlock(points, vertices, height);
+	CreateBlock(points, vertices, height, 0, BASE);
 
 	// hlavní blok
 	auto base_points = Utils::create_block_base(points, .3f + rand() % 20 / 100.f, height);
-	CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_main, height);
+	CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_main, height, MAIN);
 
 	// střešní bloky
 	auto top_points = Utils::create_block_base(base_points, .1f + (rand() % 14 - 8) / 100.f, height_main);
@@ -123,7 +123,7 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 			top_height_diff = 20.f;
 
 		auto top_height = height_main + top_height_diff;
-		CreateBlock(top_points, vertices, top_height, height_main);
+		CreateBlock(top_points, vertices, top_height, height_main, TOP);
 
 		height_main = top_height;
 		top_points = Utils::create_block_base(top_points, .1f + (rand() % 14 - 8) / 100.f, height_main);
@@ -141,11 +141,11 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 		auto height_rand = .2f + rand() % 700 / 1000.f;
 
 		base_points = Utils::create_block_base(points, padding + rand() % 100 / 1000.f - .05f, height);
-		CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_core * height_rand, height);
+		CreateBlock(Utils::move_vecs(base_points, dir, minli * size_rand), vertices, height_core * height_rand, height, PART);
 	}
 }
 
-void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector<BuildingPartVertex>& vertices, float height_top, float height_bottom)
+void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector<BuildingPartVertex>& vertices, float height_top, float height_bottom, BlockType type)
 {
 	glm::vec3 center(0);
 	glm::vec3 center_up(0);
@@ -166,6 +166,16 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		point.y = height;
 		return point;
 	};
+
+	int textureType;
+	if (type == MAIN || type == PART)
+		textureType = 0;
+	else if (type == BASE)
+		textureType = 1;
+	else if (type == TOP)
+		textureType = 2;
+	else
+		textureType = 3;
 
 	for (size_t index = 0; index < points.size(); ++index)
 	{
@@ -197,19 +207,19 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		auto textureScale = vec2{ length(n1), length(n2) } * textureScaleRatio * textureScaleFactor;
 		textureScale = floor(textureScale);
 
-		vertices.push_back({ p0, n, vec2{ 0.f, 0.f } * textureScale });
-		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale });
-		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale });
+		vertices.push_back({ p0, n, vec2{ 0.f, 0.f } * textureScale, textureType });
+		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale, textureType });
+		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale, textureType });
 
-		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale });
-		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale });
-		vertices.push_back({ p3, n, vec2{ 1.f, 1.f } * textureScale });
+		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale, textureType });
+		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale, textureType });
+		vertices.push_back({ p3, n, vec2{ 1.f, 1.f } * textureScale, textureType });
 	}
 	const auto up = glm::vec3(0, 1.f, 0);
 	for (size_t index = 0; index < points.size(); ++index)
 	{
-		vertices.push_back({ get_point_h(index + 0, height_top), up });
-		vertices.push_back({ get_point_h(index + 1, height_top), up });
-		vertices.push_back({ center_up, up });
+		vertices.push_back({ get_point_h(index + 0, height_top), up, {0, 0}, textureType });
+		vertices.push_back({ get_point_h(index + 1, height_top), up, {0, 0}, textureType });
+		vertices.push_back({ center_up, up, { 0, 0 }, textureType });
 	}
 }

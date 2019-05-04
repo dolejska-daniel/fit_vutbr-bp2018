@@ -21,9 +21,58 @@
 
 
 using namespace glm;
+using namespace ge::gl;
 
 namespace Utils
 {
+	//--------------------------------------------------------------------
+	//	Převzato z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
+	//
+	static float skyboxVertices[] = {
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+	//--------------------------------------------------------------------
+
 	static std::shared_ptr<ge::gl::Texture> create_texture2D(const GLsizei width, const GLsizei height, const GLvoid *data, const GLenum format = GL_RGBA, const GLenum type = GL_UNSIGNED_BYTE)
 	{
 		static GLfloat largest_supported_anisotropy = 0;
@@ -37,37 +86,78 @@ namespace Utils
 		return texture;
 	}
 
+	static void load_image_from_file(fipImage *image, const std::string& filepath, GLenum *format, GLenum *type)
+	{
+		image->load(filepath.c_str());
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_BYTE;
+
+		if (image->getImageType() == FIT_BITMAP) {
+			switch (image->getBitsPerPixel())
+			{
+			case 24:
+				*format = GL_BGR; break;
+			case 32:
+				*format = GL_BGRA; break;
+			default:
+				std::cerr << "Invalid BPP for loaded image" << std::endl;
+			}
+			*type = GL_UNSIGNED_BYTE;
+		}
+		if (image->getImageType() == FIT_RGBAF) {
+			switch (image->getBitsPerPixel())
+			{
+			case 32 * 4:
+				*format = GL_RGBA; break;
+			case 32 * 3:
+				*format = GL_RGB; break;
+			default:
+				std::cerr << "Invalid BPP for loaded image" << std::endl;
+			}
+			*type = GL_FLOAT;
+		}
+	}
+
+	static unsigned load_cubemap(const std::vector<std::string>& faces)
+	{
+		//--------------------------------------------------------------------
+		//	Převzato a upraveno z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
+		//
+		unsigned textureID;
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+		for (GLuint i = 0; i < faces.size(); i++)
+		{
+			fipImage face;
+			GLenum format, type;
+			load_image_from_file(&face, faces[i], &format, &type);
+			face.flipHorizontal();
+			face.flipVertical();
+
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB8, face.getWidth(), face.getHeight(), 0, format, type, face.accessPixels()
+			);
+
+			face.clear();
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		return textureID;
+		//--------------------------------------------------------------------
+	}
+
 	static std::shared_ptr<ge::gl::Texture> load_texture_from_file(const std::string& filepath)
 	{
 		fipImage image;
-		image.load(filepath.c_str());
-
-		GLenum format = GL_RGB;
-		GLenum type = GL_UNSIGNED_BYTE;
-		if (image.getImageType() == FIT_BITMAP) {
-			switch (image.getBitsPerPixel())
-			{
-			case 24:
-				format = GL_BGR; break;
-			case 32:
-				format = GL_BGRA; break;
-			default:
-				std::cerr << "Invalid BPP for loaded image" << std::endl;
-			}
-			type = GL_UNSIGNED_BYTE;
-		}
-		if (image.getImageType() == FIT_RGBAF) {
-			switch (image.getBitsPerPixel())
-			{
-			case 32 * 4:
-				format = GL_RGBA; break;
-			case 32 * 3:
-				format = GL_RGB; break;
-			default:
-				std::cerr << "Invalid BPP for loaded image" << std::endl;
-			}
-			type = GL_FLOAT;
-		}
+		GLenum format, type;
+		load_image_from_file(&image, filepath, &format, &type);
 
 		auto texture = create_texture2D(image.getWidth(), image.getHeight(), image.accessPixels(), format, type);
 
