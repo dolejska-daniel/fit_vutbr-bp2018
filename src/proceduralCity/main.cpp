@@ -42,6 +42,9 @@ using namespace argumentViewer;
 using namespace Application;
 using namespace Terrain;
 
+const auto build_id = std::string("20190504");
+const auto windowFlags = sdl2cpp::Window::DEBUG;
+
 ///
 /// @brief
 ///
@@ -100,8 +103,10 @@ int main(const int argc, char* argv[])
 	//	Create main loop & window
 	auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
 	auto window = std::make_shared<sdl2cpp::Window  >(width, height);
-	window->createContext("rendering", 450u, sdl2cpp::Window::CORE, sdl2cpp::Window::DEBUG);
+	window->createContext("rendering", 450u, sdl2cpp::Window::CORE, windowFlags);
 	mainLoop->addWindow("mainWindow", window);
+
+	SDL_SetWindowTitle(window->getWindow(), ("Procedural City, Daniel Dolejška [build " + build_id + "]").c_str());
 
 	//	Initialize geGL
 	init();
