@@ -337,6 +337,8 @@ docs/doxygen/
 html/
 latex/
 share/
+output/models/*.obj
+output/capture/*.png
 
 ### Exceptions
 !CMakeModules/*

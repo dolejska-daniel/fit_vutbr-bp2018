@@ -39,17 +39,20 @@ void main(void)
 layout(triangles) in;
 layout(line_strip, max_vertices = 2) out;
 
+out vec3 fragmentColor;
+
 in VS_OUT {
 	vec3 normal;
 } gs_in[];
 
+const float MAGNITUDE = 6;
 
-void GenerateLine(int index)
+void GenerateNormal(int index)
 {
 	gl_Position = gl_in[index].gl_Position;
 	EmitVertex();
 
-	gl_Position = gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * 0.7;
+	gl_Position = gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE;
 	EmitVertex();
 
 	EndPrimitive();
@@ -57,9 +60,10 @@ void GenerateLine(int index)
 
 void main(void)
 {
-	GenerateLine(0); // first vertex normal
-	GenerateLine(1); // second vertex normal
-	GenerateLine(2); // third vertex normal
+	fragmentColor = vec3(1, 0, 0);
+	GenerateNormal(0); // first vertex normal
+	GenerateNormal(1); // second vertex normal
+	GenerateNormal(2); // third vertex normal
 }
 
 
@@ -69,11 +73,13 @@ void main(void)
 #shader fragment
 #version 450
 
+in vec3 fragmentColor;
+
 //	Output variables
 layout(location = 0) out vec4 color;
 
 
 void main(void)
 {
-	color = vec4(1.0, 0.0, 0.0, 1.0);
+	color = vec4(fragmentColor, 1.0);
 }

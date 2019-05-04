@@ -34,16 +34,19 @@
 #include <Utils/functions.h>
 #include <FreeImagePlus.h>
 #include <Utils/CameraPath.h>
+#include <chrono>
+#include <ctime>
 
 
 using namespace glm;
 using namespace ge::gl;
+using namespace sdl2cpp;
 using namespace argumentViewer;
 using namespace Application;
 using namespace Terrain;
 
 const auto build_id = std::string("20190504");
-const auto windowFlags = sdl2cpp::Window::DEBUG;
+const auto windowFlags = Window::DEBUG;
 
 ///
 /// @brief
@@ -101,9 +104,9 @@ int main(const int argc, char* argv[])
 	uint32_t height = 768;
 
 	//	Create main loop & window
-	auto mainLoop = std::make_shared<sdl2cpp::MainLoop>();
-	auto window = std::make_shared<sdl2cpp::Window  >(width, height);
-	window->createContext("rendering", 450u, sdl2cpp::Window::CORE, windowFlags);
+	auto mainLoop = std::make_shared<MainLoop>();
+	auto window = std::make_shared<Window>(width, height);
+	window->createContext("rendering", 450u, Window::CORE, windowFlags);
 	mainLoop->addWindow("mainWindow", window);
 
 	SDL_SetWindowTitle(window->getWindow(), ("Procedural City, Daniel Dolejška [build " + build_id + "]").c_str());
@@ -238,13 +241,8 @@ int main(const int argc, char* argv[])
 	//	VYKRESLOVÁNÍ
 	// =============================================================
 
-	std::cerr << "Callback" << std::endl;
-	//	Drawing
-	mainLoop->setIdleCallback([&]() {
-
-		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	const auto draw_skybox = [&shaders,&skyboxVA,&skyboxTexture]()
+	{
 		//--------------------------------------------------------------------
 		//	Převzato a upraveno z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
 		//
@@ -255,6 +253,44 @@ int main(const int argc, char* argv[])
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glDepthMask(GL_TRUE);
 		//--------------------------------------------------------------------
+	};
+
+	const auto draw_map = [&map,&renderer,&shaders](const bool set_color = false)
+	{
+		if (set_color)
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_green[0]);
+
+		for (const auto& chunk : map->GetChunks())
+			if (chunk.second)
+				renderer->Render(chunk.second);
+	};
+
+	const auto draw_buildings = [&buildings,&renderer,&shaders](const bool set_color = false)
+	{
+		if (set_color)
+			shaders->GetActiveProgram()->set3fv("color", &vec3(1.f, 1.f, 0.f)[0]);
+
+		for (const auto& building : buildings)
+			for (const auto& part : building->parts)
+				renderer->Render(part);
+	};
+
+	const auto draw_streets = [&streets,&renderer,&shaders](const bool set_color = false)
+	{
+		if (set_color)
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_black[0]);
+
+		for (const auto& street : streets)
+			for (const auto& part : street->parts)
+				renderer->Render(part);
+	};
+
+	std::cerr << "Callback" << std::endl;
+	//	Drawing
+	mainLoop->setIdleCallback([&]() {
+
+		glClearColor(0.2f, 0.2f, 0.2f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		static auto fullscreen = false;
 		if (KeyDown['t'])
@@ -272,8 +308,11 @@ int main(const int argc, char* argv[])
 				}
 				else
 				{
-					width = 2560;
-					height = 1080;
+					SDL_DisplayMode dm;
+					SDL_GetCurrentDisplayMode(0, &dm);
+
+					width = dm.w;
+					height = dm.h;
 					glViewport(0, 0, width, height);
 					cameraProjection->setAspect(float(width / height));
 
@@ -283,9 +322,10 @@ int main(const int argc, char* argv[])
 			}
 		}
 
-
 		static auto k = 0u;
 		static auto camAutoRunning = false;
+		static auto camAutoCapture = false;
+		static auto camAutoCaptureStop = false;
 		static auto camAuto = false;
 		static auto camFrame = false;
 		if (KeyDown['f'])
@@ -294,7 +334,7 @@ int main(const int argc, char* argv[])
 			{
 				auto delta = 1;
 				if (KeyDown[SDLK_LCTRL])
-					delta = 10;
+					delta = 25;
 
 				auto l = Vars.getUint32("camera.path.length") += delta;
 				std::cerr << "camera.path.length = " << l << std::endl;
@@ -303,7 +343,7 @@ int main(const int argc, char* argv[])
 			{
 				auto delta = 1;
 				if (KeyDown[SDLK_LCTRL])
-					delta = 10;
+					delta = 25;
 
 				auto l = Vars.getUint32("camera.path.length") -= delta;
 				std::cerr << "camera.path.length = " << l << std::endl;
@@ -343,6 +383,9 @@ int main(const int argc, char* argv[])
 				{
 					camAutoRunning = !camAutoRunning;
 					k = 0u;
+
+					if (KeyDown[SDLK_LCTRL])
+						camAutoCapture = true;
 				}
 
 				camAuto = true;
@@ -354,7 +397,10 @@ int main(const int argc, char* argv[])
 		if (camAutoRunning && cameraPath)
 		{
 			if (k >= Vars.getUint32("camera.path.length"))
+			{
 				k = 0;
+				camAutoCaptureStop = true;
+			}
 
 			auto keypoint = cameraPath->getKeypoint(float(k) / float(Vars.getUint32("camera.path.length")));
 			freeLook->setPosition(keypoint.position);
@@ -370,62 +416,74 @@ int main(const int argc, char* argv[])
 		static short render = 0;
 		if (render == 0)
 		{
+			// ----------------------------------------------------dd--
+			//	DEFAULT NICE RENDERER - TEXTURES
+			// ----------------------------------------------------dd--
+
+			draw_skybox();
+
 			shaders->Use("Phong_Terrain");
-		}
-		else if (render == 1)
-		{
-			shaders->Use("Normal");
-		}
-		else
-		{
-			shaders->Use("Phong_Terrain");
-			render = 0;
-		}
+			draw_map();
 
-		for (const auto& chunk : map->GetChunks())
-			if (chunk.second)
-				renderer->Render(chunk.second);
-
-		if (render == 0)
-		{
 			shaders->Use("Phong_Buildings");
+			draw_buildings();
+
+			shaders->Use("Phong");
+			draw_streets(true);
 		}
 		else if (render == 1)
 		{
+			// ----------------------------------------------------dd--
+			//	SIMPLE PHONG RENDERER - NO TEXTURES
+			// ----------------------------------------------------dd--
+
+			//draw_skybox();
+
+			shaders->Use("Phong");
+			draw_map(true);
+			draw_buildings(true);
+			draw_streets(true);
+		}
+		else if (render == 2)
+		{
+			// ----------------------------------------------------dd--
+			//	DEBUG RENDERER - NORMALS
+			// ----------------------------------------------------dd--
+
 			shaders->Use("Normal");
+			draw_map();
+			draw_buildings();
+			draw_streets();
+		}
+		else if (render == 3 || render == 4)
+		{
+			// ----------------------------------------------------dd--
+			//	DEBUG RENDERER - GEOMETRY
+			// ----------------------------------------------------dd--
+
+			glClearColor(0.f, 0.f, 0.f, 1.f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			shaders->Use("Geometry_Wireframe");
+			draw_map(true);
+			draw_buildings(true);
+
+			shaders->GetActiveProgram()->set3fv("color", &Utils::color_blue[0]);
+			draw_streets();
+
+			if (render == 4)
+			{
+				shaders->Use("Geometry_Normals");
+				draw_map();
+				draw_buildings();
+				draw_streets();
+			}
 		}
 		else
 		{
-			shaders->Use("Phong_Buildings");
 			render = 0;
+			return;
 		}
-		/*
-		if (render == 0)
-			shaders->GetActiveProgram()->set3fv("color", &Utils::color_red[0]);
-		*/
-		for (const auto& building : buildings)
-			for (const auto& part : building->parts)
-				renderer->Render(part);
-
-		if (render == 0)
-		{
-			shaders->Use("Phong");
-		}
-		else if (render == 1)
-		{
-			shaders->Use("Normal");
-		}
-		else
-		{
-			shaders->Use("Phong");
-			render = 0;
-		}
-		if (render == 0)
-			shaders->GetActiveProgram()->set3fv("color", &Utils::color_black[0]);
-		for (const auto& street : streets)
-			for (const auto& part : street->parts)
-				renderer->Render(part);
-
 
 		shaders->Use("Phong");
 
@@ -949,7 +1007,7 @@ int main(const int argc, char* argv[])
 			{
 				if (KeyDown['s'])
 				{
-					auto terrain_fp = Vars.getString("output.dir") + "/terrain.obj";
+					auto terrain_fp = Vars.getString("output.dir") + "/models/terrain.obj";
 					auto terrain_f = Utils::write_file(terrain_fp);
 
 					std::cerr << "Saving terrain model to: " << terrain_fp << std::endl;
@@ -959,7 +1017,7 @@ int main(const int argc, char* argv[])
 					auto building_f = std::move(terrain_f);
 					if (!KeyDown[SDLK_LSHIFT])
 					{
-						building_fp = Vars.getString("output.dir") + "/buildings.obj";
+						building_fp = Vars.getString("output.dir") + "/models/buildings.obj";
 						building_f = Utils::write_file(building_fp);
 					}
 					std::cerr << "Saving building models to: " << building_fp << std::endl;
@@ -999,6 +1057,61 @@ int main(const int argc, char* argv[])
 			for (const auto& s : streetMap->ReadStreets())
 				if (!s->Destroyed())
 					renderer->Render(s);
+		}
+
+		static auto capturing = false;
+		static auto capturing_changed = false;
+
+		static auto frame_id = 0ul;
+		static auto frame_output_dir = std::string("");
+		if (KeyDown['i'] || camAutoCapture || camAutoCaptureStop)
+		{
+			if (!capturing_changed)
+			{
+				auto current_time = std::chrono::system_clock::now();
+				frame_output_dir = Vars.getString("output.dir") + "/capture/" + std::to_string(current_time.time_since_epoch().count()) + "_";
+
+				frame_id = 0;
+				capturing = !capturing;
+				camAutoCapture = false;
+				camAutoCaptureStop = false;
+				if (capturing)
+					std::cerr << "Started capture to " << frame_output_dir << "*.png" << std::endl;
+				else
+					std::cerr << "Capture ended." << std::endl;
+			}
+
+			capturing_changed = true;
+		}
+		else
+			capturing_changed = false;
+
+		auto frame_pixels_size = 3 * width * height;
+		static auto frame_pixels_size_last = frame_pixels_size;
+		static auto frame_pixels = new byte[frame_pixels_size];
+		if (capturing)
+		{
+			if (frame_pixels_size != frame_pixels_size_last)
+			{
+				frame_pixels_size_last = frame_pixels_size;
+
+				free(frame_pixels);
+				frame_pixels = new byte[frame_pixels_size];
+			}
+			glReadBuffer(GL_BACK);
+			glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, frame_pixels);
+			auto frame_image = FreeImage_ConvertFromRawBits(frame_pixels, width, height, 3 * width, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
+			auto frame_image_filename = frame_output_dir + std::to_string(frame_id) + ".png";
+			auto saved = FreeImage_Save(FIF_PNG, frame_image, frame_image_filename.c_str());
+			if (saved)
+			{
+				std::cerr << "Successfully captured framebuffer to file " << frame_image_filename << std::endl;
+				frame_id++;
+			}
+			else
+			{
+				std::cerr << "Failed to save framebuffer to file " << frame_image_filename << std::endl;
+			}
 		}
 
 		glFinish();

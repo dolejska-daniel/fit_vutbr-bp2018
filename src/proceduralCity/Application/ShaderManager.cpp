@@ -78,6 +78,7 @@ void ShaderManager::BindProgram(std::shared_ptr<Program> const& program, std::st
 
 	auto projectionMatrix = projection->getProjection();
 	auto viewMatrix = camera->getView();
+	auto cameraPosition = camera->getPosition();
 
 	if (programName == "SkyBox")
 	{
@@ -89,10 +90,14 @@ void ShaderManager::BindProgram(std::shared_ptr<Program> const& program, std::st
 		->setMatrix4fv("viewMatrix", &viewMatrix[0][0])
 		->setMatrix4fv("modelMatrix", Vars.getReinterpret<float>("model"));
 
-	if (programName == "Phong" || programName == "Phong_Terrain" || programName == "Phong_Buildings")
+	if (programName == "Phong"
+		|| programName == "Phong_Terrain"
+		|| programName == "Phong_Buildings"
+		|| programName == "Geometry_Wireframe"
+		)
 	{
 		program
-			->set3fv("lightPosition_worldspace", &camera->getPosition()[0])
-			->set3fv("cameraPosition_worldspace", &camera->getPosition()[0]);
+			->set3fv("lightPosition_worldspace", &cameraPosition[0])
+			->set3fv("cameraPosition_worldspace", &cameraPosition[0]);
 	}
 }
