@@ -321,7 +321,8 @@ TSWLatexianTemp*
 *.sta
 
 ### Project specific files
-output/*.obj
+output/*/*.obj
+output/*/*.png
 
 ### Directories
 .idea/
@@ -337,8 +338,6 @@ docs/doxygen/
 html/
 latex/
 share/
-output/models/*.obj
-output/capture/*.png
 
 ### Exceptions
 !CMakeModules/*

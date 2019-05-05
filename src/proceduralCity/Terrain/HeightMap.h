@@ -54,6 +54,8 @@ namespace Terrain
 
 		float ilerp(float min, float max, float x) const;
 
+		float approximate_sample(float sample) const;
+
 	private:
 		vars::Vars& _vars;	///< 
 

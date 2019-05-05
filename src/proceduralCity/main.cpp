@@ -86,8 +86,10 @@ int main(const int argc, char* argv[])
 	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ KAMERY
 	// =============================================================
-	Vars.addString("camera.path.keyFile", args.gets("--camera-path-keyFile", "../res/camera/path.csv", ""));
-	Vars.addUint32("camera.path.length", args.getu32("--camera-path-length", 1200, ""));
+	Vars.addString("camera.path.keyFile", args.gets("--camera-path-keyFile", "../res/camera/path.csv", "File with the camera path"));
+	Vars.addUint32("camera.path.length", args.getu32("--camera-path-length", 30, "Time to get from start to end, in seconds"));
+
+	Vars.addUint32("capture.framerate", args.getu32("--capture-framerate", 60, "Framerate of the captured video"));
 
 
 	if (args.isPresent("--help", "") || !args.validate())
@@ -330,27 +332,27 @@ int main(const int argc, char* argv[])
 		static auto camFrame = false;
 		if (KeyDown['f'])
 		{
-			if (KeyDown[SDLK_KP_PLUS])
+			if (!camFrame)
 			{
-				auto delta = 1;
-				if (KeyDown[SDLK_LCTRL])
-					delta = 25;
+				if (KeyDown[SDLK_KP_PLUS])
+				{
+					auto delta = 1;
+					if (KeyDown[SDLK_LCTRL])
+						delta = 5;
 
-				auto l = Vars.getUint32("camera.path.length") += delta;
-				std::cerr << "camera.path.length = " << l << std::endl;
-			}
-			else if (KeyDown[SDLK_KP_MINUS])
-			{
-				auto delta = 1;
-				if (KeyDown[SDLK_LCTRL])
-					delta = 25;
+					auto l = Vars.getUint32("camera.path.length") += delta;
+					std::cerr << "camera.path.length = " << l << std::endl;
+				}
+				else if (KeyDown[SDLK_KP_MINUS])
+				{
+					auto delta = 1;
+					if (KeyDown[SDLK_LCTRL])
+						delta = 5;
 
-				auto l = Vars.getUint32("camera.path.length") -= delta;
-				std::cerr << "camera.path.length = " << l << std::endl;
-			}
-			else if (!camFrame)
-			{
-				if (KeyDown['o'])
+					auto l = Vars.getUint32("camera.path.length") -= delta;
+					std::cerr << "camera.path.length = " << l << std::endl;
+				}
+				else if (KeyDown['o'])
 				{
 					if (cameraPath)
 						cameraPath->keys.clear();
@@ -396,13 +398,13 @@ int main(const int argc, char* argv[])
 
 		if (camAutoRunning && cameraPath)
 		{
-			if (k >= Vars.getUint32("camera.path.length"))
+			if (k >= Vars.getUint32("camera.path.length") * Vars.getUint32("capture.framerate"))
 			{
 				k = 0;
 				camAutoCaptureStop = true;
 			}
 
-			auto keypoint = cameraPath->getKeypoint(float(k) / float(Vars.getUint32("camera.path.length")));
+			auto keypoint = cameraPath->getKeypoint(float(k) / float(Vars.getUint32("camera.path.length") * Vars.getUint32("capture.framerate")));
 			freeLook->setPosition(keypoint.position);
 			freeLook->setRotation(keypoint.viewVector, keypoint.upVector);
 			k++;
@@ -1007,21 +1009,40 @@ int main(const int argc, char* argv[])
 			{
 				if (KeyDown['s'])
 				{
+					std::cerr << "Saving objects..." << std::endl;
+
 					auto terrain_fp = Vars.getString("output.dir") + "/models/terrain.obj";
 					auto terrain_f = Utils::write_file(terrain_fp);
-
-					std::cerr << "Saving terrain model to: " << terrain_fp << std::endl;
 					renderer->Save(map, terrain_f);
+					std::cerr << "Saved terrain model to: " << terrain_fp << std::endl;
 
-					auto building_fp = terrain_fp;
-					auto building_f = std::move(terrain_f);
-					if (!KeyDown[SDLK_LSHIFT])
-					{
-						building_fp = Vars.getString("output.dir") + "/models/buildings.obj";
-						building_f = Utils::write_file(building_fp);
-					}
-					std::cerr << "Saving building models to: " << building_fp << std::endl;
+					auto building_fp = Vars.getString("output.dir") + "/models/buildings.obj";
+					auto building_f = Utils::write_file(building_fp);
 					renderer->Save(buildings, building_f);
+					std::cerr << "Saved building models to: " << building_fp << std::endl;
+
+					auto terrain_noise_fps = std::vector<std::pair<std::string, vec3>>{
+						{ Vars.getString("output.dir") + "/models/terrain-3_512x512.png", { 512, 512, 3 } },
+						{ Vars.getString("output.dir") + "/models/terrain-5_512x512.png", { 512, 512, 5 } },
+						{ Vars.getString("output.dir") + "/models/terrain-8_512x512.png", { 512, 512, 8 } },
+					};
+					for (const auto& terrain_noise_fp : terrain_noise_fps)
+					{
+						const auto res = terrain_noise_fp.second;
+						auto noise = Utils::dump_terrain_noise(
+							map->GetHeightMap(),
+							res.x,
+							res.y,
+							res.z
+						);
+						auto image = Utils::create_image_from_raw(res.x, res.y, noise);
+						FreeImage_FlipHorizontal(image);
+						FreeImage_FlipVertical(image);
+						FreeImage_FlipHorizontal(image);
+						Utils::save_image_to_file(terrain_noise_fp.first, image);
+						std::cerr << "Saved terrain noise to: " << terrain_noise_fp.first << std::endl;
+						free(noise);
+					}
 
 					save = true;
 				}
@@ -1098,11 +1119,11 @@ int main(const int argc, char* argv[])
 				free(frame_pixels);
 				frame_pixels = new byte[frame_pixels_size];
 			}
-			glReadBuffer(GL_BACK);
-			glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, frame_pixels);
-			auto frame_image = FreeImage_ConvertFromRawBits(frame_pixels, width, height, 3 * width, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
+
 			auto frame_image_filename = frame_output_dir + std::to_string(frame_id) + ".png";
-			auto saved = FreeImage_Save(FIF_PNG, frame_image, frame_image_filename.c_str());
+
+			Utils::dump_framebuffer(width, height, frame_pixels);
+			auto saved = Utils::save_image_to_file(frame_image_filename, width, height, frame_pixels);
 			if (saved)
 			{
 				std::cerr << "Successfully captured framebuffer to file " << frame_image_filename << std::endl;

@@ -139,11 +139,16 @@ float HeightMap::GetData(glm::vec3 const& v) const
 
 void HeightMap::PreprocessData(float& sample) const
 {
-	const float s = glm::clamp(ilerp(minNoise, maxNoise, sample), 0.f, 1.f);
+	const float s = approximate_sample(sample);
 	sample = 40 * _curve->GetPoint(s).y;
 }
 
-float HeightMap::ilerp(float min, float max, float x) const
+float HeightMap::ilerp(const float min, const float max, const float x) const
 {
 	return (x - min) / (max - min);
+}
+
+float HeightMap::approximate_sample(const float sample) const
+{
+	return glm::clamp(ilerp(minNoise, maxNoise, sample), 0.f, 1.f);
 }

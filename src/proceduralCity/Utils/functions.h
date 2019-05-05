@@ -18,6 +18,7 @@
 #include <geGL/Texture.h>
 #include <FreeImagePlus.h>
 #include <geGL/StaticCalls.h>
+#include <Terrain/HeightMap.h>
 
 
 using namespace glm;
@@ -116,6 +117,59 @@ namespace Utils
 			}
 			*type = GL_FLOAT;
 		}
+	}
+
+	static FIBITMAP *create_image_from_raw(const unsigned width, const unsigned height, byte *data)
+	{
+		return FreeImage_ConvertFromRawBits(data, width, height, 3 * width, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
+	}
+
+	static bool save_image_to_file(const std::string& filename, FIBITMAP *image, const FREE_IMAGE_FORMAT format = FIF_PNG)
+	{
+		const auto saved = FreeImage_Save(format, image, filename.c_str());
+		return saved;
+	}
+
+	static bool save_image_to_file(const std::string& filename, const unsigned width, const unsigned height, byte *data, const FREE_IMAGE_FORMAT format = FIF_PNG)
+	{
+		const auto image = create_image_from_raw(width, height, data);
+		return save_image_to_file(filename, image, format);
+	}
+
+	static byte *dump_framebuffer(const unsigned width, const unsigned height)
+	{
+		const auto data = new byte[3 * width * height];
+		glReadBuffer(GL_BACK);
+		glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, data);
+		return data;
+	}
+
+	static void dump_framebuffer(const unsigned width, const unsigned height, byte *data)
+	{
+		glReadBuffer(GL_BACK);
+		glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, data);
+	}
+
+	static byte *dump_terrain_noise(Terrain::HeightMap *height_map, const unsigned width, const unsigned height, const float scale)
+	{
+		const auto noise = new byte[3 * width * height];
+		for (auto noise_y = 0u; noise_y < height; ++noise_y)
+		{
+			for (auto noise_x = 0u; noise_x < width; ++noise_x)
+			{
+				auto noise_p = vec2{ noise_x - .5f * width, noise_y - .5f * width };
+				noise_p *= scale;
+
+				const auto noise_h = height_map->GenerateNoise(noise_p.x, noise_p.y);
+				const auto noise_c = byte(height_map->approximate_sample(noise_h) * 254);
+
+				const auto noise_index = 3 * noise_y * width + 3 * noise_x;
+				noise[noise_index] =
+					noise[noise_index + 1] =
+					noise[noise_index + 2] = noise_c;
+			}
+		}
+		return noise;
 	}
 
 	static unsigned load_cubemap(const std::vector<std::string>& faces)
