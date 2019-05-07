@@ -300,9 +300,8 @@ namespace Utils
 	static float randomi(int from = 0, int to = 1)
 	{
 		to += 1;
-		auto r = rand() % (to - from) / 1000;
+		auto r = rand() % (to - from);
 		r += from;
-		r -= 1;
 
 		return r;
 	}
@@ -405,4 +404,27 @@ namespace Utils
 			a.y + u * (b.y - a.y)
 		};
 	}
+
+	static glm::vec3 create_random_orange_tint()
+	{
+		return glm::vec3{
+			255,
+			randomi(230, 255),
+			randomi(160, 255)
+		} / 255.f;
+	};
+
+	static glm::vec3 create_random_blue_tint()
+	{
+		return glm::vec3{
+			190,
+			randomi(190, 255),
+			255
+		} / 255.f;
+	};
+
+	static glm::vec3 create_random_black_tint()
+	{
+		return glm::vec3(randomi(32, 255)) / 255.f;
+	};
 }

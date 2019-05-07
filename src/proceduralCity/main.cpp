@@ -211,15 +211,6 @@ int main(const int argc, char* argv[])
 	}
 	const auto windowTexture = Utils::create_texture2D(windows_width, windows_height, 1, windowTextureData, GL_RGB);
 
-	grassTexture->bind(0);
-	dirtTexture->bind(1);
-	rockTexture->bind(2);
-	concrete1Texture->bind(3);
-	concrete2Texture->bind(4);
-	concrete3Texture->bind(5);
-	windowTexture->bind(6);
-
-	// Skybox: https://learnopengl.com/Advanced-OpenGL/Cubemaps
 	// from: https://assetstore.unity.com/packages/2d/textures-materials/sky/skybox-series-free-103633
 	const auto skybox_faces = std::vector<std::string>{
 		Vars.getString("resources.dir") + "/textures/skybox/right.jpg",
@@ -231,6 +222,33 @@ int main(const int argc, char* argv[])
 	};
 	const unsigned skyboxTexture = Utils::load_cubemap(skybox_faces);
 
+	/*
+	const auto citybox_faces = std::vector<std::string>{
+		Vars.getString("resources.dir") + "/textures/reflection/right.png",
+		Vars.getString("resources.dir") + "/textures/reflection/left.png",
+		Vars.getString("resources.dir") + "/textures/reflection/top.png",
+		Vars.getString("resources.dir") + "/textures/reflection/bottom.png",
+		Vars.getString("resources.dir") + "/textures/reflection/front.png",
+		Vars.getString("resources.dir") + "/textures/reflection/back.png",
+	};*/
+	const unsigned cityboxTexture = Utils::load_cubemap(skybox_faces);
+
+	grassTexture->bind(0);
+	dirtTexture->bind(1);
+	rockTexture->bind(2);
+	concrete1Texture->bind(3);
+	concrete2Texture->bind(4);
+	concrete3Texture->bind(5);
+	windowTexture->bind(6);
+
+	glActiveTexture(GL_TEXTURE0 + 7);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+
+	glActiveTexture(GL_TEXTURE0 + 8);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cityboxTexture);
+
+
+	// Skybox: https://learnopengl.com/Advanced-OpenGL/Cubemaps
 	auto skyboxVA = std::make_shared<VertexArray>();
 	skyboxVA->bind();
 
@@ -243,7 +261,7 @@ int main(const int argc, char* argv[])
 	//	VYKRESLOVÁNÍ
 	// =============================================================
 
-	const auto draw_skybox = [&shaders,&skyboxVA,&skyboxTexture]()
+	const auto draw_skybox = [&shaders, &skyboxVA]()
 	{
 		//--------------------------------------------------------------------
 		//	Převzato a upraveno z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
@@ -251,7 +269,6 @@ int main(const int argc, char* argv[])
 		glDepthMask(GL_FALSE);
 		shaders->Use("SkyBox");
 		skyboxVA->bind();
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glDepthMask(GL_TRUE);
 		//--------------------------------------------------------------------

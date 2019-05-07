@@ -29,8 +29,8 @@ void main()
 #shader fragment
 #version 450
 
-//	Input textures
-uniform samplerCube skyboxTexture;
+layout(binding = 7) uniform samplerCube skyboxTexture;
+layout(binding = 8) uniform samplerCube cityboxTexture;
 
 //	Input variables
 in vec3 textureCoords;
@@ -40,6 +40,7 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-	color = texture(skyboxTexture, textureCoords);
+	vec3 skyboxColor = texture(skyboxTexture, textureCoords).rgb;
+	color = vec4(skyboxColor, 1);
 }
 

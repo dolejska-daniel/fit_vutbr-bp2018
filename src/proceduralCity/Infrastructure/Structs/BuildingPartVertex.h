@@ -17,7 +17,7 @@ namespace Infrastructure
 	{
 		glm::vec3 position;
 		glm::vec3 normal;
+		glm::vec3 textureTint;
 		glm::vec2 textureCoord;
-		int textureSlot;
 	};
 }

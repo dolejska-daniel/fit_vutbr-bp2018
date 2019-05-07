@@ -39,5 +39,6 @@ namespace Infrastructure
 
 		Terrain::HeightMap* _heightMap;
 		std::vector<BuildingPartVertex> vertices;
+		glm::vec3 textureTint;
 	};
 }

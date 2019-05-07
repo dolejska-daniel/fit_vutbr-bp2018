@@ -61,11 +61,11 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 			);*/
 
 			auto pos = vertex.position.y;
-			auto offsetPosDirt = pos - 48.f;
+			auto offsetPosDirt = pos - 42.f;
 			auto offsetPosRock = pos - 24.f;
 			auto grassFactor = 32.f / (abs(pos) + 0.01f);
-			auto dirtFactor = offsetPosDirt * (glm::sign(offsetPosDirt) - 1) / 16.f;
-			auto rockFactor = offsetPosRock * (glm::sign(offsetPosRock) + 1) / 32.f;
+			auto dirtFactor = offsetPosDirt * (glm::sign(offsetPosDirt) - 1) / (16.f * grassFactor);
+			auto rockFactor = offsetPosRock * (glm::sign(offsetPosRock) + 1) / (16.f * grassFactor);
 
 			auto textureMix = glm::vec3{ dirtFactor, grassFactor, rockFactor };
 			vertex.textureMix = glm::normalize(textureMix);

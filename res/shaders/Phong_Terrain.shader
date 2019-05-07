@@ -148,13 +148,26 @@ void main()
 	vec3 diffColor =
 		texture(diffuseTextureDirt, pxCoord).xyz * pxFactor * v_textureMix.x +
 		texture(diffuseTextureDirt, nxCoord).xyz * nxFactor * v_textureMix.x +
+		texture(diffuseTextureDirt, pyCoord).xyz * pyFactor * v_textureMix.x +
+		texture(diffuseTextureDirt, nyCoord).xyz * nyFactor * v_textureMix.x +
+		texture(diffuseTextureDirt, pzCoord).xyz * pzFactor * v_textureMix.x +
+		texture(diffuseTextureDirt, nzCoord).xyz * nzFactor * v_textureMix.x +
 
+		texture(diffuseTextureGrass, pxCoord).xyz * pxFactor * v_textureMix.y +
+		texture(diffuseTextureGrass, nxCoord).xyz * nxFactor * v_textureMix.y +
 		texture(diffuseTextureGrass, pyCoord).xyz * pyFactor * v_textureMix.y +
 		texture(diffuseTextureGrass, nyCoord).xyz * nyFactor * v_textureMix.y +
+		texture(diffuseTextureGrass, pzCoord).xyz * pzFactor * v_textureMix.y +
+		texture(diffuseTextureGrass, nzCoord).xyz * nzFactor * v_textureMix.y +
 
-		texture(diffuseTextureRock,  pzCoord).xyz * pzFactor * v_textureMix.z +
-		texture(diffuseTextureRock,  nzCoord).xyz * nzFactor * v_textureMix.z;
+		texture(diffuseTextureRock, pxCoord).xyz * pxFactor * v_textureMix.z +
+		texture(diffuseTextureRock, nxCoord).xyz * nxFactor * v_textureMix.z +
+		texture(diffuseTextureRock, pyCoord).xyz * pyFactor * v_textureMix.z +
+		texture(diffuseTextureRock, nyCoord).xyz * nyFactor * v_textureMix.z +
+		texture(diffuseTextureRock, pzCoord).xyz * pzFactor * v_textureMix.z +
+		texture(diffuseTextureRock, nzCoord).xyz * nzFactor * v_textureMix.z;
 
+	diffColor /= 2;
 	vec3 phong = ambientFactor * diffColor + diffuseFactor * diffColor + specularFactor * lightColor;
 	color = vec4(phong, 1);
 }

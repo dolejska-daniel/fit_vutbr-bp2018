@@ -18,9 +18,17 @@ using namespace glm;
 using namespace Infrastructure;
 
 BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm::vec3>& borderPoints,
-                           BuildingType type): _heightMap(heightMap)
+                           BuildingType type): _heightMap(heightMap), textureTint(glm::vec3(1))
 {
 	//std::cerr << "Setting up building part." << std::endl;
+	auto randomTint = Utils::randomi(0, 10);
+	if (randomTint <= 3);
+	else if (randomTint <= 6)
+		textureTint = Utils::create_random_orange_tint();
+	else if (randomTint <= 9)
+		textureTint = Utils::create_random_blue_tint();
+	else
+		textureTint = Utils::create_random_black_tint();
 
 	if (type == SQUARE)
 		RandomBuildingSquareDefault(borderPoints, vertices);
@@ -35,8 +43,8 @@ BuildingPart::BuildingPart(Terrain::HeightMap* heightMap, const std::vector<glm:
 	vb->alloc(vertices.size() * sizeof(BuildingPartVertex), vertices.data());
 	va->addAttrib(vb, 0, 3, GL_FLOAT, sizeof(BuildingPartVertex), 0 * sizeof(vec3));
 	va->addAttrib(vb, 1, 3, GL_FLOAT, sizeof(BuildingPartVertex), 1 * sizeof(vec3));
-	va->addAttrib(vb, 2, 2, GL_FLOAT, sizeof(BuildingPartVertex), 2 * sizeof(vec3));
-	va->addAttrib(vb, 3, 1, GL_INT, sizeof(BuildingPartVertex), 2 * sizeof(vec3) + 1 * sizeof(vec2));
+	va->addAttrib(vb, 2, 3, GL_FLOAT, sizeof(BuildingPartVertex), 2 * sizeof(vec3));
+	va->addAttrib(vb, 3, 2, GL_FLOAT, sizeof(BuildingPartVertex), 3 * sizeof(vec3));
 }
 
 BuildingPart::~BuildingPart()
@@ -167,15 +175,7 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		return point;
 	};
 
-	int textureType;
-	if (type == MAIN || type == PART)
-		textureType = 0;
-	else if (type == BASE)
-		textureType = 1;
-	else if (type == TOP)
-		textureType = 2;
-	else
-		textureType = 3;
+	std::cerr << "Randomi: " << Utils::randomi(0, 10) << std::endl;
 
 	for (size_t index = 0; index < points.size(); ++index)
 	{
@@ -207,19 +207,19 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		auto textureScale = vec2{ length(n1), length(n2) } * textureScaleRatio * textureScaleFactor;
 		textureScale = floor(textureScale);
 
-		vertices.push_back({ p0, n, vec2{ 0.f, 0.f } * textureScale, textureType });
-		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale, textureType });
-		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale, textureType });
+		vertices.push_back({ p0, n, textureTint, vec2{ 0.f, 0.f } * textureScale });
+		vertices.push_back({ p1, n, textureTint, vec2{ 1.f, 0.f } * textureScale });
+		vertices.push_back({ p2, n, textureTint, vec2{ 0.f, 1.f } * textureScale });
 
-		vertices.push_back({ p1, n, vec2{ 1.f, 0.f } * textureScale, textureType });
-		vertices.push_back({ p2, n, vec2{ 0.f, 1.f } * textureScale, textureType });
-		vertices.push_back({ p3, n, vec2{ 1.f, 1.f } * textureScale, textureType });
+		vertices.push_back({ p1, n, textureTint, vec2{ 1.f, 0.f } * textureScale });
+		vertices.push_back({ p2, n, textureTint, vec2{ 0.f, 1.f } * textureScale });
+		vertices.push_back({ p3, n, textureTint, vec2{ 1.f, 1.f } * textureScale });
 	}
 	const auto up = glm::vec3(0, 1.f, 0);
 	for (size_t index = 0; index < points.size(); ++index)
 	{
-		vertices.push_back({ get_point_h(index + 0, height_top), up, {0, 0}, textureType });
-		vertices.push_back({ get_point_h(index + 1, height_top), up, {0, 0}, textureType });
-		vertices.push_back({ center_up, up, { 0, 0 }, textureType });
+		vertices.push_back({ get_point_h(index + 0, height_top), up, textureTint, {0, 0} });
+		vertices.push_back({ get_point_h(index + 1, height_top), up, textureTint, {0, 0} });
+		vertices.push_back({ center_up, up, textureTint, { 0, 0 } });
 	}
 }
