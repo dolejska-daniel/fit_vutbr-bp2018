@@ -19,7 +19,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		Map* GenerateMap(vars::Vars& vars);
+		Map* GenerateMap();
 		///
 		/// @brief
 		///

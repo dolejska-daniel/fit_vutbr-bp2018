@@ -19,10 +19,8 @@
 using namespace ge::gl;
 using namespace Application;
 
-Renderer::Renderer(vars::Vars& vars)
-	: _vars(vars)
-{
-}
+Renderer::Renderer()
+= default;
 
 Renderer::~Renderer()
 = default;

@@ -29,7 +29,7 @@ StreetMap::StreetMap(Terrain::Map *map)
 	if (Utils::StreetQuadTree == nullptr)
 		throw std::runtime_error("Utils::StreetQuadTree is nullptr.");
 
-	_zone = std::make_shared<StreetZone>(map->GetVars(), glm::vec2(0.f, 0.f), INFINITY);
+	_zone = std::make_shared<StreetZone>(glm::vec2(0.f, 0.f), INFINITY);
 	/*
 	for (auto i = 0; i < 10; i++)
 		_zone->Add(std::make_shared<StreetZone>(map->GetVars(), glm::vec2(400 - (rand() % 800), 400 - (rand() % 800)), 50.f, [&](std::shared_ptr<Street> const& street)

@@ -9,17 +9,21 @@
 #include <Terrain/HeightMap.h>
 #include <Terrain/Generator.h>
 #include <Infrastructure/Street.h>
+#include <Application/Application.h>
 
 
 using namespace Terrain;
 
-Map::Map(vars::Vars& vars)
-	: _vars(vars), _width(vars.getUint32("terrain.map.width")), _height(vars.getUint32("terrain.map.height")), _chunkWidth(vars.getUint32("terrain.chunk.width")), _chunkHeight(vars.getUint32("terrain.chunk.height"))
+Map::Map()
+	: _width(Application::Vars.getUint32("terrain.map.width")),
+	_height(Application::Vars.getUint32("terrain.map.height")),
+	_chunkWidth(Application::Vars.getUint32("terrain.chunk.width")),
+	_chunkHeight(Application::Vars.getUint32("terrain.chunk.height"))
 {
 	const auto halfWidth = _width / 2;
 	const auto halfHeight = _height / 2;
 
-	_heightMap = new HeightMap(vars);
+	_heightMap = new HeightMap();
 
 	const auto GenerateTopRow = [&](const int index) {
 		const int initialX = -index + 1;
@@ -98,7 +102,7 @@ bool Map::ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street) 
 {
 	const auto w = _width - 1;
 	const auto v = street->GetSegment().endPoint;
-	//auto d = _vars.getUint32("terrain.chunk.width") * _vars.getFloat("terrain.chunk.scale");
+	//auto d = Application::Vars.getUint32("terrain.chunk.width") * Application::Vars.getFloat("terrain.chunk.scale");
 	const auto d = 0;
 
 	const glm::vec2 max{ GetChunkOffsetX(w + 1) + d, GetChunkOffsetY(w + 1) + d };

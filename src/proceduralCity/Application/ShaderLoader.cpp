@@ -34,7 +34,7 @@ void ShaderLoader::CloseFile(std::ifstream &file)
 	file.close();
 }
 
-ShaderSources ShaderLoader::GetShaderSources(const vars::Vars& vars, std::string const& filename)
+ShaderSources ShaderLoader::GetShaderSources(std::string const& filename)
 {
 	//	Pokus o vyhledání z již zpracovaných zdrojáků
 	const auto existingSources = ShaderLoader::Files.find(filename);
@@ -46,7 +46,7 @@ ShaderSources ShaderLoader::GetShaderSources(const vars::Vars& vars, std::string
 	const auto sources = new std::stringstream[Types.size()];
 	auto type = ShaderType::NONE;
 
-	auto stream = OpenFile(vars.getString("resources.dir") + "/shaders/" + filename + ".shader");
+	auto stream = OpenFile(Vars.getString("resources.dir") + "/shaders/" + filename + ".shader");
 	if (!stream.is_open())
 		//	Stream se nepodařilo otevřít
 		throw std::invalid_argument("Shader file with given name was not found.");

@@ -26,7 +26,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		Map(vars::Vars& vars);
+		Map();
 		///
 		/// @brief
 		///
@@ -42,11 +42,6 @@ namespace Terrain
 			const auto globalY = -(static_cast<int>(_chunkHeight) / 2);
 			return globalY + y * _chunkHeight * 8;
 		};
-
-		///
-		/// @brief
-		///
-		vars::Vars& GetVars() const { return _vars; }
 
 		///
 		/// @brief
@@ -86,8 +81,6 @@ namespace Terrain
 		bool ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street) const;
 
 	private:
-		vars::Vars& _vars;	///<
-
 		unsigned int _width;	///<
 		unsigned int _height;	///<
 

@@ -12,9 +12,9 @@
 
 using namespace Terrain;
 
-Map* Generator::GenerateMap(vars::Vars& vars)
+Map* Generator::GenerateMap()
 {
-	return new Map(vars);
+	return new Map();
 }
 
 std::shared_ptr<Chunk> Generator::GenerateChunk(Map* map, const int globalOffsetX, const int globalOffsetY)
@@ -23,7 +23,7 @@ std::shared_ptr<Chunk> Generator::GenerateChunk(Map* map, const int globalOffset
 
 	//	Vytvoření instance chunku
 	//	- vygenerování výškové mapy a inicializace objektu proběhne automaticky
-	auto chunk = std::make_shared<Chunk>(map->GetVars(), globalOffsetX, globalOffsetY);
+	auto chunk = std::make_shared<Chunk>(globalOffsetX, globalOffsetY);
 	std::cerr << "Chunk offset: " << globalOffsetX << ", " << globalOffsetY << std::endl;
 
 	//	Sestavení vertexů a indexů chunku

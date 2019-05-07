@@ -22,10 +22,10 @@ const float stepSize = 6.f;
 const float stepLevelOffset = .75f;
 const float splitLimit = 30.f;
 
-StreetZone::StreetZone(vars::Vars& vars, glm::vec2 const& center, const float radius,
+StreetZone::StreetZone(glm::vec2 const& center, const float radius,
 	std::function<void(std::shared_ptr<Street> const& street)> buildStep,
 	std::function<void(StreetMap* map, std::shared_ptr<Street> const& street)> splitStep):
-	_vars(vars), _center(center), _radius(radius), _buildStep(std::move(buildStep)), _splitStep(std::move(splitStep))
+	_center(center), _radius(radius), _buildStep(std::move(buildStep)), _splitStep(std::move(splitStep))
 {
 	if (_buildStep == nullptr)
 	{

@@ -45,7 +45,7 @@ using namespace argumentViewer;
 using namespace Application;
 using namespace Terrain;
 
-const auto build_id = std::string("20190504");
+const auto build_id = std::string("201905062009");
 const auto windowFlags = Window::DEBUG;
 
 ///
@@ -151,13 +151,13 @@ int main(const int argc, char* argv[])
 	Vars.add<mat4>("model", mat4(1));
 
 	//	Initialize ShaderManager
-	auto shaders = std::make_shared<ShaderManager>(Vars);
+	auto shaders = std::make_shared<ShaderManager>();
 	shaders->Use("Phong");
 
-	auto renderer = std::make_shared<Renderer>(Vars);
+	auto renderer = std::make_shared<Renderer>();
 	auto color = vec3(0, 1, 0);
 
-	const auto map = Generator::GenerateMap(Vars);
+	const auto map = Generator::GenerateMap();
 
 	auto streetMap = std::make_shared<Infrastructure::StreetMap>(map);
 	//auto parcel = new Infrastructure::Parcel();
@@ -1082,6 +1082,8 @@ int main(const int argc, char* argv[])
 
 		static auto capturing = false;
 		static auto capturing_changed = false;
+		if (camAutoCaptureStop && !capturing)
+			camAutoCaptureStop = false;
 
 		static auto frame_id = 0ul;
 		static auto frame_output_dir = std::string("");

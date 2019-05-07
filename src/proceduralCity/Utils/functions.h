@@ -161,7 +161,13 @@ namespace Utils
 				noise_p *= scale;
 
 				const auto noise_h = height_map->GenerateNoise(noise_p.x, noise_p.y);
-				const auto noise_c = byte(height_map->approximate_sample(noise_h) * 254);
+				const auto noise_c = byte(height_map->approximate_sample(noise_h) * 255);
+
+				/*
+				auto noise_ph = noise_h;
+				height_map->PreprocessData(noise_ph);
+				const auto noise_pc = byte(noise_ph * 254);
+				*/
 
 				const auto noise_index = 3 * noise_y * width + 3 * noise_x;
 				noise[noise_index] =

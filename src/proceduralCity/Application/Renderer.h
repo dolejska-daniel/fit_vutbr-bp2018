@@ -26,7 +26,7 @@ namespace Application
 		///
 		/// @brief
 		///
-		Renderer(vars::Vars& vars);
+		Renderer();
 		///
 		/// @brief
 		///
@@ -56,11 +56,5 @@ namespace Application
 		void Attach(std::shared_ptr<IRenderableCollection> const& collection);
 		void Detach(std::shared_ptr<IRenderableCollection> const& collection);
 		*/
-
-	private:
-		///
-		/// @brief
-		///
-		vars::Vars &_vars;
 	};
 }

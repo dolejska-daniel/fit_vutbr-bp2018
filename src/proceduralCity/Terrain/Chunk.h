@@ -24,7 +24,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		Chunk(vars::Vars& vars, int globalOffsetX, int globalOffsetY);
+		Chunk(int globalOffsetX, int globalOffsetY);
 		///
 		/// @brief
 		///

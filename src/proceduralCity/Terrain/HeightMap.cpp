@@ -8,19 +8,20 @@
 #include <Terrain/Chunk.h>
 #include <Terrain/HeightMap.h>
 #include <Utils/Curve.h>
+#include <Application/Application.h>
 
 
 using namespace Terrain;
 
-HeightMap::HeightMap(vars::Vars& vars)
-	: _vars(vars), minNoise(0), maxNoise(0)
+HeightMap::HeightMap()
+	: _minNoise(0), _maxNoise(0)
 {
-	auto amplitude = _vars.getFloat("terrain.amplitude");
-	auto frequency = _vars.getFloat("terrain.frequency");
+	auto amplitude = Application::Vars.getFloat("terrain.amplitude");
+	auto frequency = Application::Vars.getFloat("terrain.frequency");
 
-	const auto octaveCount = _vars.getUint32("terrain.octaves");
-	const auto persistence = _vars.getFloat("terrain.persistence");
-	const auto lacunarity = _vars.getFloat("terrain.lacunarity");
+	const auto octaveCount = Application::Vars.getUint32("terrain.octaves");
+	const auto persistence = Application::Vars.getFloat("terrain.persistence");
+	const auto lacunarity = Application::Vars.getFloat("terrain.lacunarity");
 
 	_offsets = new glm::vec2[octaveCount];
 	for (unsigned int i = 0; i < octaveCount; i++)
@@ -31,8 +32,8 @@ HeightMap::HeightMap(vars::Vars& vars)
 
 	for (unsigned int i = 0; i < octaveCount; i++)
 	{
-		maxNoise +=  0.5f * amplitude;
-		minNoise += -0.5f * amplitude;
+		_maxNoise +=  0.5f * amplitude;
+		_minNoise += -0.5f * amplitude;
 
 		amplitude *= persistence;
 		frequency *= lacunarity;
@@ -68,8 +69,8 @@ HeightMap::HeightMap(vars::Vars& vars)
 	_curve = std::make_shared<Utils::Curve2D>(heightCurvePoints);
 
 	std::cerr << "ALL SET!" << std::endl;
-	std::cerr << minNoise << std::endl;
-	std::cerr << maxNoise << std::endl << std::endl;
+	std::cerr << _minNoise << std::endl;
+	std::cerr << _maxNoise << std::endl << std::endl;
 	std::cerr << "Height mults: " << std::endl;
 	for (auto f = 0.f; f <= 1.f; f+=0.05f)
 		std::cerr << _curve->GetPoint(f).y << std::endl;
@@ -87,13 +88,13 @@ float HeightMap::GenerateNoise(float globalX, float globalY) const
 	//
 	// https://github.com/SebLague/Procedural-Landmass-Generation
 	//
-	const auto scale = _vars.getFloat("terrain.scale");
-	auto amplitude = _vars.getFloat("terrain.amplitude");
-	auto frequency = _vars.getFloat("terrain.frequency");
+	const auto scale = Application::Vars.getFloat("terrain.scale");
+	auto amplitude = Application::Vars.getFloat("terrain.amplitude");
+	auto frequency = Application::Vars.getFloat("terrain.frequency");
 
-	const auto persistence = _vars.getFloat("terrain.persistence");
-	const auto lacunarity = _vars.getFloat("terrain.lacunarity");
-	const auto octaveCount = _vars.getUint32("terrain.octaves");
+	const auto persistence = Application::Vars.getFloat("terrain.persistence");
+	const auto lacunarity = Application::Vars.getFloat("terrain.lacunarity");
+	const auto octaveCount = Application::Vars.getUint32("terrain.octaves");
 
 	float result = 0;
 	glm::vec2 sample(0);
@@ -134,7 +135,7 @@ float HeightMap::GetData(glm::vec3 const& v, const unsigned detail) const
 
 float HeightMap::GetData(glm::vec3 const& v) const
 {
-	return GetData(v, _vars.getUint32("terrain.detail"));
+	return GetData(v, Application::Vars.getUint32("terrain.detail"));
 }
 
 void HeightMap::PreprocessData(float& sample) const
@@ -150,5 +151,5 @@ float HeightMap::ilerp(const float min, const float max, const float x) const
 
 float HeightMap::approximate_sample(const float sample) const
 {
-	return glm::clamp(ilerp(minNoise, maxNoise, sample), 0.f, 1.f);
+	return glm::clamp(ilerp(_minNoise, _maxNoise, sample), 0.f, 1.f);
 }

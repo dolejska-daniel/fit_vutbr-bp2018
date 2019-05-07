@@ -20,9 +20,7 @@ namespace Application
 		///
 		/// @brief Inicializuje novou instanci třídy.
 		///
-		/// @param[in,out]	vars	Proměnné programu
-		///
-		ShaderManager(vars::Vars& vars);
+		ShaderManager();
 		///
 		/// @brief Zruší dynamicky alokované prvky a tuto instanci.
 		///
@@ -57,10 +55,6 @@ namespace Application
 		/// @brief Aktuálně běžící program na GPU.
 		///
 		std::shared_ptr<ge::gl::Program> _activeProgram;
-		///
-		/// @brief Proměnné programu.
-		///
-		vars::Vars& _vars;
 		///
 		/// @brief Obsahuje zpracované programy se shadery.
 		///

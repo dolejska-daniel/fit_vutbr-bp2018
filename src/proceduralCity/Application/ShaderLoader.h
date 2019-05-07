@@ -7,7 +7,6 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <Vars/Vars.h>
 #include <Application/Application.h>
 
 
@@ -39,12 +38,11 @@ namespace Application
 		/// jména z aktuální `resources` složky a podsložky `shaders` (
 		///	`{RESOURCES}/shaders/{filename}.shader`).
 		///
-		/// @param[in]	vars		Proměnné programu
 		/// @param[in]	filename	Název `.shader` souboru
 		///
 		/// @returns	Zdrojový kód z daného souboru
 		///
-		ShaderSources GetShaderSources(vars::Vars const& vars, std::string const& filename);
+		ShaderSources GetShaderSources(std::string const& filename);
 
 		///
 		/// @brief Seznam podporovaných typů.

@@ -7,17 +7,18 @@
 #include <Vars/Vars.h>
 #include <Terrain/Map.h>
 #include <Terrain/Chunk.h>
+#include <Application/Application.h>
 
 
 using namespace Terrain;
 
-Chunk::Chunk(vars::Vars& vars, const int globalOffsetX, const int globalOffsetY)
+Chunk::Chunk(const int globalOffsetX, const int globalOffsetY)
 	: _globalOffsetX(globalOffsetX), _globalOffsetY(globalOffsetY)
 {
-	_detail = vars.getUint32("terrain.detail");
-	_width  = vars.getUint32("terrain.chunk.width");
-	_height = vars.getUint32("terrain.chunk.height");
-	_scale  = vars.getFloat("terrain.chunk.scale");
+	_detail = Application::Vars.getUint32("terrain.detail");
+	_width  = Application::Vars.getUint32("terrain.chunk.width");
+	_height = Application::Vars.getUint32("terrain.chunk.height");
+	_scale  = Application::Vars.getFloat("terrain.chunk.scale");
 
 	SetDrawMode(GL_TRIANGLES);
 	auto va = CreateVA();
@@ -26,8 +27,9 @@ Chunk::Chunk(vars::Vars& vars, const int globalOffsetX, const int globalOffsetY)
 	auto vb = CreateVB();
 	BindVB();
 	vb->alloc(GetVerticesSize());
-	va->addAttrib(vb, 0, 3, GL_FLOAT, 6 * sizeof(float), 0 * sizeof(float));
-	va->addAttrib(vb, 1, 3, GL_FLOAT, 6 * sizeof(float), 3 * sizeof(float));
+	va->addAttrib(vb, 0, 3, GL_FLOAT, 3 * sizeof(glm::vec3), 0 * sizeof(glm::vec3));
+	va->addAttrib(vb, 1, 3, GL_FLOAT, 3 * sizeof(glm::vec3), 1 * sizeof(glm::vec3));
+	va->addAttrib(vb, 2, 3, GL_FLOAT, 3 * sizeof(glm::vec3), 2 * sizeof(glm::vec3));
 
 	auto ib = CreateIB();
 	BindIB();

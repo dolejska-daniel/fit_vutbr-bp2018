@@ -7,10 +7,12 @@
 //	Input vertex attributes
 layout(location = 0) in vec3 vertexPosition_worldspace;
 layout(location = 1) in vec3 vertexNormal_worldspace;
+layout(location = 2) in vec3 textureMix;
 
 //	Output variables
 out vec3 position;
 out vec3 normal;
+out vec3 v_textureMix;
 
 //	Uniforms
 uniform mat4 modelMatrix;
@@ -24,6 +26,7 @@ void main()
 
 	position = vertexPosition_worldspace;
 	normal = normalize(vertexNormal_worldspace);
+	v_textureMix = textureMix;
 }
 
 
@@ -41,6 +44,7 @@ layout(binding = 2) uniform sampler2D diffuseTextureRock;
 //	Input variables
 in vec3 position;
 in vec3 normal;
+in vec3 v_textureMix;
 
 //	Output variables
 layout(location = 0) out vec4 color;
@@ -141,31 +145,15 @@ void main()
 	vec2 nzCoord = position.xy * vec2(-1, +1) * scale;
 
 
-	vec3 pxDiffuseColor = texture(diffuseTextureRock, pxCoord).xyz * pxFactor;
-	vec3 nxDiffuseColor = texture(diffuseTextureRock, nxCoord).xyz * nxFactor;
-
-	vec3 pyDiffuseColor = texture(diffuseTextureGrass, pyCoord).xyz * pyFactor;
-	vec3 nyDiffuseColor = texture(diffuseTextureGrass, nyCoord).xyz * nyFactor;
-
-	vec3 pzDiffuseColor = texture(diffuseTextureRock, pzCoord).xyz * pzFactor;
-	vec3 nzDiffuseColor = texture(diffuseTextureRock, nzCoord).xyz * nyFactor;
-	if (position.y < 0)
-	{
-		pxDiffuseColor = texture(diffuseTextureDirt, pxCoord).xyz * pxFactor;
-		nxDiffuseColor = texture(diffuseTextureDirt, nxCoord).xyz * nxFactor;
-
-		pzDiffuseColor = texture(diffuseTextureDirt, pzCoord).xyz * pzFactor;
-		nzDiffuseColor = texture(diffuseTextureDirt, nzCoord).xyz * nyFactor;
-	}
-
 	vec3 diffColor =
-		pxDiffuseColor +
-		nxDiffuseColor +
-		pyDiffuseColor +
-		nyDiffuseColor +
-		pzDiffuseColor +
-		nzDiffuseColor
-		;
+		texture(diffuseTextureDirt, pxCoord).xyz * pxFactor * v_textureMix.x +
+		texture(diffuseTextureDirt, nxCoord).xyz * nxFactor * v_textureMix.x +
+
+		texture(diffuseTextureGrass, pyCoord).xyz * pyFactor * v_textureMix.y +
+		texture(diffuseTextureGrass, nyCoord).xyz * nyFactor * v_textureMix.y +
+
+		texture(diffuseTextureRock,  pzCoord).xyz * pzFactor * v_textureMix.z +
+		texture(diffuseTextureRock,  nzCoord).xyz * nzFactor * v_textureMix.z;
 
 	vec3 phong = ambientFactor * diffColor + diffuseFactor * diffColor + specularFactor * lightColor;
 	color = vec4(phong, 1);

@@ -37,8 +37,8 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 
 	//	Lokální lambda pro výpočet normály
 	const auto CalculatePosition = [&](const int x, const int y, glm::vec3& target)  {
-		const auto globalX = float(scale * x / detail + globalOffsetX);
-		const auto globalY = float(scale * y / detail + globalOffsetY);
+		const auto globalX = scale * float(x) / float(detail) + float(globalOffsetX);
+		const auto globalY = scale * float(y) / float(detail) + float(globalOffsetY);
 
 		target.x = globalX; // Šířka
 		target.y = 0; // 3D Výška
@@ -52,17 +52,33 @@ void Builder::BuildVertices(const std::shared_ptr<Chunk>& chunk, HeightMap* heig
 	{
 		for (unsigned int x = 0; x < width; x++)
 		{
-			CalculatePosition(x, y, GetVertex(x, y).position);
+			auto& vertex = GetVertex(x, y);
+			CalculatePosition(x, y, vertex.position);
 			/*
 			printf("position[%2d, %2d] = (%f, %f, %f), chunk offset (%d, %d), _detail %d;\n",
 				x, y, GetVertex(x, y).position.x, GetVertex(x, y).position.y, GetVertex(x, y).position.z,
 				chunk->GetGlobalOffsetX(), chunk->GetGlobalOffsetY(), chunk->GetDetail()
 			);*/
 
+			auto pos = vertex.position.y;
+			auto offsetPosDirt = pos - 48.f;
+			auto offsetPosRock = pos - 24.f;
+			auto grassFactor = 32.f / (abs(pos) + 0.01f);
+			auto dirtFactor = offsetPosDirt * (glm::sign(offsetPosDirt) - 1) / 16.f;
+			auto rockFactor = offsetPosRock * (glm::sign(offsetPosRock) + 1) / 32.f;
+
+			auto textureMix = glm::vec3{ dirtFactor, grassFactor, rockFactor };
+			vertex.textureMix = glm::normalize(textureMix);
+			/*
+			std::cerr << "Height: " << vertex.position.y << std::endl;
+			std::cerr << "Factor: " << dirtFactor << ", " << grassFactor << ", " << rockFactor << ", " << std::endl;
+			std::cerr << "Vector: " << vertex.textureMix.x << ", " << vertex.textureMix.y << ", " << vertex.textureMix.z << ", " << std::endl << std::endl;
+			*/
+
 			//	Výchozí normála
-			GetVertex(x, y).normal.x = 0;
-			GetVertex(x, y).normal.y = 1;
-			GetVertex(x, y).normal.z = 0;
+			vertex.normal.x = 0;
+			vertex.normal.y = 1;
+			vertex.normal.z = 0;
 		}
 	}
 

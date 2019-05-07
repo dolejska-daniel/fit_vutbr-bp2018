@@ -17,8 +17,7 @@
 using namespace Application;
 using namespace ge::gl;
 
-ShaderManager::ShaderManager(vars::Vars& vars)
-	: _vars(vars)
+ShaderManager::ShaderManager()
 {
 }
 
@@ -35,7 +34,7 @@ void ShaderManager::Use(std::string const& programName)
 	std::shared_ptr<Shader> shader;
 	std::vector<std::shared_ptr<Shader>> shaders;
 
-	auto sources = ShaderLoader::GetShaderSources(_vars, programName);
+	auto sources = ShaderLoader::GetShaderSources(programName);
 	if (sources.vertex.length())
 	{
 		shader = std::make_shared<Shader>();

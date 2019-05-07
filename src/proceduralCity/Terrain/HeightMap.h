@@ -7,7 +7,6 @@
 #pragma once
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <Vars/Vars.h>
 #include <Utils/Curve.h>
 
 
@@ -22,7 +21,7 @@ namespace Terrain
 		///
 		/// @brief
 		///
-		HeightMap(vars::Vars& vars);
+		HeightMap();
 		///
 		/// @brief
 		///
@@ -57,10 +56,8 @@ namespace Terrain
 		float approximate_sample(float sample) const;
 
 	private:
-		vars::Vars& _vars;	///< 
-
-		float minNoise;	///< 
-		float maxNoise; ///<
+		float _minNoise;	///< 
+		float _maxNoise; ///<
 
 		glm::vec2* _offsets;	///< 
 
