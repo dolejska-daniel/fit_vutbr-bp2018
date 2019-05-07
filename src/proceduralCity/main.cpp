@@ -209,7 +209,7 @@ int main(const int argc, char* argv[])
 			windowTextureData[index] = { r, g, b };
 		}
 	}
-	const auto windowTexture = Utils::create_texture2D(windows_width, windows_height, windowTextureData, GL_RGB);
+	const auto windowTexture = Utils::create_texture2D(windows_width, windows_height, 1, windowTextureData, GL_RGB);
 
 	grassTexture->bind(0);
 	dirtTexture->bind(1);

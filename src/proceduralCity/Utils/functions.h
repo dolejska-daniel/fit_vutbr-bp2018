@@ -74,17 +74,28 @@ namespace Utils
 	};
 	//--------------------------------------------------------------------
 
-	static std::shared_ptr<ge::gl::Texture> create_texture2D(const GLsizei width, const GLsizei height, const GLvoid *data, const GLenum format = GL_RGBA, const GLenum type = GL_UNSIGNED_BYTE)
+	static std::shared_ptr<ge::gl::Texture> create_texture2D(const GLsizei width, const GLsizei height, int max_mipmap_level, const GLvoid *data, const GLenum format = GL_RGBA, const GLenum type = GL_UNSIGNED_BYTE)
 	{
 		static GLfloat largest_supported_anisotropy = 0;
 		if (largest_supported_anisotropy == 0)
 			ge::gl::glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
 
-		const auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D, GL_RGB8, 1, width, height);
+		const auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D, GL_RGB8, max_mipmap_level, width, height);
 		texture->texParameterfv(GL_TEXTURE_MAX_ANISOTROPY_EXT, &largest_supported_anisotropy);
 		texture->setData2D(data, format, type);
+		if (max_mipmap_level > 1)
+		{
+			texture->texParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			texture->generateMipmap();
+		}
 
 		return texture;
+	}
+
+	static std::shared_ptr<ge::gl::Texture> create_texture2D(const GLsizei width, const GLsizei height, const GLvoid *data, const GLenum format = GL_RGBA, const GLenum type = GL_UNSIGNED_BYTE)
+	{
+		const auto max_mipmap_level = int(glm::ceil(glm::log2(float(width))));
+		return create_texture2D(width, height, max_mipmap_level, data, format, type);
 	}
 
 	static void load_image_from_file(fipImage *image, const std::string& filepath, GLenum *format, GLenum *type)
