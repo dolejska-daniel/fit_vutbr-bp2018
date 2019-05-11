@@ -27,24 +27,24 @@ namespace Terrain
 		///
 		~HeightMap();
 
-		float GenerateNoise(float globalX, float globalY) const;
+		float GenerateNoise(float globalX, float globalY);
 
 		///
 		/// @brief
 		///
-		float GetData(float x, float y, unsigned int detail) const;
+		float GetData(float x, float y, unsigned int detail);
 		///
 		/// @brief
 		///
-		float GetData(glm::vec2 const& v, unsigned int detail) const;
+		float GetData(glm::vec2 const& v, unsigned int detail);
 		///
 		/// @brief
 		///
-		float GetData(glm::vec3 const& v, unsigned int detail) const;
+		float GetData(glm::vec3 const& v, unsigned int detail);
 		///
 		/// @brief
 		///
-		float GetData(glm::vec3 const& v) const;
+		float GetData(glm::vec3 const& v);
 
 		///
 		/// @brief

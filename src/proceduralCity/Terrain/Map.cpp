@@ -20,8 +20,8 @@ Map::Map()
 	_chunkWidth(Application::Vars.getUint32("terrain.chunk.width")),
 	_chunkHeight(Application::Vars.getUint32("terrain.chunk.height"))
 {
-	const auto halfWidth = _width / 2;
-	const auto halfHeight = _height / 2;
+	const int halfWidth = _width / 2;
+	const int halfHeight = _height / 2;
 
 	_heightMap = new HeightMap();
 
@@ -79,6 +79,7 @@ Map::Map()
 		}
 	};
 
+	/*
 	GetChunk(0) = Generator::GenerateChunk(this, GetChunkOffsetX(0), GetChunkOffsetY(0));
 	for (unsigned i = 2; i <= _width; i++)
 	{
@@ -87,6 +88,26 @@ Map::Map()
 		GenerateBottomRow(i);
 		GenerateLeftColumn(i);
 	}
+	*/
+
+
+	for (int y = 0; y < _height; ++y)
+	{
+		for (int x = 0; x < _width; ++x)
+		{
+			GetChunk(y * _width + x) = Generator::GenerateChunk(this, GetChunkOffsetX(-halfWidth + x), GetChunkOffsetY(-halfHeight + y));
+		}
+	}
+
+	/*
+	GetChunk(0) = Generator::GenerateChunk(this, GetChunkOffsetX(0), GetChunkOffsetY(0));
+	for (unsigned i = 2; i <= _width; i++)
+	{
+		GenerateTopRow(i);
+		GenerateRightColumn(i);
+		GenerateBottomRow(i);
+		GenerateLeftColumn(i);
+	}*/
 }
 
 Map::~Map()

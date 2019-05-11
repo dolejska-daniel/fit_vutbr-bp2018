@@ -82,7 +82,7 @@ HeightMap::~HeightMap()
 	delete[] _offsets;
 }
 
-float HeightMap::GenerateNoise(float globalX, float globalY) const
+float HeightMap::GenerateNoise(float globalX, float globalY)
 {
 	//	TODO: Detail?
 	//
@@ -110,11 +110,16 @@ float HeightMap::GenerateNoise(float globalX, float globalY) const
 		frequency *= lacunarity;
 	}
 
+	/*
+	if (result > _maxNoise)
+		_maxNoise = result;
+	else if (result < _minNoise)
+		_minNoise = result;*/
 	return result;
 }
 
 
-float HeightMap::GetData(const float x, const float y, unsigned int detail) const
+float HeightMap::GetData(const float x, const float y, unsigned int detail)
 {
 	auto noise = GenerateNoise(x, y);
 
@@ -123,17 +128,17 @@ float HeightMap::GetData(const float x, const float y, unsigned int detail) cons
 	return noise;
 }
 
-float HeightMap::GetData(glm::vec2 const& v, const unsigned detail) const
+float HeightMap::GetData(glm::vec2 const& v, const unsigned detail)
 {
 	return GetData(v.x, v.y, detail);
 }
 
-float HeightMap::GetData(glm::vec3 const& v, const unsigned detail) const
+float HeightMap::GetData(glm::vec3 const& v, const unsigned detail)
 {
 	return GetData(v.x, v.z, detail);
 }
 
-float HeightMap::GetData(glm::vec3 const& v) const
+float HeightMap::GetData(glm::vec3 const& v)
 {
 	return GetData(v, Application::Vars.getUint32("terrain.detail"));
 }

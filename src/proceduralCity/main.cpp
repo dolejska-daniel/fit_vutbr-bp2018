@@ -77,7 +77,7 @@ int main(const int argc, char* argv[])
 	Vars.addUint32("terrain.detail", args.getu32("--terrain-detail", 1, "Default level of object detail"));
 
 	Vars.addUint32("terrain.map.width", args.getu32("--terrain-map-width", 2, "Terrain map width (count of chunks)"));
-	Vars.addUint32("terrain.map.height", args.getu32("--terrain-map-height", 1, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
+	Vars.addUint32("terrain.map.height", args.getu32("--terrain-map-height", 2, "Terrain map height (count of chunks) in 2D (depth/length in 3D)"));
 
 	Vars.addUint32("terrain.chunk.width", args.getu32("--terrain-chunk-width", 64, "Chunk width"));
 	Vars.addUint32("terrain.chunk.height", args.getu32("--terrain-chunk-height", 64, "Terrain chunk height in 2D (depth/length in 3D)"));
@@ -86,7 +86,7 @@ int main(const int argc, char* argv[])
 	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ KAMERY
 	// =============================================================
-	Vars.addString("camera.path.keyFile", args.gets("--camera-path-keyFile", "../res/camera/path.csv", "File with the camera path"));
+	Vars.addString("camera.path.keyFile", args.gets("--camera-path-keyFile", "", "File with the camera path"));
 	Vars.addUint32("camera.path.length", args.getu32("--camera-path-length", 30, "Time to get from start to end, in seconds"));
 
 	Vars.addUint32("capture.framerate", args.getu32("--capture-framerate", 60, "Framerate of the captured video"));
@@ -168,6 +168,8 @@ int main(const int argc, char* argv[])
 	std::shared_ptr<CameraPath> cameraPath = nullptr;
 	if (!Vars.getString("camera.path.keyFile").empty())
 		cameraPath = std::make_shared<CameraPath>(false, Vars.getString("camera.path.keyFile"));
+	else
+		cameraPath = std::make_shared<CameraPath>(false);
 
 
 	const auto grassTexture = Utils::load_texture_from_file(Vars.getString("resources.dir") + "/textures/grass.jpg");
@@ -1104,6 +1106,7 @@ int main(const int argc, char* argv[])
 
 		static auto frame_id = 0ul;
 		static auto frame_output_dir = std::string("");
+		static auto frames = std::vector<std::unique_ptr<byte>>();
 		if (KeyDown['i'] || camAutoCapture || camAutoCaptureStop)
 		{
 			if (!capturing_changed)
@@ -1111,14 +1114,36 @@ int main(const int argc, char* argv[])
 				auto current_time = std::chrono::system_clock::now();
 				frame_output_dir = Vars.getString("output.dir") + "/capture/" + std::to_string(current_time.time_since_epoch().count()) + "_";
 
-				frame_id = 0;
 				capturing = !capturing;
 				camAutoCapture = false;
 				camAutoCaptureStop = false;
 				if (capturing)
+				{
+					frame_id = 0;
 					std::cerr << "Started capture to " << frame_output_dir << "*.png" << std::endl;
+				}
 				else
-					std::cerr << "Capture ended." << std::endl;
+				{
+					std::cerr << "Capture ended, saving frames..." << std::endl;
+					for (const auto& frame : frames)
+					{
+						auto frame_image_filename = frame_output_dir + std::to_string(frame_id) + ".png";
+						auto saved = Utils::save_image_to_file(frame_image_filename, width, height, frame.get());
+						if (saved)
+						{
+							std::cerr << "Successfully captured framebuffer to file " << frame_image_filename << std::endl;
+							frame_id++;
+						}
+						else
+						{
+							std::cerr << "Failed to save framebuffer to file " << frame_image_filename << std::endl;
+							break;
+						}
+					}
+
+					frames.clear();
+					frame_id = 0;
+				}
 			}
 
 			capturing_changed = true;
@@ -1126,32 +1151,11 @@ int main(const int argc, char* argv[])
 		else
 			capturing_changed = false;
 
-		auto frame_pixels_size = 3 * width * height;
-		static auto frame_pixels_size_last = frame_pixels_size;
-		static auto frame_pixels = new byte[frame_pixels_size];
 		if (capturing)
 		{
-			if (frame_pixels_size != frame_pixels_size_last)
-			{
-				frame_pixels_size_last = frame_pixels_size;
-
-				free(frame_pixels);
-				frame_pixels = new byte[frame_pixels_size];
-			}
-
-			auto frame_image_filename = frame_output_dir + std::to_string(frame_id) + ".png";
-
+			auto frame_pixels = new byte[3 * width * height];
 			Utils::dump_framebuffer(width, height, frame_pixels);
-			auto saved = Utils::save_image_to_file(frame_image_filename, width, height, frame_pixels);
-			if (saved)
-			{
-				std::cerr << "Successfully captured framebuffer to file " << frame_image_filename << std::endl;
-				frame_id++;
-			}
-			else
-			{
-				std::cerr << "Failed to save framebuffer to file " << frame_image_filename << std::endl;
-			}
+			frames.emplace_back(frame_pixels);
 		}
 
 		glFinish();
