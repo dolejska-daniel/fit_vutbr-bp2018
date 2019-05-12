@@ -2,6 +2,8 @@ from modules.utils import *
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib import cm
 
+print("Plotting scatter graphs...")
+
 # -----------------------------------------------------dd--
 #   High detail Perlin surface + vertices
 # -----------------------------------------------------dd--

@@ -1,0 +1,133 @@
+// QuadTree containing one point
+digraph containing_1
+{
+    dpi=300;
+
+    node [ shape=circle fontname=Consolas ];
+
+    // First level
+    root [ label="root" shape=square ];
+
+    level_0_a [ label="a" ];
+    level_0_b [ label="b" ];
+    level_0_c [ label="c" ];
+    level_0_d [ label="d" ];
+    root -> level_0_a
+    root -> level_0_b
+    root -> level_0_c
+    root -> level_0_d
+
+    level_0_a_records [
+        shape=plaintext
+        label=<<table border="0" cellspacing="0" cellborder="1">
+                <tr><td bgcolor="blue">&#160;</td></tr>
+            </table>>
+    ];
+    level_0_a -- level_0_a_records [ dir=none ];
+}
+
+// QuadTree containing two points
+digraph containing_2
+{
+    dpi=300;
+
+    node [ shape=circle fontname=Consolas ];
+
+    // First level
+    root [ label="root" shape=square ];
+
+    level_0_a [ label="a" ];
+    level_0_b [ label="b" ];
+    level_0_c [ label="c" ];
+    level_0_d [ label="d" ];
+    root -> level_0_a
+    root -> level_0_b
+    root -> level_0_c
+    root -> level_0_d
+
+    level_0_a_records [
+        shape=plaintext
+        label=<<table border="0" cellspacing="0" cellborder="1">
+                <tr><td bgcolor="blue">&#160;</td></tr>
+            </table>>
+    ];
+    level_0_a -- level_0_a_records [ dir=none ];
+
+    level_0_c_records [
+        shape=plaintext
+        label=<<table border="0" cellspacing="0" cellborder="1">
+                <tr><td bgcolor="green">&#160;</td></tr>
+            </table>>
+    ];
+    level_0_c -- level_0_c_records [ dir=none ];
+}
+
+// QuadTree containing four points
+digraph containing_4
+{
+    dpi=300;
+
+    node [ shape=circle fontname=Consolas ];
+
+    // First level
+    root [ label="root" shape=square ];
+
+    level_0_a [ label="a" ];
+    level_0_b [ label="b" ];
+    level_0_c [ label="c" ];
+    level_0_d [ label="d" ];
+    root -> level_0_a
+    root -> level_0_b
+    root -> level_0_c
+    root -> level_0_d
+
+    level_0_a_records [
+        shape=plaintext
+        label=<<table border="0" cellspacing="0" cellborder="1">
+                <tr><td bgcolor="blue">&#160;</td></tr>
+            </table>>
+    ];
+    level_0_a -- level_0_a_records [ dir=none ];
+
+    level_0_d_records [
+        shape=plaintext
+        label=<<table border="0" cellspacing="0" cellborder="1">
+                <tr><td bgcolor="red">&#160;</td></tr>
+            </table>>
+    ];
+    level_0_d -- level_0_d_records [ dir=none ];
+
+    // Second level
+    {
+        node [ color="#800080" fontcolor="#800080" ];
+        edge [ color="#800080" fontcolor="#800080" ];
+
+        level_1_2 [ label="" shape=square ];
+        level_0_c -> level_1_2 [ color=black ];
+
+        level_1_2_a [ label="ca" ];
+        level_1_2_b [ label="cb" ];
+        level_1_2_c [ label="cc" ];
+        level_1_2_d [ label="cd" ];
+        level_1_2 -> level_1_2_a
+        level_1_2 -> level_1_2_b
+        level_1_2 -> level_1_2_c
+        level_1_2 -> level_1_2_d
+
+        level_1_2_a_records [
+            shape=plaintext
+            label=<<table border="0" cellspacing="0" cellborder="1">
+                    <tr><td bgcolor="green">&#160;</td></tr>
+                </table>>
+        ];
+        level_1_2_a -- level_1_2_a_records [ dir=none ];
+
+        level_1_2_b_records [
+            shape=plaintext
+            label=<<table border="0" cellspacing="0" cellborder="1">
+                    <tr><td bgcolor="yellow">&#160;</td></tr>
+                </table>>
+        ];
+        level_1_2_b -- level_1_2_b_records [ dir=none ];
+    }
+}

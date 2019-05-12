@@ -3,6 +3,8 @@ import numpy as np
 import scipy.stats as stats
 import math
 
+print("Plotting simple functions...")
+
 # -----------------------------------------------------dd--
 #   Texture intensity function - Grass
 # -----------------------------------------------------dd--

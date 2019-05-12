@@ -9,7 +9,7 @@ from glob import glob
 from os import path, getenv
 
 dot_src_path = "./dot/"
-dot_out_format = "png"
+dot_out_format = "pdf"
 
 noise_img_res = (512, 512)
 
@@ -18,32 +18,42 @@ noise_img_res = (512, 512)
     =======================================================================dd== """
 
 if not getenv("PLOTS_SHOW"):
+    print("Displaying plots...")
     p.show()
+else:
+    print("Skipping plot display.")
 
 
 """ =======================================================================dd==
         DOT GRAPHS
     =======================================================================dd== """
 
+print("Processing dot files...")
 for in_filename in glob(dot_src_path + "*.dot"):
     out_filename = path.basename(in_filename).rpartition('.')[0]
 
+    print("Parsing {}...".format(in_filename))
     graphs = dot.graph_from_dot_file(in_filename)
     for graph in graphs:
-        graph.write(save_dir + out_filename + "_{}.{}".format(graph.get_name(), dot_out_format), format=dot_out_format)
+        out_filepath = save_dir + out_filename + "_{}.{}".format(graph.get_name(), dot_out_format)
+        print("Saving graph {} to {}.".format(graph.get_name(), out_filepath))
+        graph.write(out_filepath, format=dot_out_format)
 
 
 """ =======================================================================dd==
         NOISES
     =======================================================================dd== """
 
+print("Generating noise images...")
 # -----------------------------------------------------dd--
 #   Random noise
 # -----------------------------------------------------dd--
 imageData = np.random.rand(*noise_img_res)
 imageData[:] *= 255
 
-imageio.imwrite(save_dir + 'noise_random.png', imageData.astype('uint8')[:, :])
+imageFilepath = save_dir + 'noise_random.png'
+print("Saving {}.".format(imageFilepath))
+imageio.imwrite(imageFilepath, imageData.astype('uint8')[:, :])
 
 # -----------------------------------------------------dd--
 #   Perlin noise
@@ -56,7 +66,9 @@ for x in range(noise_img_res[0]):
 
 imageData[:] *= 255
 
-imageio.imwrite(save_dir + 'noise_perlin.png', imageData.astype('uint8')[:, :])
+imageFilepath = save_dir + 'noise_perlin.png'
+print("Saving {}.".format(imageFilepath))
+imageio.imwrite(imageFilepath, imageData.astype('uint8')[:, :])
 
 # -----------------------------------------------------dd--
 #   Simplex noise
@@ -69,4 +81,6 @@ for x in range(noise_img_res[0]):
 
 imageData[:] *= 255
 
-imageio.imwrite(save_dir + 'noise_simplex.png', imageData.astype('uint8')[:, :])
+imageFilepath = save_dir + 'noise_simplex.png'
+print("Saving {}.".format(imageFilepath))
+imageio.imwrite(imageFilepath, imageData.astype('uint8')[:, :])

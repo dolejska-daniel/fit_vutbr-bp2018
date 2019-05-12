@@ -1,6 +1,8 @@
 from modules.utils import *
 import numpy as np
 
+print("Plotting vectors...")
+
 # -----------------------------------------------------dd--
 #   Vectors
 # -----------------------------------------------------dd--
