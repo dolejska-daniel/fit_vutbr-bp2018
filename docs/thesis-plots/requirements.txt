@@ -1,0 +1,9 @@
+pydot
+scipy
+imageio
+matplotlib==3.0.3
+numpy==1.16.3
+PyGLM==0.5.2b1
+Pygments==2.2.0
+pyparsing==2.4.0
+pypng==0.0.19
