@@ -4,7 +4,8 @@
 ///
 /// @author Daniel Dolejška <xdolej08@stud.fit.vutbr.cz>
 ///
-#include <iostream> // std::cerr
+#include <iostream> // 
+
 #include <fstream> // std::ifstream
 #include <string> // std::string
 #include <sstream> // std::stringstream

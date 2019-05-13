@@ -95,6 +95,7 @@ Map::Map()
 	{
 		for (int x = 0; x < _width; ++x)
 		{
+			std::cerr << "Building terrain (" << y * _width + x + 1 << "/" << _width * _height << ") ";
 			GetChunk(y * _width + x) = Generator::GenerateChunk(this, GetChunkOffsetX(-halfWidth + x), GetChunkOffsetY(-halfHeight + y));
 		}
 	}

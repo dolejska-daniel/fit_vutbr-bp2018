@@ -90,8 +90,6 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 	auto noise = glm::perlin(center / noise_scale);
 	noise *= noise_coeff;
 
-	std::cerr << noise << std::endl;
-
 	const auto a = glm::normalize(points[1] - points[0]);
 	const auto al = glm::length(points[1] - points[0]) * (1.f - padding); // a length
 	const auto ali = glm::length(points[1] - points[0]) * padding * .4f; // a length inversed
@@ -175,8 +173,6 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		return point;
 	};
 
-	std::cerr << "Randomi: " << Utils::randomi(0, 10) << std::endl;
-
 	for (size_t index = 0; index < points.size(); ++index)
 	{
 		auto p0 = get_point(index + 0);
@@ -197,10 +193,10 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		auto n3 = p3 - p0;
 
 		auto n = glm::normalize(glm::cross(n1, n2));
-		if (nm.x * n.x >= 0.f && nm.z * n.z >= 0.f)
+		if (glm::dot(n, nm) > 0)
 			n = glm::normalize(glm::cross(n2, n3));
-		if (nm.x * n.x >= 0.f && nm.z * n.z >= 0.f)
-			n = glm::normalize(glm::cross(n1, n3));
+		if (glm::dot(n, nm) > 0)
+			n = glm::normalize(glm::cross(n3, n1));
 
 		auto textureScaleFactor = 4.f;
 		auto textureScaleRatio = vec2{ 1.f / 4.f, 1.f / 3.f };

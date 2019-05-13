@@ -93,7 +93,7 @@ void Building::GenerateParts_Square()
 	auto len_ratio = min(u_len, v_len);
 	if (len_ratio < 10.f)
 	{
-		std::cerr << "Not building on parcel, len is too low: " << len_ratio << std::endl;
+		// std::cerr << "Not building on parcel, len is too low: " << len_ratio << std::endl;
 		return;
 	}
 
@@ -115,7 +115,7 @@ void Building::GenerateParts_Square()
 	auto ratio = max(x_max / y_max, y_max / x_max);
 	if (ratio > 5.f)
 	{
-		std::cerr << "Not building on parcel, ratio is too big: " << ratio << std::endl;
+		// std::cerr << "Not building on parcel, ratio is too big: " << ratio << std::endl;
 		return;
 	}
 

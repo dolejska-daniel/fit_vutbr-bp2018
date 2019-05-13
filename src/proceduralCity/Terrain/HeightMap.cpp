@@ -68,12 +68,12 @@ HeightMap::HeightMap()
 	};
 	_curve = std::make_shared<Utils::Curve2D>(heightCurvePoints);
 
-	std::cerr << "ALL SET!" << std::endl;
-	std::cerr << _minNoise << std::endl;
-	std::cerr << _maxNoise << std::endl << std::endl;
-	std::cerr << "Height mults: " << std::endl;
-	for (auto f = 0.f; f <= 1.f; f+=0.05f)
-		std::cerr << _curve->GetPoint(f).y << std::endl;
+	// 	std::cerr << "ALL SET!" << std::endl;
+	// std::cerr << _minNoise << std::endl;
+	// std::cerr << _maxNoise << std::endl << std::endl;
+	// std::cerr << "Height mults: " << std::endl;
+	// for (auto f = 0.f; f <= 1.f; f+=0.05f)
+		// std::cerr << _curve->GetPoint(f).y << std::endl;
 	std::cerr << std::endl;
 }
 

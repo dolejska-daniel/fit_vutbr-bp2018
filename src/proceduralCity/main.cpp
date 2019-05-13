@@ -306,7 +306,6 @@ int main(const int argc, char* argv[])
 				renderer->Render(part);
 	};
 
-	std::cerr << "Callback" << std::endl;
 	//	Drawing
 	mainLoop->setIdleCallback([&]() {
 
@@ -941,7 +940,7 @@ int main(const int argc, char* argv[])
 						parcel->Finish();
 					};
 
-					std::cerr << "Creating street parcel..." << std::endl;
+					// std::cerr << "Creating street parcel..." << std::endl;
 					auto point1 = street->GetSegmentPoint(0, 0.f);
 					auto point2 = point1;
 					for (auto& intersection : street->GetIntersections())
@@ -977,11 +976,11 @@ int main(const int argc, char* argv[])
 				{
 					auto pair = rightPairs[intersection_id];
 
-					std::cerr << std::endl << "New right parcel..." << std::endl;
+					// std::cerr << std::endl << "New right parcel..." << std::endl;
 					parcel = std::make_shared<Infrastructure::Parcel>();
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::RIGHT);
-					std::cerr << "Finishing parcel." << std::endl;
+					// std::cerr << "Finishing parcel." << std::endl;
 					parcel->Shrink(1.f);
 					parcel->Finish();
 
@@ -993,11 +992,11 @@ int main(const int argc, char* argv[])
 				{
 					auto pair = leftPairs[intersection_id];
 
-					std::cerr << std::endl << "New left parcel..." << std::endl;
+					// std::cerr << std::endl << "New left parcel..." << std::endl;
 					parcel = std::make_shared<Infrastructure::Parcel>();
 					parcels.push_back(parcel);
 					processStreet(street_current, pair.point1, Infrastructure::LEFT);
-					std::cerr << "Finishing parcel." << std::endl;
+					// std::cerr << "Finishing parcel." << std::endl;
 					parcel->Shrink(1.f);
 					parcel->Finish();
 
