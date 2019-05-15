@@ -67,6 +67,7 @@ uniform float shininess = 1000;
 
 // ----------------------------------------------------dd--
 //	LIGHTING FUNCTIONS
+//	pøevzato z IZG: http://www.fit.vutbr.cz/study/courses/IZG/private/lecture/izg_opengl_examples.zip
 // ----------------------------------------------------dd--
 
 float diffuse(

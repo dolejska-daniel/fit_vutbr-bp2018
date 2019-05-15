@@ -1,6 +1,6 @@
 // ==========================================================dd=
 //	VERTEX SHADER
-//	https://learnopengl.com/Advanced-OpenGL/Geometry-Shader
+//	Pøevzato a upraveno z: https://learnopengl.com/Advanced-OpenGL/Geometry-Shader
 // =============================================================
 #shader vertex
 #version 450

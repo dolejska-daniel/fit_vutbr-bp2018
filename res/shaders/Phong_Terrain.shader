@@ -59,6 +59,7 @@ uniform float shininess = 1000;
 
 // ----------------------------------------------------dd--
 //	LIGHTING FUNCTIONS
+//	pøevzato z IZG: http://www.fit.vutbr.cz/study/courses/IZG/private/lecture/izg_opengl_examples.zip
 // ----------------------------------------------------dd--
 
 float diffuse(
@@ -86,45 +87,13 @@ float specular(
 		* sign(diffuse(position, normal, light));
 }
 
-vec3 lambertLighting(
-	vec3 position,
-	vec3 normal,
-	vec3 light,
-	vec3 diffuseColor)
-{
-	float ambientFactor = 0.4;
-	float diffuseFactor = diffuse(position, normal, light);
-
-	return ambientFactor * diffuseColor +
-		diffuseFactor * diffuseColor;
-}
-
-vec3 phongLighting(
-	vec3 position,
-	vec3 normal,
-	vec3 light,
-	vec3 camera,
-	float shininess,
-	vec3 diffuseColor,
-	vec3 lightColor)
-{
-	float ambientFactor = 0.4;
-	float diffuseFactor = diffuse(position, normal, light);
-	float specularFactor = specular(position, normal, light, camera, shininess);
-
-	return ambientFactor * diffuseColor +
-		diffuseFactor * diffuseColor +
-		specularFactor * lightColor;
-}
-
-
 // ----------------------------------------------------dd--
 //	MAIN
 // ----------------------------------------------------dd--
 
 void main()
 {
-	float ambientFactor = 0.3;
+	float ambientFactor = 0.4;
 	float diffuseFactor = diffuse(position, normal, lightPosition_worldspace);
 	float specularFactor = specular(position, normal, lightPosition_worldspace, cameraPosition_worldspace, shininess);
 
@@ -168,7 +137,9 @@ void main()
 		texture(diffuseTextureRock, nzCoord).xyz * nzFactor * v_textureMix.z;
 
 	diffColor /= 2;
-	vec3 phong = ambientFactor * diffColor + diffuseFactor * diffColor + specularFactor * lightColor;
+	//vec3 phong = ambientFactor * diffColor + diffuseFactor * diffColor + specularFactor * lightColor;
+	ambientFactor += specularFactor;
+	vec3 phong = ambientFactor * diffColor + diffuseFactor * diffColor;
 	color = vec4(phong, 1);
 }
 

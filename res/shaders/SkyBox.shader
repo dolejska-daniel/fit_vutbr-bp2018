@@ -1,5 +1,6 @@
 // ==========================================================dd=
 //	VERTEX SHADER
+//	pøevzato z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
 // =============================================================
 #shader vertex
 #version 450
@@ -25,6 +26,7 @@ void main()
 
 // ==========================================================dd=
 //	FRAGMENT SHADER
+//	pøevzato z: https://learnopengl.com/Advanced-OpenGL/Cubemaps
 // =============================================================
 #shader fragment
 #version 450
