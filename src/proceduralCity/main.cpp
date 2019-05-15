@@ -69,10 +69,10 @@ int main(const int argc, char* argv[])
 	// =============================================================
 	Vars.addUint32("terrain.seed", args.getu32("--terrain-seed", 12345, "Default seed for terrain generation"));
 	Vars.addFloat("terrain.scale", args.getf32("--terrain-scale", 80.f, "Perlin noise scale (higher the number smoother the changes)"));
-	Vars.addFloat("terrain.amplitude", args.getf32("--terrain-amplitude", 2.5f, "Noise function amplitudes"));
-	Vars.addFloat("terrain.frequency", args.getf32("--terrain-frequency", 0.2f, ""));
-	Vars.addFloat("terrain.persistence", args.getf32("--terrain-persistence", 0.7f, ""));
-	Vars.addFloat("terrain.lacunarity", args.getf32("--terrain-lacunarity", 1.3f, ""));
+	Vars.addFloat("terrain.amplitude", args.getf32("--terrain-amplitude", 2.5f, "Noise octaves amplitudes"));
+	Vars.addFloat("terrain.frequency", args.getf32("--terrain-frequency", 0.2f, "Noise octaves frequency"));
+	Vars.addFloat("terrain.persistence", args.getf32("--terrain-persistence", 0.7f, "Noise octaves persistence"));
+	Vars.addFloat("terrain.lacunarity", args.getf32("--terrain-lacunarity", 1.3f, "Nois octaves lacunarity"));
 	Vars.addUint32("terrain.octaves", args.getu32("--terrain-octaves", 3, "Number of noises from which is the terrain going to be generated"));
 	Vars.addUint32("terrain.detail", args.getu32("--terrain-detail", 1, "Default level of object detail"));
 
@@ -94,26 +94,26 @@ int main(const int argc, char* argv[])
 	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ LAYOUTU SILNIC
 	// =============================================================
-	Vars.addFloat("streets.layout.step", args.getf32("--streets-layout-step", 6.f, ""));
-	Vars.addFloat("streets.layout.step.offset", args.getf32("--streets-layout-step-offset", 0.75f, "Street level offset"));
-	Vars.addFloat("streets.layout.split", args.getf32("--streets-layout-split", 30.f, ""));
+	Vars.addFloat("streets.layout.step", args.getf32("--streets-layout-step", 6.f, "Length of street build step"));
+	Vars.addFloat("streets.layout.step.offset", args.getf32("--streets-layout-step-offset", 0.75f, "Street level step offset modifier"));
+	Vars.addFloat("streets.layout.split", args.getf32("--streets-layout-split", 30.f, "New street location modifier"));
 
 	// ==========================================================dd=
 	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ PARCEL A BUDOV
 	// =============================================================
-	Vars.addFloat("parcels.density", args.getf32("--parcels-density", 2.f, ""));
+	Vars.addFloat("parcels.density", args.getf32("--parcels-density", 2.f, "Building parcel density level"));
 
-	Vars.addFloat("buildings.noise.change", args.getf32("--buildings-noise-change", 4.f, ""));
-	Vars.addFloat("buildings.noise.scale", args.getf32("--buildings-noise-scale", 10.f, ""));
-	Vars.addFloat("buildings.noise.coeff", args.getf32("--buildings-noise-coeff", 4.f, ""));
+	Vars.addFloat("buildings.noise.change", args.getf32("--buildings-noise-change", 4.f, "Building height modifier"));
+	Vars.addFloat("buildings.noise.scale", args.getf32("--buildings-noise-scale", 10.f, "Building height modifier"));
+	Vars.addFloat("buildings.noise.coeff", args.getf32("--buildings-noise-coeff", 4.f, "Building height modifier"));
 
-	Vars.addUint32("buildings.blocks.top.min", args.getu32("--buildings-blocks-top-min", 0u, ""));
-	Vars.addUint32("buildings.blocks.top.max", args.getu32("--buildings-blocks-top-max", 4u, ""));
+	Vars.addUint32("buildings.blocks.top.min", args.getu32("--buildings-blocks-top-min", 0u, "Building top block minimum count"));
+	Vars.addUint32("buildings.blocks.top.max", args.getu32("--buildings-blocks-top-max", 4u, "Building top block maximum count"));
 
-	Vars.addUint32("buildings.blocks.min", args.getu32("--buildings-blocks-min", 2u, ""));
-	Vars.addUint32("buildings.blocks.max", args.getu32("--buildings-blocks-max", 5u, ""));
+	Vars.addUint32("buildings.blocks.min", args.getu32("--buildings-blocks-min", 2u, "Building block minimum count"));
+	Vars.addUint32("buildings.blocks.max", args.getu32("--buildings-blocks-max", 5u, "Building block maximum count"));
 
-	Vars.addUint32("buildings.windows.scale", args.getu32("--buildings-windows-scale", 4u, ""));
+	Vars.addUint32("buildings.windows.scale", args.getu32("--buildings-windows-scale", 4u, "Building window scale factor"));
 
 
 	if (args.isPresent("--help", "") || !args.validate())
