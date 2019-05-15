@@ -12,6 +12,7 @@
 #include <glm/gtc/noise.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <vector>
+#include <Application/Application.h>
 
 
 using namespace glm;
@@ -60,7 +61,7 @@ void BuildingPart::StreetSquare(const std::vector<glm::vec3>& borderPoints, std:
 	for (auto& vertex : vertices)
 	{
 		if (vertex.position.y == 1.f)
-			vertex.position.y = _heightMap->GetData(vertex.position) + .15f;
+			vertex.position.y = _heightMap->GetData(vertex.position) + .25f;
 	}
 }
 
@@ -82,9 +83,9 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 	height += .1f;
 
 	const auto padding = .6f;
-	const auto noise_change = 4.f;
-	const auto noise_scale = 10.f;
-	const auto noise_coeff = 4.f;
+	const auto noise_change = Application::Vars.getFloat("buildings.noise.change");
+	const auto noise_scale = Application::Vars.getFloat("buildings.noise.scale");
+	const auto noise_coeff = Application::Vars.getFloat("buildings.noise.coeff");
 
 	const auto size = points.size();
 	auto noise = glm::perlin(center / noise_scale);
@@ -120,8 +121,11 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 	auto top_points = Utils::create_block_base(base_points, .1f + (rand() % 14 - 8) / 100.f, height_main);
 	top_points = Utils::move_vecs(top_points, dir, minli * size_rand);
 
+	auto top_blocks_min = Application::Vars.getUint32("buildings.blocks.top.min");
+	auto top_blocks_max = Application::Vars.getUint32("buildings.blocks.top.max");
+
 	const auto height_core = height_main;
-	auto t_max = rand() % 4;
+	auto t_max = Utils::randomi(top_blocks_min, top_blocks_max);
 	for (auto t = 0; t < t_max; t++)
 	{
 		auto top_height_diff = height_main * ((200 + rand() % 300) / 10000.f);
@@ -135,8 +139,11 @@ void BuildingPart::RandomBuildingSquareDefault(const std::vector<glm::vec3>& bor
 		top_points = Utils::create_block_base(top_points, .1f + (rand() % 14 - 8) / 100.f, height_main);
 	}
 
+	auto blocks_min = Application::Vars.getUint32("buildings.blocks.min");
+	auto blocks_max = Application::Vars.getUint32("buildings.blocks.max");
+
 	// další bloky
-	auto i_max = 2 + rand() % 3;
+	auto i_max = Utils::randomi(blocks_min, blocks_max);
 	for (auto i = 0; i < i_max; i++)
 	{
 		dir = Utils::random_dir_vec();
@@ -198,7 +205,10 @@ void BuildingPart::CreateBlock(const std::vector<glm::vec3>& points, std::vector
 		if (glm::dot(n, nm) > 0)
 			n = glm::normalize(glm::cross(n3, n1));
 
-		auto textureScaleFactor = 4.f;
+		auto textureScaleFactor = float(Application::Vars.getUint32("buildings.windows.scale"));
+		if (type == BASE)
+			textureScaleFactor = 0;
+
 		auto textureScaleRatio = vec2{ 1.f / 4.f, 1.f / 3.f };
 		auto textureScale = vec2{ length(n1), length(n2) } * textureScaleRatio * textureScaleFactor;
 		textureScale = floor(textureScale);

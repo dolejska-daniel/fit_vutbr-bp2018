@@ -9,6 +9,7 @@
 #include <map>
 #include <Vars/Fwd.h>
 #include <Terrain/Fwd.h>
+#include <glm/vec2.hpp>
 
 
 namespace Infrastructure {
@@ -86,6 +87,9 @@ namespace Terrain
 
 		unsigned int _chunkWidth;	///<
 		unsigned int _chunkHeight;	///<
+
+		glm::vec2 _offsetMin{0, 0};	///<
+		glm::vec2 _offsetMax{0, 0};	///<
 
 		HeightMap* _heightMap;	///<
 		std::map<unsigned int, std::shared_ptr<Chunk>> _chunks;		///<

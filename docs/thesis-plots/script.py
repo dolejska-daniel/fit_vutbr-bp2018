@@ -1,3 +1,4 @@
+import math
 import matplotlib.pyplot as p
 from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d import proj3d
@@ -67,6 +68,120 @@ for x in range(noise_img_res[0]):
 imageData[:] *= 255
 
 imageFilepath = save_dir + 'noise_perlin.png'
+print("Saving {}.".format(imageFilepath))
+imageio.imwrite(imageFilepath, imageData.astype('uint8')[:, :])
+
+# -----------------------------------------------------dd--
+#   Perlin noise with 3 octaves
+# -----------------------------------------------------dd--
+octave_count = 2
+frequency = 2
+amplitude = 128
+persistence = .5
+lacunarity = 2
+max_value = float('-inf')
+min_value = float('inf')
+
+imageData = np.zeros([*noise_img_res])
+for x in range(noise_img_res[0]):
+    for y in range(noise_img_res[1]):
+        tmp_freq = frequency
+        tmp_ampl = amplitude
+        sample = 0
+        tmp_max = 0
+        for o in range(octave_count):
+            p = glm.perlin(glm.vec2(x, y) * tmp_freq / 160)
+            # p = (p + 1) / 2
+            sample += p * tmp_ampl
+            tmp_max += tmp_ampl
+
+            tmp_ampl *= persistence
+            tmp_freq *= lacunarity
+
+        imageData[x][y] = sample # / tmp_max
+        max_value = max(max_value, sample)
+        min_value = min(min_value, sample)
+
+max_value2 = float('-inf')
+min_value2 = float('inf')
+
+for x in range(noise_img_res[0]):
+    for y in range(noise_img_res[1]):
+        old = imageData[x][y]
+        imageData[x][y] += min_value
+        imageData[x][y] /= 2 * max_value # (max_value - min_value)
+        imageData[x][y] = np.clip(imageData[x][y] + 1, 0, 1)
+        #print(old, imageData[x][y])
+
+        max_value2 = max(max_value2, imageData[x][y])
+        min_value2 = min(min_value2, imageData[x][y])
+
+
+#print(max_value)
+#print(min_value)
+#print(max_value2)
+#print(min_value2)
+
+imageData[:] *= 255
+
+imageFilepath = save_dir + 'noise_perlin_octaves_2.png'
+print("Saving {}.".format(imageFilepath))
+imageio.imwrite(imageFilepath, imageData.astype('uint8')[:, :])
+
+# -----------------------------------------------------dd--
+#   Perlin noise with 6 octaves
+# -----------------------------------------------------dd--
+octave_count = 6
+frequency = 2
+amplitude = 128
+persistence = .5
+lacunarity = 2
+max_value = float('-inf')
+min_value = float('inf')
+
+imageData = np.zeros([*noise_img_res])
+for x in range(noise_img_res[0]):
+    for y in range(noise_img_res[1]):
+        tmp_freq = frequency
+        tmp_ampl = amplitude
+        sample = 0
+        tmp_max = 0
+        for o in range(octave_count):
+            p = glm.perlin(glm.vec2(x, y) * tmp_freq / 160)
+            # p = (p + 1) / 2
+            sample += p * tmp_ampl
+            tmp_max += tmp_ampl
+
+            tmp_ampl *= persistence
+            tmp_freq *= lacunarity
+
+        imageData[x][y] = sample # / tmp_max
+        max_value = max(max_value, sample)
+        min_value = min(min_value, sample)
+
+max_value2 = float('-inf')
+min_value2 = float('inf')
+
+for x in range(noise_img_res[0]):
+    for y in range(noise_img_res[1]):
+        old = imageData[x][y]
+        imageData[x][y] += min_value
+        imageData[x][y] /= 2 * max_value # (max_value - min_value)
+        imageData[x][y] = np.clip(imageData[x][y] + 1, 0, 1)
+        #print(old, imageData[x][y])
+
+        max_value2 = max(max_value2, imageData[x][y])
+        min_value2 = min(min_value2, imageData[x][y])
+
+
+#print(max_value)
+#print(min_value)
+#print(max_value2)
+#print(min_value2)
+
+imageData[:] *= 255
+
+imageFilepath = save_dir + 'noise_perlin_octaves_6.png'
 print("Saving {}.".format(imageFilepath))
 imageio.imwrite(imageFilepath, imageData.astype('uint8')[:, :])
 

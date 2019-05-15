@@ -66,7 +66,7 @@ void Street::Destroy(const std::shared_ptr<StreetMap>& streetMap)
 	_destroyed = true;
 
 	const auto this_street = this->shared_from_this();
-	std::cerr << "Removing: " << this_street << std::endl;
+	// std::cerr << "Removing: " << this_street << std::endl;
 
 	// TODO: Napojit segmenty
 	for (const auto& segment : GetSegments())
@@ -101,7 +101,7 @@ void Street::Destroy(const std::shared_ptr<StreetMap>& streetMap)
 	{
 		if (sub_street)
 		{
-			std::cerr << "Removing sub: " << sub_street << std::endl;
+			// std::cerr << "Removing sub: " << sub_street << std::endl;
 			streetMap->RemoveStreet(sub_street);
 		}
 	}

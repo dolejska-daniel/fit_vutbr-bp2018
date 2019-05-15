@@ -13,14 +13,11 @@
 #include <Infrastructure/StreetMap.h>
 #include <Infrastructure/StreetZone.h>
 #include <Terrain/Map.h>
+#include <Application/Application.h>
 
 
 using namespace Infrastructure;
 
-
-const float stepSize = 6.f;
-const float stepLevelOffset = .75f;
-const float splitLimit = 30.f;
 
 StreetZone::StreetZone(glm::vec2 const& center, const float radius,
 	std::function<void(std::shared_ptr<Street> const& street)> buildStep,
@@ -32,7 +29,7 @@ StreetZone::StreetZone(glm::vec2 const& center, const float radius,
 		_buildStep = [&](std::shared_ptr<Street> const& street)
 		{
 			const auto dir = street->ReadSegment().direction;
-			street->BuildStep(dir, float(glm::pow(stepLevelOffset, street->GetLevel()) * stepSize));
+			street->BuildStep(dir, float(glm::pow(Application::Vars.getFloat("streets.layout.step.offset"), street->GetLevel()) * Application::Vars.getFloat("streets.layout.step")));
 		};
 	}
 
@@ -41,7 +38,7 @@ StreetZone::StreetZone(glm::vec2 const& center, const float radius,
 		_splitStep = [&](StreetMap* map, std::shared_ptr<Street> const& street)
 		{
 			const auto segment = street->GetSegment();
-			if (street->lengthSplit >= splitLimit/* && street->GetLevel() < 4*/)
+			if (street->lengthSplit >= Application::Vars.getFloat("streets.layout.split")/* && street->GetLevel() < 4*/)
 			{
 				street->ResetSegmentSplit();
 
@@ -63,7 +60,7 @@ StreetZone::StreetZone(glm::vec2 const& center, const float radius,
 					direction.z = -segment.direction.x;
 				}
 
-				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(stepLevelOffset, street->GetLevel()) * stepSize, street->GetLevel() + 1);
+				const auto substreet = std::make_shared<Street>(map->terrainMap->GetHeightMap(), position, direction, glm::pow(Application::Vars.getFloat("streets.layout.step.offset"), street->GetLevel()) * Application::Vars.getFloat("streets.layout.step"), street->GetLevel() + 1);
 				// substreet->GetSegment je pouze jeden bod.
 				auto intersection_segment = substreet->GetSegment();
 				intersection_segment.endPoint = intersection_segment.startPoint + intersection_segment.direction;

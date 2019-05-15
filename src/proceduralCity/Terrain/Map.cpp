@@ -10,6 +10,7 @@
 #include <Terrain/Generator.h>
 #include <Infrastructure/Street.h>
 #include <Application/Application.h>
+#include <glm/glm.hpp>
 
 
 using namespace Terrain;
@@ -95,8 +96,11 @@ Map::Map()
 	{
 		for (int x = 0; x < _width; ++x)
 		{
-			std::cerr << "Building terrain (" << y * _width + x + 1 << "/" << _width * _height << ") ";
-			GetChunk(y * _width + x) = Generator::GenerateChunk(this, GetChunkOffsetX(-halfWidth + x), GetChunkOffsetY(-halfHeight + y));
+			std::cerr << "Building terrain (" << y * _width + x + 1 << "/" << _width * _height << "), " << -halfWidth + x << ", " << -halfHeight + y << " - ";
+			glm::vec2 offset = { GetChunkOffsetX(-halfWidth + x), GetChunkOffsetY(-halfHeight + y) };
+			_offsetMax = glm::max(offset, _offsetMax);
+			_offsetMin = glm::min(offset, _offsetMin);
+			GetChunk(y * _width + x) = Generator::GenerateChunk(this, offset.x, offset.y);
 		}
 	}
 
@@ -122,13 +126,12 @@ std::shared_ptr<Chunk>& Map::GetChunk(const unsigned int index)
 
 bool Map::ValidateStreet(std::shared_ptr<Infrastructure::Street> const& street) const
 {
-	const auto w = _width - 1;
+	return true;
 	const auto v = street->GetSegment().endPoint;
-	//auto d = Application::Vars.getUint32("terrain.chunk.width") * Application::Vars.getFloat("terrain.chunk.scale");
-	const auto d = 0;
 
-	const glm::vec2 max{ GetChunkOffsetX(w + 1) + d, GetChunkOffsetY(w + 1) + d };
-	const glm::vec2 min{ GetChunkOffsetX(-w), GetChunkOffsetY(-w) };
+	const glm::vec2 max(_offsetMax);
+	const glm::vec2 min(_offsetMin);
+	std::cerr << max.x << ", " << max.y << "; " << min.x << ", " << min.y << std::endl;
 	if (v.x < min.x || v.z < min.y || v.x > max.x || v.z > max.y)
 	{
 		street->End();

@@ -1,0 +1,56 @@
+// QuadTree containing four line segments
+digraph x
+{
+    fontname=Consolas
+    fontsize=8
+
+    node [
+        fontname=Consolas
+        fontsize=8
+        shape=record
+    ]
+
+    edge [
+        fontname=Consolas
+        fontsize=8
+        arrowtail=odiamond
+    ]
+
+    graph [
+        #splines=ortho
+        concentrate=true
+    ]
+
+    IRenderableBase
+    IRenderableArray
+    IRenderableElementArray
+    a [ shape=point ]
+    b [ shape=point ]
+    c [ shape=point ]
+
+    subgraph infrastructure
+    {
+        label = "namespace Infrastructure";
+        BuildingPart
+        Parcel
+        Street
+    }
+
+    subgraph terrain
+    {
+        label = "namespace Terrain";
+        Chunk
+    }
+
+    IRenderableBase -> a [ dir=back ];
+    a -> IRenderableArray [ dir=none ];
+    a -> IRenderableElementArray [ dir=none ];
+
+    IRenderableArray -> b [ dir=back ];
+    b -> BuildingPart [ dir=none ];
+    b -> Street [ dir=none ];
+
+    IRenderableElementArray -> c [ dir=back ];
+    c -> Parcel [ dir=none ];
+    c -> Chunk [ dir=none ];
+}

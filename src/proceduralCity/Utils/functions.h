@@ -174,11 +174,36 @@ namespace Utils
 				const auto noise_h = height_map->GenerateNoise(noise_p.x, noise_p.y);
 				const auto noise_c = byte(height_map->approximate_sample(noise_h) * 255);
 
-				/*
-				auto noise_ph = noise_h;
-				height_map->PreprocessData(noise_ph);
-				const auto noise_pc = byte(noise_ph * 254);
-				*/
+				const auto noise_index = 3 * noise_y * width + 3 * noise_x;
+				noise[noise_index] =
+					noise[noise_index + 1] =
+					noise[noise_index + 2] = noise_c;
+			}
+		}
+		return noise;
+	}
+
+	static byte *dump_processed_terrain_noise(Terrain::HeightMap *height_map, const unsigned width, const unsigned height, const float scale)
+	{
+		const auto curve_min = height_map->_curve->GetPoint(0).y - 1.f;
+		const auto curve_max = height_map->_curve->GetPoint(1).y;
+
+		const auto noise = new byte[3 * width * height];
+		for (auto noise_y = 0u; noise_y < height; ++noise_y)
+		{
+			for (auto noise_x = 0u; noise_x < width; ++noise_x)
+			{
+				auto noise_p = vec2{ noise_x - .5f * width, noise_y - .5f * width };
+				noise_p *= scale;
+
+				auto noise_h = height_map->GenerateNoise(noise_p.x, noise_p.y);
+				noise_h = height_map->approximate_sample(noise_h);
+				noise_h = height_map->_curve->GetPoint(noise_h).y;
+				if (curve_min < 0)
+					noise_h += glm::abs(curve_min);
+				noise_h /= curve_max - curve_min;
+
+				const auto noise_c = byte(noise_h * 255);
 
 				const auto noise_index = 3 * noise_y * width + 3 * noise_x;
 				noise[noise_index] =
@@ -297,12 +322,13 @@ namespace Utils
 		return r;
 	}
 
-	static float randomi(int from = 0, int to = 1)
+	static int randomi(int from = 0, int to = 1)
 	{
 		to += 1;
 		auto r = rand() % (to - from);
 		r += from;
 
+		std::cerr << "ranomi: from " << from << ", to " << to << ", out: " << r << std::endl;
 		return r;
 	}
 

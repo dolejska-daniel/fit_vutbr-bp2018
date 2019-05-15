@@ -9,6 +9,7 @@
 #include <Infrastructure/Building.h>
 #include <Infrastructure/BuildingPart.h>
 #include <Utils/functions.h>
+#include <Application/Application.h>
 
 using namespace glm;
 using namespace Infrastructure;
@@ -97,7 +98,7 @@ void Building::GenerateParts_Square()
 		return;
 	}
 
-	auto density = 2.f;
+	auto density = Application::Vars.getFloat("parcels.density");
 	float x_max, y_max;
 	vec3 z_offset, x_offset;
 

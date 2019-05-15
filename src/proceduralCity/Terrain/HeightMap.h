@@ -55,12 +55,13 @@ namespace Terrain
 
 		float approximate_sample(float sample) const;
 
+		std::shared_ptr<Utils::Curve2D> _curve;	///< 
+
 	private:
+
 		float _minNoise;	///< 
 		float _maxNoise; ///<
 
 		glm::vec2* _offsets;	///< 
-
-		std::shared_ptr<Utils::Curve2D> _curve;	///< 
 	};
 }

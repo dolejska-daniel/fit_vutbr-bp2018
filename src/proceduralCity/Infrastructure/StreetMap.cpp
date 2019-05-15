@@ -191,6 +191,7 @@ void StreetMap::ValidateIntersections()
 
 void StreetMap::ValidateIntersections(const std::shared_ptr<Street>& street)
 {
+	return;
 	const auto err = 0.001f;
 	std::cerr << "\n===\nValidating street: " << street << std::endl;
 	auto segments = street->GetSegments();

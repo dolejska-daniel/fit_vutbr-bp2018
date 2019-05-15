@@ -91,6 +91,30 @@ int main(const int argc, char* argv[])
 
 	Vars.addUint32("capture.framerate", args.getu32("--capture-framerate", 60, "Framerate of the captured video"));
 
+	// ==========================================================dd=
+	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ LAYOUTU SILNIC
+	// =============================================================
+	Vars.addFloat("streets.layout.step", args.getf32("--streets-layout-step", 6.f, ""));
+	Vars.addFloat("streets.layout.step.offset", args.getf32("--streets-layout-step-offset", 0.75f, "Street level offset"));
+	Vars.addFloat("streets.layout.split", args.getf32("--streets-layout-split", 30.f, ""));
+
+	// ==========================================================dd=
+	//	DEFINICE PROMĚNNÝCH A ARGUMENTŮ PROGRAMU PRO NASTAVENÍ PARCEL A BUDOV
+	// =============================================================
+	Vars.addFloat("parcels.density", args.getf32("--parcels-density", 2.f, ""));
+
+	Vars.addFloat("buildings.noise.change", args.getf32("--buildings-noise-change", 4.f, ""));
+	Vars.addFloat("buildings.noise.scale", args.getf32("--buildings-noise-scale", 10.f, ""));
+	Vars.addFloat("buildings.noise.coeff", args.getf32("--buildings-noise-coeff", 4.f, ""));
+
+	Vars.addUint32("buildings.blocks.top.min", args.getu32("--buildings-blocks-top-min", 0u, ""));
+	Vars.addUint32("buildings.blocks.top.max", args.getu32("--buildings-blocks-top-max", 4u, ""));
+
+	Vars.addUint32("buildings.blocks.min", args.getu32("--buildings-blocks-min", 2u, ""));
+	Vars.addUint32("buildings.blocks.max", args.getu32("--buildings-blocks-max", 5u, ""));
+
+	Vars.addUint32("buildings.windows.scale", args.getu32("--buildings-windows-scale", 4u, ""));
+
 
 	if (args.isPresent("--help", "") || !args.validate())
 	{
@@ -617,6 +641,7 @@ int main(const int argc, char* argv[])
 				if (KeyDown['o'])
 				{
 					streets.clear();
+					street_parcel_id = 0;
 				}
 				else
 				{
@@ -1061,6 +1086,14 @@ int main(const int argc, char* argv[])
 						std::cerr << "Saved terrain noise to: " << terrain_noise_fp.first << std::endl;
 						free(noise);
 					}
+
+					auto noise = Utils::dump_processed_terrain_noise(map->GetHeightMap(), 512, 512, 3);
+					auto image = Utils::create_image_from_raw(512, 512, noise);
+					FreeImage_FlipHorizontal(image);
+					FreeImage_FlipVertical(image);
+					FreeImage_FlipHorizontal(image);
+					Utils::save_image_to_file(Vars.getString("output.dir") + "/models/terrain-processed-3_512x512.png", image);
+					free(noise);
 
 					save = true;
 				}
