@@ -342,6 +342,7 @@ share/
 ### Exceptions
 !CMakeModules/*
 !docs/thesis/zadani.pdf
+!_assessment/*.pdf
 !3rd-party/CMakeModules/*
 !include/FreeImage.h
 !include/FreeImagePlus.h
